@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roxy Updater - PRO+</title>
+<title>Pro+ Updater</title>
 <link rel="stylesheet" href="/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -47,7 +47,7 @@
 <a href="/commands" class="back-btn">← Back</a>
 <div class="upd-container">
   <div class="upd-header">
-    <h1>🔄 Roxy Updater</h1>
+    <h1>🔄 Pro+ Updater</h1>
     <p>Checks GitHub for new commits and applies updates without touching your config.</p>
   </div>
 
@@ -99,7 +99,7 @@ async function checkUpdate() {
     document.getElementById('commitMsg').textContent = r.message;
     document.getElementById('commitSha').textContent = r.shortSha;
     document.getElementById('commitAuthor').textContent = r.author;
-    document.getElementById('commitDate').textContent = new Date(r.date).toLocaleString();
+    document.getElementById('commitDate').textContent = fmtDate(r.date);
 
     const badge = document.getElementById('statusBadge');
     const updateBtn = document.getElementById('updateBtn');
@@ -169,8 +169,15 @@ function renderHistory(history) {
     <div class="history-item">
       <span class="history-sha">${h.sha}</span>
       <span class="history-msg">${h.message}</span>
-      <span class="history-date">${new Date(h.date).toLocaleDateString()}</span>
+      <span class="history-date">${fmtDate(h.date)}</span>
     </div>`).join('');
+}
+
+function fmtDate(d) {
+  if (!d) return 'Unknown';
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return d;
+  return dt.toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
 }
 
 // Auto-check on load
