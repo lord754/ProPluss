@@ -301,8 +301,17 @@
             if (data.success) {
                 if (data.isFirst) {
                     showToast('\u2713 Token added! Starting bot...', '#2ecc71');
-                    // Wait a moment for the bot to boot then go to home
-                    setTimeout(() => { window.location.href = '/'; }, 3000);
+                    document.getElementById('newToken').value = '';
+                    // Poll until bot is ready then go home
+                    const poll = async () => {
+                        try {
+                            const r = await fetch('/api/bot-ready');
+                            const d = await r.json();
+                            if (d.ready) { window.location.href = '/'; return; }
+                        } catch(e) {}
+                        setTimeout(poll, 1500);
+                    };
+                    setTimeout(poll, 2000);
                 } else {
                     showToast(`Account #${data.index} added!`, '#2ecc71');
                     document.getElementById('newToken').value = '';
