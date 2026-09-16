@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roxy Updater - PRO+</title>
+<link rel="stylesheet" href="/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+.upd-container{width:95%;max-width:860px;margin:0 auto;padding:40px 20px 120px}
+.upd-header{text-align:center;margin-bottom:36px}
+.upd-header h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.upd-header p{color:#666;font-size:.95rem}
+.card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px;margin-bottom:20px}
+.card-title{font-size:1rem;font-weight:700;color:#a29bfe;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:10px}
+.status-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:.82rem;font-weight:600}
+.badge-green{background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.3)}
+.badge-purple{background:rgba(138,43,226,0.15);color:#c084fc;border:1px solid rgba(138,43,226,0.3)}
+.badge-gray{background:rgba(255,255,255,0.05);color:#666;border:1px solid rgba(255,255,255,0.08)}
+.commit-box{background:#0a0a0f;border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:16px;margin-top:14px}
+.commit-msg{font-size:1rem;font-weight:600;color:#fff;margin-bottom:6px}
+.commit-meta{font-size:.78rem;color:#555}
+.commit-sha{font-family:monospace;color:#8a2be2;font-size:.8rem}
+.btn{padding:12px 24px;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-size:.9rem;transition:.2s;font-family:'Outfit',sans-serif}
+.btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff;box-shadow:0 4px 15px rgba(138,43,226,0.3)}
+.btn-primary:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:rgba(255,255,255,0.05);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
+.btn-secondary:hover{background:rgba(255,255,255,0.1);color:#fff}
+.log-box{background:#050508;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;height:260px;overflow-y:auto;font-family:monospace;font-size:.78rem;color:#aaa;white-space:pre-wrap;word-break:break-all}
+.log-box::-webkit-scrollbar{width:5px}
+.log-box::-webkit-scrollbar-thumb{background:#222;border-radius:3px}
+.history-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.history-item:last-child{border-bottom:none}
+.history-sha{font-family:monospace;color:#8a2be2;font-size:.8rem;min-width:56px}
+.history-msg{font-size:.88rem;color:#ccc;flex:1}
+.history-date{font-size:.75rem;color:#444;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot-green{background:#2ecc71}
+.dot-orange{background:#f39c12}
+#checkBtn{min-width:130px}
+</style>
+</head>
+<body>
+<a href="/commands" class="back-btn">← Back</a>
+<div class="upd-container">
+  <div class="upd-header">
+    <h1>🔄 Roxy Updater</h1>
+    <p>Checks GitHub for new commits and applies updates without touching your config.</p>
+  </div>
+
+  <!-- Status Card -->
+  <div class="card">
+    <div class="card-title">Update Status</div>
+    <div class="status-row">
+      <div id="statusBadge" class="badge badge-gray">⏳ Not checked yet</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-secondary" id="checkBtn" onclick="checkUpdate()">Check for Updates</button>
+        <button class="btn btn-primary" id="updateBtn" onclick="applyUpdate()" disabled>Apply Update</button>
+      </div>
+    </div>
+    <div id="commitBox" style="display:none" class="commit-box">
+      <div class="commit-msg" id="commitMsg"></div>
+      <div class="commit-meta">
+        <span class="commit-sha" id="commitSha"></span>
+        &nbsp;·&nbsp;<span id="commitAuthor"></span>
+        &nbsp;·&nbsp;<span id="commitDate"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Card -->
+  <div class="card" id="logCard" style="display:none">
+    <div class="card-title">Update Log</div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+  <!-- History Card -->
+  <div class="card" id="historyCard" style="display:none">
+    <div class="card-title">Update History</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<%- include('partials/super_button') %>
+
+<script>
+let currentSha = null;
+
+async function checkUpdate() {
+  const btn = document.getElementById('checkBtn');
+  btn.disabled = true; btn.textContent = 'Checking...';
+  try {
+    const r = await fetch('/api/updater/check').then(x => x.json());
+    currentSha = r.sha;
+    document.getElementById('commitBox').style.display = 'block';
+    document.getElementById('commitMsg').textContent = r.message;
+    document.getElementById('commitSha').textContent = r.shortSha;
+    document.getElementById('commitAuthor').textContent = r.author;
+    document.getElementById('commitDate').textContent = new Date(r.date).toLocaleString();
+
+    const badge = document.getElementById('statusBadge');
+    const updateBtn = document.getElementById('updateBtn');
+    if (r.hasUpdate) {
+      badge.className = 'badge badge-purple';
+      badge.innerHTML = '<span class="dot dot-orange"></span>Update Available';
+      updateBtn.disabled = false;
+    } else {
+      badge.className = 'badge badge-green';
+      badge.innerHTML = '<span class="dot dot-green"></span>Up to date';
+      updateBtn.disabled = true;
+    }
+
+    if (r.history && r.history.length) renderHistory(r.history);
+  } catch(e) {
+    document.getElementById('statusBadge').className = 'badge badge-gray';
+    document.getElementById('statusBadge').textContent = '❌ Check failed: ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = 'Check for Updates';
+}
+
+async function applyUpdate() {
+  if (!currentSha) return;
+  const btn = document.getElementById('updateBtn');
+  btn.disabled = true; btn.textContent = 'Updating...';
+  document.getElementById('logCard').style.display = 'block';
+  const logBox = document.getElementById('logBox');
+  logBox.textContent = '';
+
+  // Poll logs while update runs
+  const poll = setInterval(async () => {
+    const r = await fetch('/api/updater/logs').then(x => x.json());
+    logBox.textContent = r.logs.join('\n');
+    logBox.scrollTop = logBox.scrollHeight;
+  }, 800);
+
+  try {
+    const r = await fetch('/api/updater/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sha: currentSha })
+    }).then(x => x.json());
+
+    clearInterval(poll);
+    const finalLogs = await fetch('/api/updater/logs').then(x => x.json());
+    logBox.textContent = finalLogs.logs.join('\n');
+    logBox.scrollTop = logBox.scrollHeight;
+
+    document.getElementById('statusBadge').className = 'badge badge-green';
+    document.getElementById('statusBadge').innerHTML = '<span class="dot dot-green"></span>Updated successfully';
+    btn.textContent = 'Apply Update';
+
+    if (r.history) renderHistory(r.history);
+  } catch(e) {
+    clearInterval(poll);
+    logBox.textContent += '\nError: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Apply Update';
+  }
+}
+
+function renderHistory(history) {
+  const card = document.getElementById('historyCard');
+  const list = document.getElementById('historyList');
+  if (!history.length) return;
+  card.style.display = 'block';
+  list.innerHTML = history.map(h => `
+    <div class="history-item">
+      <span class="history-sha">${h.sha}</span>
+      <span class="history-msg">${h.message}</span>
+      <span class="history-date">${new Date(h.date).toLocaleDateString()}</span>
+    </div>`).join('');
+}
+
+// Auto-check on load
+checkUpdate();
+</script>
+</body>
+</html>

@@ -100,7 +100,7 @@ async function bootClient(token, accountIndex) {
             } catch (e) {}
         }, 30 * 60 * 1000);
 
-        // Register in map and set as active if it's the selected account
+        // Register in map immediately so dashboard knows a boot is in progress
         clients.set(accountIndex, client);
         const { active } = accountManager.getAccounts();
         if (accountIndex === active) clientRef.current = client;
@@ -311,6 +311,11 @@ async function bootClient(token, accountIndex) {
             await command.execute(message, args, client);
         } catch (error) { console.error('Error in messageCreate:', error); }
     });
+
+    // Register immediately so dashboard loading page sees the client before ready fires
+    clients.set(accountIndex, client);
+    const { active: _active } = accountManager.getAccounts();
+    if (accountIndex === _active) clientRef.current = client;
 
     await client.login(token);
     return client;

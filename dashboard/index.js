@@ -50,7 +50,7 @@ const FormData = (_undici && _undici.FormData) || global.FormData;
 const Blob = (_undici && _undici.Blob) || global.Blob;
 const fetch = (_undici && _undici.fetch) || global.fetch;
 
-const LOADING_PAGE = (label) => `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PRO+ Loading</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;height:100vh;background:#0b0b10;color:#fff;font-family:'Outfit',sans-serif}.card{display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px 48px;background:rgba(255,255,255,0.03);border:1px solid rgba(138,43,226,0.2);border-radius:20px;backdrop-filter:blur(10px)}.spinner{width:64px;height:64px;border:5px solid rgba(138,43,226,0.15);border-top-color:#c084fc;border-radius:50%;animation:spin 0.9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.label{font-size:1.05rem;font-weight:700;letter-spacing:.3px}.bar-outer{width:240px;height:6px;background:rgba(255,255,255,0.07);border-radius:6px;overflow:hidden}.bar-inner{height:100%;width:0%;background:linear-gradient(90deg,#7c3aed,#c084fc);border-radius:6px;transition:width 0.6s ease}.pct-label{font-size:0.8rem;color:#666;align-self:flex-end;margin-top:-12px}.sub{color:#555;font-size:.82rem;text-align:center;line-height:1.5}.hint{font-size:.75rem;color:#444;margin-top:4px}a{color:#8a2be2;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><div class="card"><div class="spinner"></div><div class="label" id="lbl">Loading ${label}...</div><div class="bar-outer"><div class="bar-inner" id="bar"></div></div><div class="pct-label" id="pct">0%</div><div class="sub" id="sub">Bot is connecting to Discord.<br>This page refreshes automatically.</div><div class="hint">Taking too long? Check your token in <a href="/accounts">Accounts</a>.</div></div><script>const bar=document.getElementById('bar');const pct=document.getElementById('pct');const sub=document.getElementById('sub');let displayed=0;function setBar(v){displayed=v;bar.style.width=v+'%';pct.textContent=Math.round(v)+'%';}(async function poll(){try{const r=await fetch('/api/bot-ready');const d=await r.json();if(d.total===0){return location.href='/accounts';}if(d.total>0){const real=Math.round((d.loaded/d.total)*100);if(real>displayed)setBar(real);sub.textContent='Loaded '+d.loaded+' / '+d.total+' token'+(d.total>1?'s':'')+'...';}if(d.ready){setBar(100);setTimeout(()=>location.href='/',300);}else{setTimeout(poll,1500);}}catch(e){setTimeout(poll,2000);}})();</script></body></html>`;
+const LOADING_PAGE = (label) => `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PRO+ Loading</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;align-items:center;justify-content:center;height:100vh;background:#0b0b10;color:#fff;font-family:'Outfit',sans-serif}.card{display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px 48px;background:rgba(255,255,255,0.03);border:1px solid rgba(138,43,226,0.2);border-radius:20px;backdrop-filter:blur(10px)}.spinner{width:64px;height:64px;border:5px solid rgba(138,43,226,0.15);border-top-color:#c084fc;border-radius:50%;animation:spin 0.9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.label{font-size:1.05rem;font-weight:700;letter-spacing:.3px}.bar-outer{width:240px;height:6px;background:rgba(255,255,255,0.07);border-radius:6px;overflow:hidden}.bar-inner{height:100%;width:0%;background:linear-gradient(90deg,#7c3aed,#c084fc);border-radius:6px;transition:width 0.6s ease}.pct-label{font-size:0.8rem;color:#666;align-self:flex-end;margin-top:-12px}.sub{color:#555;font-size:.82rem;text-align:center;line-height:1.5}.hint{font-size:.75rem;color:#444;margin-top:4px}a{color:#8a2be2;text-decoration:none}a:hover{text-decoration:underline}</style></head><body><div class="card"><div class="spinner"></div><div class="label" id="lbl">Loading ${label}...</div><div class="bar-outer"><div class="bar-inner" id="bar"></div></div><div class="pct-label" id="pct">0%</div><div class="sub" id="sub">Bot is connecting to Discord.<br>This page refreshes automatically.</div><div class="hint">Taking too long? Check your token in <a href="/accounts">Accounts</a>.</div></div><script>const bar=document.getElementById('bar');const pct=document.getElementById('pct');const sub=document.getElementById('sub');let displayed=0;const started=Date.now();function setBar(v){displayed=v;bar.style.width=v+'%';pct.textContent=Math.round(v)+'%';}(async function poll(){try{const r=await fetch('/api/bot-ready');const d=await r.json();if(d.total===0){return location.href='/accounts';}if(d.total>0){const real=Math.round((d.loaded/d.total)*100);if(real>displayed)setBar(real);sub.textContent='Loaded '+d.loaded+' / '+d.total+' token'+(d.total>1?'s':'')+'...';}if(d.ready){setBar(100);setTimeout(()=>location.href='/',300);return;}if(Date.now()-started>60000){return location.href='/';}setTimeout(poll,1500);}catch(e){setTimeout(poll,2000);}})();</script></body></html>`;
 
 function errCode(e) {
     const msg = (e && (e.message || String(e))) || '';
@@ -416,6 +416,40 @@ module.exports = (clientRef, clientsMap) => {
             user: client.user,
             page: 'commands'
         });
+    });
+
+    app.get('/commands/updater', (req, res) => {
+        if (!client.user) return res.send(LOADING_PAGE('Updater'));
+        res.render('cmd_updater', { user: client.user, page: 'commands' });
+    });
+
+    // Updater API
+    const updater = require('../updater');
+    let updaterLogs = [];
+
+    app.get('/api/updater/check', async (req, res) => {
+        try {
+            const info = await updater.checkForUpdate();
+            res.json(info);
+        } catch(e) { res.json({ error: e.message }); }
+    });
+
+    app.get('/api/updater/logs', (req, res) => {
+        res.json({ logs: updaterLogs });
+    });
+
+    app.post('/api/updater/apply', async (req, res) => {
+        const { sha } = req.body;
+        if (!sha) return res.json({ success: false, error: 'No SHA provided' });
+        updaterLogs = [];
+        try {
+            const result = await updater.applyUpdate(sha, updaterLogs);
+            const state = updater.loadState();
+            res.json({ success: true, ...result, history: state.history });
+        } catch(e) {
+            updaterLogs.push('Fatal: ' + e.message);
+            res.json({ success: false, error: e.message });
+        }
     });
 
     app.get('/commands/rpc', (req, res) => {
