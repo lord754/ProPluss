@@ -1095,8 +1095,11 @@ module.exports = (clientRef, clientsMap) => {
         if (!token || token.trim().length < 20) return res.json({ success: false, message: 'Invalid token' });
         const { accounts: before } = accountManager.getAccounts();
         const isFirst = before.length === 0;
-        const index = accountManager.addAccount(token.trim());
-        // Auto-boot the client if this is the first token ever added
+        const result = accountManager.addAccount(token.trim());
+        if (result && result.duplicate) {
+            return res.json({ success: false, message: `Token already exists at ${result.key}` });
+        }
+        const index = result;
         if (isFirst && global.bootClient) {
             global.bootClient(token.trim(), index).catch(e => console.error('[Accounts] Auto-boot failed:', e.message));
         }

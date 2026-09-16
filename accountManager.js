@@ -64,10 +64,16 @@ function getActiveToken() {
 
 function addAccount(token) {
     const data = parseTokensFile();
+    // Check for duplicate token
+    const tokenKeys = Object.keys(data).filter(k => k === 'TOKEN' || /^TOKEN\d+$/.test(k));
+    for (const k of tokenKeys) {
+        if (data[k] && data[k].trim() === token.trim()) {
+            const idx = k === 'TOKEN' ? 0 : parseInt(k.replace('TOKEN', ''));
+            return { duplicate: true, index: idx, key: k };
+        }
+    }
     // Find next available index
-    const existing = Object.keys(data)
-        .filter(k => k === 'TOKEN' || /^TOKEN\d+$/.test(k))
-        .map(k => k === 'TOKEN' ? 0 : parseInt(k.replace('TOKEN', '')));
+    const existing = tokenKeys.map(k => k === 'TOKEN' ? 0 : parseInt(k.replace('TOKEN', '')));
     let next = 0;
     while (existing.includes(next)) next++;
     const key = next === 0 ? 'TOKEN' : `TOKEN${next}`;

@@ -292,12 +292,17 @@
         async function addAccount() {
             const token = document.getElementById('newToken').value.trim();
             if (!token) return showToast('Please enter a token.', '#ff4757');
+            const btn = document.querySelector('.btn-add');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
             const res = await fetch('/api/accounts/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token })
             });
             const data = await res.json();
+            btn.disabled = false;
+            btn.textContent = 'Add Account';
             if (data.success) {
                 if (data.isFirst) {
                     showToast('\u2713 Token added! Starting bot...', '#2ecc71');
