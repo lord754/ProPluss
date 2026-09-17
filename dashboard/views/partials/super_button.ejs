@@ -1,0 +1,105 @@
+<div class="super-button-wrapper">
+    <div class="super-menu" id="superMenu">
+        <div class="menu-header">PRO+ Hub</div>
+
+        <a href="/" class="menu-item <%= page === 'home' ? 'active' : '' %>">
+            <span class="icon">🏠</span>
+            <span class="label">Dashboard</span>
+        </a>
+
+        <a href="/afk" class="menu-item <%= page === 'afk' ? 'active' : '' %>">
+            <span class="icon">💤</span>
+            <span class="label">AFK System</span>
+        </a>
+
+        <a href="/commands" class="menu-item <%= page === 'commands' ? 'active' : '' %>">
+            <span class="icon">⚡</span>
+            <span class="label">Commands</span>
+        </a>
+
+        <a href="/commands/rpc" class="menu-item">
+            <span class="icon">🎮</span>
+            <span class="label">Rich Presence</span>
+        </a>
+
+        <a href="/ai" class="menu-item <%= page === 'ai' ? 'active' : '' %>">
+            <span class="icon">🧠</span>
+            <span class="label">AI Chat</span>
+        </a>
+
+        <a href="/music" class="menu-item <%= page === 'music' ? 'active' : '' %>">
+            <span class="icon">🎙️</span>
+            <span class="label">Voice</span>
+        </a>
+
+        <a href="/quest" class="menu-item <%= page === 'quest' ? 'active' : '' %>">
+            <span class="icon">⚔️</span>
+            <span class="label">Quests</span>
+        </a>
+
+        <a href="/spammer" class="menu-item <%= page === 'spammer' ? 'active' : '' %>">
+            <span class="icon">💣</span>
+            <span class="label">Spammer</span>
+        </a>
+
+        <a href="/server-cloner" class="menu-item <%= page === 'cloner' ? 'active' : '' %>">
+            <span class="icon">🔄</span>
+            <span class="label">Cloner</span>
+        </a>
+
+        <a href="/accounts" class="menu-item <%= page === 'accounts' ? 'active' : '' %>">
+            <span class="icon">👤</span>
+            <span class="label">Multi Account Manager</span>
+        </a>
+
+        <a href="/commands/updater" class="menu-item <%= page === 'updater' ? 'active' : '' %>">
+            <span class="icon">🔄</span>
+            <span class="label">Pro+ Updater</span>
+        </a>
+
+        <div class="menu-version" id="menuVersion">v1.0</div>
+    </div>
+
+    <button class="super-btn" id="superBtn" onclick="toggleSuperMenu()"
+        style="background: transparent !important; box-shadow: none !important; padding: 0; -webkit-tap-highlight-color: transparent; outline: none;">
+        <img src="/super.png" alt="Super" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+    </button>
+</div>
+
+<div class="super-overlay" id="superOverlay" onclick="toggleSuperMenu()"></div>
+
+<style>
+.menu-version {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #333;
+    margin-top: 10px;
+    padding: 6px 0 2px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-family: monospace;
+    letter-spacing: 0.5px;
+}
+</style>
+
+<script>
+    function toggleSuperMenu() {
+        const menu = document.getElementById('superMenu');
+        const btn = document.getElementById('superBtn');
+        const overlay = document.getElementById('superOverlay');
+
+        menu.classList.toggle('open');
+        btn.classList.toggle('active');
+        overlay.classList.toggle('visible');
+    }
+
+    // Load version for menu footer
+    (async function loadMenuVersion() {
+        try {
+            const r = await fetch('/api/updater/dot-status').then(x => x.json());
+            const el = document.getElementById('menuVersion');
+            if (el && r.installedVersion) {
+                el.textContent = 'v' + r.installedVersion;
+            }
+        } catch(e) {}
+    })();
+</script>

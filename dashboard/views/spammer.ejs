@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO+ Spammer &amp; Purge</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .spammer-container {
+            width: 95%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #fff;
+            padding-bottom: 100px;
+            box-sizing: border-box;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0 20px 0;
+            text-align: center;
+            background: linear-gradient(to right, #fff, #a29bfe);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: 1px solid #333;
+            background: #0b0b10;
+            color: #ccc;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            border-color: #8a2be2;
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .tab-btn.danger.active {
+            background: rgba(255, 71, 87, 0.2);
+            border-color: #ff4757;
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .panel {
+            background: rgba(19, 19, 26, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 35px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .panel.visible {
+            display: block;
+        }
+
+        .panel-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #fff;
+        }
+
+        .panel-subtitle {
+            color: #888;
+            font-size: 0.92rem;
+            margin: 0 0 25px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ccc;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group .hint {
+            color: #666;
+            font-size: 0.75rem;
+            margin-top: 5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 13px;
+            background: #0b0b10;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #8a2be2;
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            background: #0b0b10;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 0 12px;
+        }
+
+        .time-input-group:focus-within {
+            border-color: #8a2be2;
+        }
+
+        .time-input-group input {
+            flex: 1;
+            padding: 13px 5px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .time-input-group .unit {
+            color: #888;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid #333;
+            background: #0b0b10;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            border-color: #8a2be2;
+            color: #fff;
+        }
+
+        .mode-btn.active {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .mode-btn.active.call-mode {
+            background: rgba(255, 71, 87, 0.2);
+            border-color: #ff4757;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.3);
+        }
+
+        .mode-btn.active.msg-mode {
+            background: rgba(46, 204, 113, 0.2);
+            border-color: #2ecc71;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .mode-icon {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .mode-desc {
+            font-size: 0.78rem;
+            color: #888;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #8a2be2, #6c5ce7);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-stop {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-stop:hover {
+            background: #ff4757;
+            color: #fff;
+        }
+
+        .btn-stop:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-purge {
+            background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4) !important;
+        }
+
+        .btn-purge:hover {
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6) !important;
+        }
+
+        .status-panel {
+            background: rgba(19, 19, 26, 0.8);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: monospace;
+        }
+
+        .stat-value.running {
+            color: #2ecc71;
+        }
+
+        .stat-value.stopped {
+            color: #888;
+        }
+
+        .stat-value.error {
+            color: #ff4757;
+        }
+
+        .terminal-box {
+            background: rgba(10, 10, 15, 0.95);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #0f0;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .terminal-header span {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .terminal-clear {
+            background: transparent;
+            border: 1px solid #444;
+            color: #aaa;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .terminal-clear:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .log-line {
+            margin-bottom: 2px;
+            word-wrap: break-word;
+        }
+
+        .log-line.error {
+            color: #ff5f5f;
+        }
+
+        .log-line.success {
+            color: #2ecc71;
+        }
+
+        .warning-box {
+            background: rgba(255, 159, 67, 0.1);
+            border: 1px solid rgba(255, 159, 67, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            color: #ff9f43;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .warning-box i {
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        @media(max-width: 700px) {
+            .panel {
+                padding: 22px;
+            }
+
+            .time-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .mode-buttons {
+                flex-direction: column;
+            }
+
+            .btn-row {
+                flex-direction: column;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="spammer-container">
+        <h1 class="page-title">Spammer &amp; DM Purge</h1>
+
+        <div class="warning-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <b>Warning:</b> Spamming and call-bombing violate Discord's Terms of Service and can get your account
+                <b>banned, locked, or terminated</b>. Use this tool at your own risk. The developer is not responsible
+                for any consequences. Always respect Discord rate limits — extremely low delays (e.g. 1ms) will be
+                throttled by Discord's API queue regardless of what you set.
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" id="tabSpammer" onclick="switchTab('spammer')">
+                <i class="fas fa-bolt"></i> Spammer
+            </button>
+            <button class="tab-btn danger" id="tabPurge" onclick="switchTab('purge')">
+                <i class="fas fa-trash-alt"></i> DM Purge
+            </button>
+        </div>
+
+        <!-- ===== SPAMMER PANEL ===== -->
+        <div class="panel visible" id="panelSpammer">
+            <h2 class="panel-title">Spammer</h2>
+            <p class="panel-subtitle">Send repeated DM messages or initiate + instantly end calls to a victim user.</p>
+
+            <!-- Mode selection -->
+            <div class="form-group">
+                <label>Mode</label>
+                <div class="mode-buttons">
+                    <button class="mode-btn active msg-mode" id="spamModeMsg" onclick="setSpamMode('message')">
+                        <span class="mode-icon">💬</span>
+                        <div>Message Spam</div>
+                        <div class="mode-desc">Sends DM messages repeatedly</div>
+                    </button>
+                    <button class="mode-btn" id="spamModeCall" onclick="setSpamMode('call')">
+                        <span class="mode-icon">📞</span>
+                        <div>Voice Call Spam</div>
+                        <div class="mode-desc">Rings and hangs up instantly, repeat</div>
+                    </button>
+                    <button class="mode-btn" id="spamModeVideo" onclick="setSpamMode('videocall')">
+                        <span class="mode-icon">📹</span>
+                        <div>Video Call Spam</div>
+                        <div class="mode-desc">Video rings and hangs up instantly</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Victim user ID -->
+            <div class="form-group">
+                <label>Victim User ID</label>
+                <div style="position:relative">
+                    <input type="text" class="input-field" id="victimId" placeholder="Search friends or paste ID..." autocomplete="off" oninput="filterFriends('spam')" onfocus="filterFriends('spam')">
+                    <div class="friends-dropdown" id="friendsDropdownSpam"></div>
+                </div>
+                <span class="hint">Type to search friends or paste a user ID manually.</span>
+            </div>
+
+            <!-- Time inputs -->
+            <div class="form-group">
+                <label>Delay between each action (set both — they add up)</label>
+                <div class="time-inputs">
+                    <div class="time-input-group">
+                        <input type="number" id="delayMs" min="0" max="86400000" value="1000" placeholder="0">
+                        <span class="unit">ms</span>
+                    </div>
+                    <div class="time-input-group">
+                        <input type="number" id="delaySec" min="0" max="86400" value="0" placeholder="0">
+                        <span class="unit">sec</span>
+                    </div>
+                </div>
+                <span class="hint">Example: <b>1 ms</b> + <b>0 sec</b> = 1ms delay between calls/messages. Discord rate-limits very low delays automatically.</span>
+            </div>
+
+            <!-- Count -->
+            <div class="form-group">
+                <label>Count (how many times to repeat)</label>
+                <input type="number" class="input-field" id="spamCount" min="1" max="100000" value="100" placeholder="100">
+                <span class="hint">Example: <b>100</b> means the action will be repeated 100 times.</span>
+            </div>
+
+            <!-- Message (only for message mode) -->
+            <div class="form-group" id="messageField">
+                <label>Message Content (optional — defaults to "Spam #N")</label>
+                <input type="text" class="input-field" id="spamMessage" placeholder="Hello! (leave empty to use auto counter)" maxlength="1900">
+            </div>
+
+            <!-- Action buttons -->
+            <div class="btn-row">
+                <button class="btn-primary" id="startSpamBtn" onclick="startSpammer()">
+                    <i class="fas fa-play" style="margin-right: 6px;"></i> Start Spam
+                </button>
+                <button class="btn-stop" id="stopSpamBtn" onclick="stopSpammer()" disabled>
+                    <i class="fas fa-stop" style="margin-right: 6px;"></i> Stop
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div class="status-panel" style="margin-top: 25px;">
+                <div class="status-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value stopped" id="spamStatus">Idle</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Mode</div>
+                        <div class="stat-value" id="spamModeDisplay" style="font-size: 1rem;">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Completed</div>
+                        <div class="stat-value" id="spamCompleted">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Failed</div>
+                        <div class="stat-value" id="spamFailed">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="status-panel">
+                <div class="terminal-header">
+                    <span><i class="fas fa-terminal"></i> Spammer Logs</span>
+                    <button class="terminal-clear" onclick="clearSpamLogs()">Clear</button>
+                </div>
+                <div class="terminal-box" id="spamTerminal">
+                    <div class="log-line" style="color:#666;">Ready. Configure settings and click "Start Spam".</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== DM PURGE PANEL ===== -->
+        <div class="panel" id="panelPurge">
+            <h2 class="panel-title">DM Purge</h2>
+            <p class="panel-subtitle">
+                Delete your own messages in a DM conversation with a victim user.
+                Set count to <b>-1</b> to delete <b>ALL</b> of your messages in that DM (infinity).
+            </p>
+
+            <div class="form-group">
+                <label>Victim User ID</label>
+                <div style="position:relative">
+                    <input type="text" class="input-field" id="purgeVictimId" placeholder="Search friends or paste ID..." autocomplete="off" oninput="filterFriends('purge')" onfocus="filterFriends('purge')">
+                    <div class="friends-dropdown" id="friendsDropdownPurge"></div>
+                </div>
+                <span class="hint">The DM channel with this user is where your messages will be purged.</span>
+            </div>
+
+            <div class="form-group">
+                <label>Count (how many of YOUR messages to delete)</label>
+                <input type="number" class="input-field" id="purgeCount" value="100" placeholder="100 (use -1 for ALL)">
+                <span class="hint">
+                    Positive number (e.g. <b>50</b>) deletes that many of your most recent messages in the DM.<br>
+                    <b>-1</b> = infinity → deletes <b>every</b> message you've sent to this victim (paginates through history).
+                </span>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn-primary btn-purge" id="startPurgeBtn" onclick="startPurge()">
+                    <i class="fas fa-trash-alt" style="margin-right: 6px;"></i> Start DM Purge
+                </button>
+                <button class="btn-stop" id="stopPurgeBtn" onclick="stopPurge()" disabled>
+                    <i class="fas fa-stop" style="margin-right: 6px;"></i> Stop
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div class="status-panel" style="margin-top: 25px;">
+                <div class="status-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value stopped" id="purgeStatus">Idle</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Mode</div>
+                        <div class="stat-value" id="purgeModeDisplay" style="font-size: 1rem;">—</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Deleted</div>
+                        <div class="stat-value" id="purgeDeleted">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Failed</div>
+                        <div class="stat-value" id="purgeFailed">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="status-panel">
+                <div class="terminal-header">
+                    <span><i class="fas fa-terminal"></i> Purge Logs</span>
+                    <button class="terminal-clear" onclick="clearPurgeLogs()">Clear</button>
+                </div>
+                <div class="terminal-box" id="purgeTerminal">
+                    <div class="log-line" style="color:#666;">Ready. Set victim ID + count and click "Start DM Purge".</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/super_button') %>
+
+    <style>
+        .friends-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: #13131a;
+            border: 1px solid rgba(138,43,226,0.4);
+            border-radius: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 999;
+            display: none;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+        .friends-dropdown.open { display: block; }
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .friend-item:hover { background: rgba(138,43,226,0.15); }
+        .friend-item img { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+        .friend-name { color:#fff; font-size:.9rem; font-weight:600; }
+        .friend-id { color:#555; font-size:.75rem; font-family:monospace; }
+        .friends-empty { padding:14px; color:#555; font-size:.85rem; text-align:center; }
+    </style>
+
+    <script>
+        // === Friends dropdown ===
+        let allFriends = [];
+
+        async function loadFriends() {
+            try {
+                const res = await fetch('/api/friends');
+                allFriends = await res.json();
+            } catch(e) { allFriends = []; }
+        }
+
+        function renderDropdown(dropId, matches, panel) {
+            const drop = document.getElementById(dropId);
+            if (!matches.length) {
+                drop.innerHTML = '<div class="friends-empty">No friends found</div>';
+            } else {
+                drop.innerHTML = matches.slice(0, 30).map(f =>
+                    '<div class="friend-item" onclick="selectFriend(\'' + panel + '\',\'' + f.id + '\')">' +
+                    '<img src="' + f.avatar + '" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
+                    '<div><div class="friend-name">' + f.username + '</div>' +
+                    '<div class="friend-id">' + f.id + '</div></div></div>'
+                ).join('');
+            }
+            drop.classList.add('open');
+        }
+
+        function filterFriends(panel) {
+            const inputId = panel === 'spam' ? 'victimId' : 'purgeVictimId';
+            const dropId  = panel === 'spam' ? 'friendsDropdownSpam' : 'friendsDropdownPurge';
+            const query   = document.getElementById(inputId).value.trim().toLowerCase();
+            const drop    = document.getElementById(dropId);
+            if (!allFriends.length) { drop.classList.remove('open'); return; }
+            const matches = query
+                ? allFriends.filter(f => f.username.toLowerCase().includes(query) || f.id.includes(query))
+                : allFriends;
+            renderDropdown(dropId, matches, panel);
+        }
+
+        function selectFriend(panel, id) {
+            const inputId = panel === 'spam' ? 'victimId' : 'purgeVictimId';
+            const dropId  = panel === 'spam' ? 'friendsDropdownSpam' : 'friendsDropdownPurge';
+            document.getElementById(inputId).value = id;
+            document.getElementById(dropId).classList.remove('open');
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('[style*="position:relative"]')) {
+                document.querySelectorAll('.friends-dropdown').forEach(d => d.classList.remove('open'));
+            }
+        });
+
+        loadFriends();
+
+        // === Tab switching ===
+        function switchTab(tab) {
+            document.getElementById('tabSpammer').classList.remove('active');
+            document.getElementById('tabPurge').classList.remove('active');
+            document.getElementById('panelSpammer').classList.remove('visible');
+            document.getElementById('panelPurge').classList.remove('visible');
+
+            if (tab === 'spammer') {
+                document.getElementById('tabSpammer').classList.add('active');
+                document.getElementById('panelSpammer').classList.add('visible');
+            } else {
+                document.getElementById('tabPurge').classList.add('active');
+                document.getElementById('panelPurge').classList.add('visible');
+            }
+        }
+
+        // === Spammer mode ===
+        let spamMode = 'message';
+        function setSpamMode(mode) {
+            if (!['message', 'call', 'videocall'].includes(mode)) return;
+            spamMode = mode;
+            document.getElementById('spamModeMsg').classList.remove('active', 'msg-mode');
+            document.getElementById('spamModeCall').classList.remove('active', 'call-mode');
+            document.getElementById('spamModeVideo').classList.remove('active', 'call-mode');
+            if (mode === 'message') {
+                document.getElementById('spamModeMsg').classList.add('active', 'msg-mode');
+                document.getElementById('messageField').style.display = 'block';
+            } else if (mode === 'call') {
+                document.getElementById('spamModeCall').classList.add('active', 'call-mode');
+                document.getElementById('messageField').style.display = 'none';
+            } else {
+                document.getElementById('spamModeVideo').classList.add('active', 'call-mode');
+                document.getElementById('messageField').style.display = 'none';
+            }
+        }
+
+        // === Spammer controls ===
+        async function startSpammer() {
+            const victimId = document.getElementById('victimId').value.trim();
+            const ms = parseInt(document.getElementById('delayMs').value) || 0;
+            const sec = parseInt(document.getElementById('delaySec').value) || 0;
+            const count = parseInt(document.getElementById('spamCount').value);
+            const message = document.getElementById('spamMessage').value;
+
+            if (!victimId) return alert('Enter victim user ID');
+            if (!/^\d{17,20}$/.test(victimId)) return alert('Victim ID must be a 17-20 digit Discord user ID');
+            if (isNaN(count) || count < 1) return alert('Count must be a positive number');
+            if (count > 100000) return alert('Count too high (max 100000)');
+
+            const btn = document.getElementById('startSpamBtn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Starting...';
+
+            try {
+                const res = await fetch('/api/spammer/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: spamMode,
+                        victimId,
+                        count,
+                        ms,
+                        sec,
+                        message
+                    })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    alert('Error: ' + (data.message || 'Failed to start'));
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                    return;
+                }
+                btn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Running';
+                document.getElementById('stopSpamBtn').disabled = false;
+            } catch (e) {
+                alert('Network error: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            }
+        }
+
+        async function stopSpammer() {
+            try {
+                await fetch('/api/spammer/stop', { method: 'POST' });
+            } catch (e) { }
+        }
+
+        async function clearSpamLogs() {
+            try {
+                await fetch('/api/spammer/clear-logs', { method: 'POST' });
+            } catch (e) { }
+            document.getElementById('spamTerminal').innerHTML = '';
+        }
+
+        // === Purge controls ===
+        async function startPurge() {
+            const victimId = document.getElementById('purgeVictimId').value.trim();
+            const count = parseInt(document.getElementById('purgeCount').value);
+
+            if (!victimId) return alert('Enter victim user ID');
+            if (!/^\d{17,20}$/.test(victimId)) return alert('Victim ID must be a 17-20 digit Discord user ID');
+            if (isNaN(count)) return alert('Count must be a number (-1 for infinity, or positive)');
+
+            if (!confirm(count === -1
+                ? '⚠️ You are about to delete ALL your messages in the DM with this user. This cannot be undone. Continue?'
+                : `Delete ${count} of your messages in this DM? This cannot be undone.`)) {
+                return;
+            }
+
+            const btn = document.getElementById('startPurgeBtn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Starting...';
+
+            try {
+                const res = await fetch('/api/spammer/purge/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ victimId, count })
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    alert('Error: ' + (data.message || 'Failed to start'));
+                    btn.disabled = false;
+                    btn.innerHTML = orig;
+                    return;
+                }
+                btn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Running';
+                document.getElementById('stopPurgeBtn').disabled = false;
+            } catch (e) {
+                alert('Network error: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            }
+        }
+
+        async function stopPurge() {
+            try {
+                await fetch('/api/spammer/purge/stop', { method: 'POST' });
+            } catch (e) { }
+        }
+
+        async function clearPurgeLogs() {
+            try {
+                await fetch('/api/spammer/purge/clear-logs', { method: 'POST' });
+            } catch (e) { }
+            document.getElementById('purgeTerminal').innerHTML = '';
+        }
+
+        // === Polling state ===
+        let knownSpamLogs = new Set();
+        let knownPurgeLogs = new Set();
+
+        function appendSpamLog(text) {
+            if (knownSpamLogs.has(text)) return;
+            knownSpamLogs.add(text);
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            if (text.includes('Error') || text.includes('error')) div.classList.add('error');
+            else if (text.includes('Done') || text.includes('complete')) div.classList.add('success');
+            div.innerText = text;
+            const term = document.getElementById('spamTerminal');
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+            while (term.children.length > 500) term.removeChild(term.firstChild);
+        }
+
+        function appendPurgeLog(text) {
+            if (knownPurgeLogs.has(text)) return;
+            knownPurgeLogs.add(text);
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            if (text.includes('Error') || text.includes('error') || text.includes('Fatal')) div.classList.add('error');
+            else if (text.includes('complete')) div.classList.add('success');
+            div.innerText = text;
+            const term = document.getElementById('purgeTerminal');
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+            while (term.children.length > 500) term.removeChild(term.firstChild);
+        }
+
+        async function pollSpammer() {
+            try {
+                const res = await fetch('/api/spammer/status');
+                const data = await res.json();
+
+                const statusEl = document.getElementById('spamStatus');
+                const startBtn = document.getElementById('startSpamBtn');
+                const stopBtn = document.getElementById('stopSpamBtn');
+
+                if (data.isRunning) {
+                    statusEl.innerText = 'Running';
+                    statusEl.className = 'stat-value running';
+                    startBtn.disabled = true;
+                    startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Running';
+                    stopBtn.disabled = false;
+                } else {
+                    statusEl.innerText = 'Idle';
+                    statusEl.className = 'stat-value stopped';
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-play" style="margin-right: 6px;"></i> Start Spam';
+                    stopBtn.disabled = true;
+                }
+
+                document.getElementById('spamModeDisplay').innerText = data.mode ? data.mode.toUpperCase() : '—';
+                document.getElementById('spamCompleted').innerText = data.completed;
+                document.getElementById('spamFailed').innerText = data.failed;
+
+                if (data.logs && data.logs.length) {
+                    data.logs.forEach(l => appendSpamLog(l));
+                }
+            } catch (e) { }
+        }
+
+        async function pollPurge() {
+            try {
+                const res = await fetch('/api/spammer/purge/status');
+                const data = await res.json();
+
+                const statusEl = document.getElementById('purgeStatus');
+                const startBtn = document.getElementById('startPurgeBtn');
+                const stopBtn = document.getElementById('stopPurgeBtn');
+
+                if (data.isRunning) {
+                    statusEl.innerText = 'Running';
+                    statusEl.className = 'stat-value running';
+                    startBtn.disabled = true;
+                    startBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Running';
+                    stopBtn.disabled = false;
+                } else {
+                    statusEl.innerText = 'Idle';
+                    statusEl.className = 'stat-value stopped';
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="fas fa-trash-alt" style="margin-right: 6px;"></i> Start DM Purge';
+                    stopBtn.disabled = true;
+                }
+
+                document.getElementById('purgeModeDisplay').innerText = data.mode === 'all' ? 'ALL (-1)' : (data.mode === 'count' ? 'COUNT' : '—');
+                document.getElementById('purgeDeleted').innerText = data.deleted;
+                document.getElementById('purgeFailed').innerText = data.failed;
+
+                if (data.logs && data.logs.length) {
+                    data.logs.forEach(l => appendPurgeLog(l));
+                }
+            } catch (e) { }
+        }
+
+        setInterval(pollSpammer, 1000);
+        setInterval(pollPurge, 1000);
+        pollSpammer();
+        pollPurge();
+    </script>
+</body>
+
+</html>

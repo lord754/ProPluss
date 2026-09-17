@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO+ Quest Terminal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .terminal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .terminal-window {
+            background: rgba(10, 10, 15, 0.95);
+            border: 1px solid var(--neon-purple);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #1a1a2e;
+            padding: 10px 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-title {
+            color: #ccc;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .terminal-controls {
+            display: gap;
+            gap: 10px;
+        }
+
+        .btn-t {
+            padding: 5px 15px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: all 0.2s;
+        }
+
+        .btn-t:hover {
+            background: #333;
+            border-color: #666;
+        }
+
+        .btn-start {
+            border-color: var(--status-online);
+            color: var(--status-online);
+        }
+
+        .btn-start:hover {
+            background: rgba(35, 165, 89, 0.2);
+        }
+
+        .btn-stop {
+            border-color: var(--status-dnd);
+            color: var(--status-dnd);
+        }
+
+        .btn-stop:hover {
+            background: rgba(242, 63, 67, 0.2);
+        }
+
+        .btn-bounty {
+            border-color: #ff9f43;
+            color: #ff9f43;
+            background: rgba(255, 159, 67, 0.05);
+        }
+
+        .btn-bounty:hover {
+            background: rgba(255, 159, 67, 0.2);
+        }
+
+        .btn-bounty:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .terminal-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #0f0;
+        }
+
+        .log-line {
+            margin-bottom: 2px;
+            word-wrap: break-word;
+        }
+
+        .log-line:hover {
+            background: #111;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .new-log {
+            animation: fadeIn 0.2s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal-container">
+        <h1>Quest Auto-Completer</h1>
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <span class="terminal-title">user@pro:~/quests$ ./complete_all</span>
+                <div class="terminal-controls">
+                    <button onclick="startAll()" class="btn-t btn-start">START ALL</button>
+                    <button onclick="startBounties()" class="btn-t btn-bounty" title="Completes quests AND bounties">BOUNTIES</button>
+                    <button onclick="stopAll()" class="btn-t btn-stop">STOP ALL</button>
+                    <button onclick="clearConsole()" class="btn-t">CLEAR</button>
+                </div>
+            </div>
+            <div class="terminal-body" id="terminalOutput">
+                <div class="log-line" style="color:#666;">Ready to initialize quest protocols...</div>
+                <div class="log-line" style="color:#666;">Click 'START ALL' to begin.</div>
+            </div>
+        </div>
+    </div>
+    <%- include('partials/super_button') %>
+        <script>
+            const terminalBody = document.getElementById('terminalOutput');
+            let knownLogs = new Set();
+            let autoScroll = true;
+
+            terminalBody.addEventListener('scroll', () => {
+                const isAtBottom = terminalBody.scrollHeight - terminalBody.scrollTop <= terminalBody.clientHeight + 50;
+                autoScroll = isAtBottom;
+            });
+
+            function appendLog(text) {
+                if (knownLogs.has(text)) return;
+                knownLogs.add(text);
+                const div = document.createElement('div');
+                div.className = 'log-line new-log';
+                div.innerText = text;
+                if (text.includes('Error')) div.style.color = '#ff5f5f';
+                else if (text.includes('COMPLETED')) div.style.color = '#ffff00';
+                else if (text.includes('Progress')) div.style.color = '#aaaaaa';
+                else if (text.includes('Spoofing')) div.style.color = '#00ffff';
+                terminalBody.appendChild(div);
+                if (autoScroll) terminalBody.scrollTop = terminalBody.scrollHeight;
+                if (terminalBody.children.length > 500) terminalBody.removeChild(terminalBody.firstChild);
+            }
+
+            async function startAll() {
+                appendLog("> Starting process...");
+                try { await fetch('/quest/start-all', { method: 'POST' }); }
+                catch (e) { appendLog(`> Error: ${e.message}`); }
+            }
+
+            async function startBounties() {
+                appendLog("> Starting BOUNTIES protocol — completing quests AND bounties...");
+                try { await fetch('/quest/start-bounties', { method: 'POST' }); }
+                catch (e) { appendLog(`> Error: ${e.message}`); }
+            }
+
+            async function stopAll() {
+                appendLog("> Stopping all tasks...");
+                try { await fetch('/quest/stop-all', { method: 'POST' }); }
+                catch (e) { appendLog(`> Error: ${e.message}`); }
+            }
+
+            async function clearConsole() {
+                terminalBody.innerHTML = '';
+                knownLogs.clear();
+                try { await fetch('/quest/clear-logs', { method: 'POST' }); } catch (e) { }
+            }
+
+            async function pollLogs() {
+                try {
+                    const res = await fetch('/api/quests');
+                    const data = await res.json();
+
+                    const btnStart = document.querySelector('.btn-start');
+                    const btnStop = document.querySelector('.btn-stop');
+
+                    if (data.isRunning) {
+                        btnStart.disabled = true;
+                        btnStart.style.opacity = '0.5';
+                        btnStart.style.cursor = 'not-allowed';
+                        btnStop.disabled = false;
+                        btnStop.style.opacity = '1';
+                        btnStop.style.cursor = 'pointer';
+                    } else {
+                        btnStart.disabled = false;
+                        btnStart.style.opacity = '1';
+                        btnStart.style.cursor = 'pointer';
+                        btnStop.disabled = true;
+                        btnStop.style.opacity = '0.5';
+                        btnStop.style.cursor = 'not-allowed';
+                    }
+
+                    if (data.logs) {
+                        data.logs.slice().reverse().forEach(log => {
+                            appendLog(log);
+                        });
+                    }
+                } catch (e) { }
+            }
+            setInterval(pollLogs, 3000);
+        </script>
+</body>
+
+</html>

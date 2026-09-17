@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro+ Updater</title>
+<link rel="stylesheet" href="/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+.upd-wrap{width:95%;max-width:860px;margin:0 auto;padding:30px 20px 120px}
+.back-btn{position:fixed;top:20px;left:20px;z-index:100;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#aaa;text-decoration:none;font-size:.85rem;font-weight:600;transition:.2s}
+.back-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.upd-header{text-align:center;margin:60px 0 28px}
+.upd-header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.upd-header p{color:#555;font-size:.9rem}
+.card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:14px}
+.btn{padding:9px 18px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;font-family:'Outfit',sans-serif;display:inline-flex;align-items:center;gap:5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff;box-shadow:0 4px 12px rgba(138,43,226,0.25)}
+.btn-primary:not(:disabled):hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn-secondary{background:rgba(255,255,255,0.06);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
+.btn-secondary:not(:disabled):hover{background:rgba(255,255,255,0.12);color:#fff}
+.btn-danger{background:rgba(255,71,87,0.1);color:#ff4757;border:1px solid rgba(255,71,87,0.2)}
+.btn-danger:not(:disabled):hover{background:#ff4757;color:#fff}
+.btn-warn{background:rgba(243,156,18,0.1);color:#f39c12;border:1px solid rgba(243,156,18,0.2)}
+.btn-warn:not(:disabled):hover{background:#f39c12;color:#fff}
+.btn-sm{padding:5px 11px;font-size:.75rem;border-radius:8px}
+
+/* ── Status dot system ── */
+.status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0;transition:background .4s}
+.dot-green{background:#2ecc71;box-shadow:0 0 6px rgba(46,204,113,0.6)}
+.dot-red{background:#e74c3c;box-shadow:0 0 6px rgba(231,76,60,0.6)}
+.dot-yellow{background:#f1c40f;box-shadow:0 0 6px rgba(241,196,15,0.6)}
+.dot-gray{background:#555}
+
+/* ── Check row: LEFT=button, RIGHT=dot+label ── */
+.check-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.check-row-left{display:flex;align-items:center;gap:10px}
+.check-row-right{display:flex;align-items:center;gap:8px}
+.status-label{font-size:.83rem;font-weight:700;color:#aaa}
+.installed-note{font-size:.75rem;color:#444;margin-top:6px}
+.installed-note span{color:#8a2be2;font-family:monospace}
+.version-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700}
+.badge-green{background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2)}
+.badge-purple{background:rgba(138,43,226,0.1);color:#c084fc;border:1px solid rgba(138,43,226,0.2)}
+.badge-gray{background:rgba(255,255,255,0.04);color:#555;border:1px solid rgba(255,255,255,0.07)}
+.badge-orange{background:rgba(243,156,18,0.1);color:#f39c12;border:1px solid rgba(243,156,18,0.2)}
+.badge-red{background:rgba(231,76,60,0.1);color:#e74c3c;border:1px solid rgba(231,76,60,0.2)}
+
+/* Channel badges */
+.ch-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.ch-stable{background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)}
+.ch-beta{background:rgba(52,152,219,0.12);color:#3498db;border:1px solid rgba(52,152,219,0.25)}
+.ch-alpha{background:rgba(243,156,18,0.12);color:#f39c12;border:1px solid rgba(243,156,18,0.25)}
+.ch-dev{background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.25)}
+
+/* Update type badge */
+.type-badge{display:inline-flex;padding:2px 7px;border-radius:10px;font-size:.66rem;font-weight:700;text-transform:uppercase}
+.type-major{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.25)}
+.type-minor{background:rgba(99,102,241,0.12);color:#818cf8;border:1px solid rgba(99,102,241,0.2)}
+.type-patch{background:rgba(255,255,255,0.05);color:#666;border:1px solid rgba(255,255,255,0.1)}
+
+/* Update items */
+.update-item{background:#0d0d12;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;margin-top:10px}
+.update-badges{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.update-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.update-info{flex:1;min-width:0}
+.update-msg{font-size:.92rem;font-weight:700;color:#fff;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.update-meta{font-size:.73rem;color:#555;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.update-sha{font-family:monospace;color:#8a2be2}
+.update-version{font-family:monospace;color:#a29bfe;font-weight:700}
+.update-actions{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start}
+.update-features{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)}
+.update-features ul{margin:0;padding-left:18px}
+.update-features li{font-size:.76rem;color:#666;line-height:1.5}
+
+/* Revert banner */
+.revert-banner{background:rgba(243,156,18,0.07);border:1px solid rgba(243,156,18,0.18);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.revert-text{font-size:.86rem;color:#f39c12;font-weight:600}
+.revert-sub{font-size:.73rem;color:#7a5a00;margin-top:2px}
+
+/* Log */
+.log-box{background:#050508;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px;height:200px;overflow-y:auto;font-family:monospace;font-size:.73rem;color:#888;white-space:pre-wrap;word-break:break-all}
+.log-box::-webkit-scrollbar{width:4px}
+.log-box::-webkit-scrollbar-thumb{background:#1a1a24;border-radius:2px}
+
+/* Dismissed dropdown */
+.dropdown-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:4px 0}
+.dropdown-toggle:hover .dropdown-label{color:#ccc}
+.dropdown-label{font-size:.85rem;font-weight:700;color:#a29bfe;text-transform:uppercase;letter-spacing:.5px;transition:.2s}
+.dropdown-arrow{font-size:.75rem;color:#555;transition:transform .2s}
+.dropdown-arrow.open{transform:rotate(180deg)}
+.dropdown-body{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.dropdown-body.open{max-height:600px}
+.dismissed-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);flex-wrap:wrap}
+.dismissed-item:last-child{border-bottom:none}
+.dismissed-sha{font-family:monospace;color:#555;font-size:.75rem;min-width:50px;flex-shrink:0}
+.dismissed-msg{font-size:.82rem;color:#555;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dismissed-actions{display:flex;gap:5px;flex-shrink:0}
+
+/* History */
+.history-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.history-item:last-child{border-bottom:none}
+.history-sha{font-family:monospace;color:#8a2be2;font-size:.75rem;min-width:50px;flex-shrink:0}
+.history-msg{font-size:.82rem;color:#ccc;flex:1}
+.history-version{font-family:monospace;font-size:.72rem;color:#6c5ce7;flex-shrink:0}
+.history-date{font-size:.7rem;color:#444;white-space:nowrap;flex-shrink:0}
+.empty{text-align:center;color:#444;padding:16px;font-size:.82rem}
+
+/* Dot tooltip */
+.dot-wrap{position:relative;display:inline-flex;align-items:center}
+.dot-wrap .dot-tip{position:absolute;right:18px;top:50%;transform:translateY(-50%);background:#1a1a24;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:5px 10px;font-size:.72rem;color:#ccc;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:10}
+.dot-wrap:hover .dot-tip{opacity:1}
+</style>
+</head>
+<body>
+<!-- Pre-login nav (shown when not logged in) -->
+<% if (!user) { %>
+<nav style="position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;background:rgba(5,5,8,0.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:200;">
+    <span style="font-size:1rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-right:12px">PRO+</span>
+    <a href="/login" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:#888;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03)">🔑 Login</a>
+    <a href="/accounts" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:#888;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03)">👤 Multi Account Manager</a>
+    <a href="/commands/updater" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:#c084fc;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(138,43,226,0.3);background:rgba(138,43,226,0.1)">🔄 Pro+ Updater</a>
+</nav>
+<% } %>
+<a href="/commands" class="back-btn" style="<%= !user ? 'top:68px' : '' %>">← Back</a>
+
+<div class="upd-wrap">
+  <div class="upd-header">
+    <h1>🔄 Pro+ Updater</h1>
+    <p>Check and apply GitHub updates without touching your config or tokens.</p>
+    <div style="margin-top:10px;font-size:.8rem;color:#444">
+      Current build: <span id="buildVersion" style="color:#8a2be2;font-family:monospace">—</span>
+    </div>
+  </div>
+
+  <!-- Revert Banner -->
+  <div class="revert-banner" id="revertBanner" style="display:none">
+    <div>
+      <div class="revert-text">⚠️ Bugs after the last update?</div>
+      <div class="revert-sub">Revert option disappears after 2 restarts.</div>
+    </div>
+    <button class="btn btn-warn" onclick="doRevert()">↩ Revert Update</button>
+  </div>
+
+  <!-- Main Check Card: button LEFT, dot RIGHT -->
+  <div class="card">
+    <div class="check-row">
+      <!-- LEFT: Check button -->
+      <div class="check-row-left">
+        <button class="btn btn-secondary" id="checkBtn" onclick="checkUpdates()">🔍 Check For Update</button>
+        <div id="cooldownNote" style="font-size:.75rem;color:#444;display:none"></div>
+      </div>
+      <!-- RIGHT: status dot + label -->
+      <div class="check-row-right">
+        <span id="statusLabel" class="status-label">Not checked</span>
+        <div class="dot-wrap">
+          <span class="dot-tip" id="dotTip">Not checked yet</span>
+          <span class="status-dot dot-gray" id="statusDot"></span>
+        </div>
+      </div>
+    </div>
+    <div class="installed-note" id="installedNote" style="display:none">
+      Installed: <span id="installedSha"></span>
+      <span id="installedVersionNote" style="margin-left:6px"></span>
+    </div>
+    <div id="updatesContainer"></div>
+  </div>
+
+  <!-- Log Card -->
+  <div class="card" id="logCard" style="display:none">
+    <div style="font-size:.85rem;font-weight:700;color:#a29bfe;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Update Log</div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+  <!-- Dismissed Dropdown Card -->
+  <div class="card" id="dismissedCard" style="display:none">
+    <div class="dropdown-toggle" onclick="toggleDismissed()">
+      <div class="dropdown-label">Dismissed Updates</div>
+      <div class="dropdown-arrow" id="dismissedArrow">▼</div>
+    </div>
+    <div class="dropdown-body" id="dismissedBody">
+      <div style="height:10px"></div>
+      <div id="dismissedList"></div>
+    </div>
+  </div>
+
+  <!-- History Card -->
+  <div class="card" id="historyCard" style="display:none">
+    <div style="font-size:.85rem;font-weight:700;color:#a29bfe;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Update History</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<%- include('partials/super_button') %>
+
+<script>
+let lastCheckTime = 0;
+const COOLDOWN = 60000; // 1 minute
+
+function fmtDate(d) {
+  if (!d) return '';
+  const dt = new Date(d);
+  if (isNaN(dt.getTime())) return d;
+  return dt.toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toggleDismissed() {
+  const body = document.getElementById('dismissedBody');
+  const arrow = document.getElementById('dismissedArrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// Cooldown countdown display (in the note span, not blocking the button label)
+let cooldownInterval = null;
+function startCooldownTimer() {
+  const note = document.getElementById('cooldownNote');
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  cooldownInterval = setInterval(() => {
+    const remaining = COOLDOWN - (Date.now() - lastCheckTime);
+    if (remaining <= 0) {
+      clearInterval(cooldownInterval);
+      cooldownInterval = null;
+      note.style.display = 'none';
+      note.textContent = '';
+      return;
+    }
+    const s = Math.ceil(remaining / 1000);
+    note.style.display = 'inline';
+    note.textContent = `(cooldown ${s}s)`;
+  }, 500);
+}
+
+// Apply the 3-state dot
+function applyDot(dotStatus, statusText) {
+  const dot = document.getElementById('statusDot');
+  const label = document.getElementById('statusLabel');
+  const tip = document.getElementById('dotTip');
+  dot.className = 'status-dot';
+  if (dotStatus === 'green') {
+    dot.classList.add('dot-green');
+    label.style.color = '#2ecc71';
+    label.textContent = 'Up To Date';
+    tip.textContent = 'Up To Date — no pending updates';
+  } else if (dotStatus === 'red') {
+    dot.classList.add('dot-red');
+    label.style.color = '#e74c3c';
+    label.textContent = statusText || 'Update Required';
+    tip.textContent = statusText || 'Update Required or Revert Required';
+  } else if (dotStatus === 'yellow') {
+    dot.classList.add('dot-yellow');
+    label.style.color = '#f1c40f';
+    label.textContent = statusText || 'Warning';
+    tip.textContent = statusText || 'Check needed or repo error';
+  } else {
+    dot.classList.add('dot-gray');
+    label.style.color = '#555';
+    label.textContent = 'Not checked';
+    tip.textContent = 'Not checked yet';
+  }
+}
+
+async function checkUpdates(force) {
+  const now = Date.now();
+  const btn = document.getElementById('checkBtn');
+  if (!force && now - lastCheckTime < COOLDOWN && lastCheckTime !== 0) {
+    startCooldownTimer();
+    return;
+  }
+  btn.disabled = true; btn.textContent = '⏳ Checking...';
+  applyDot('gray', 'Checking...');
+  try {
+    const r = await fetch('/api/updater/check').then(x => x.json());
+    lastCheckTime = Date.now();
+    startCooldownTimer();
+
+    // Show installed info
+    if (r.installedShortSha || r.installedVersion) {
+      document.getElementById('installedNote').style.display = 'block';
+      document.getElementById('installedSha').textContent = r.installedShortSha
+        ? (r.installedShortSha + (r.installedVersion ? ' · v' + r.installedVersion : ''))
+        : ('v' + r.installedVersion);
+      const vn = document.getElementById('installedVersionNote');
+      if (r.installedChannel && r.installedChannel !== 'stable') {
+        const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
+        vn.innerHTML = `<span style="color:${chColors[r.installedChannel]||'#a29bfe'};font-weight:700;font-size:.73rem">${r.installedChannel.toUpperCase()}</span>`;
+      }
+    }
+
+    // Build version label for header
+    const bvEl = document.getElementById('buildVersion');
+    if (r.installedVersion) {
+      bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + r.installedVersion : 'v' + r.installedVersion;
+    }
+
+    document.getElementById('revertBanner').style.display = r.canRevert ? 'flex' : 'none';
+
+    // Determine dot state
+    if (r.canRevert) {
+      applyDot('red', 'Revert Required?');
+    } else if (r.isUpToDate && !r.hasUpdate) {
+      applyDot('green', 'Up To Date');
+      document.getElementById('updatesContainer').innerHTML = '';
+    } else if (r.hasUpdate) {
+      applyDot('red', 'Update Required');
+      renderUpdates(r.updates.filter(u => !u.isDismissed));
+    } else {
+      // All dismissed
+      applyDot('yellow', 'Updates Dismissed');
+      document.getElementById('updatesContainer').innerHTML = '';
+    }
+
+    renderDismissed(r.dismissedItems);
+    renderHistory(r.history);
+  } catch(e) {
+    applyDot('yellow', 'Check Failed');
+    document.getElementById('statusLabel').textContent = 'Check Failed';
+    document.getElementById('dotTip').textContent = e.message;
+  }
+  btn.disabled = false; btn.textContent = '🔍 Check For Update';
+}
+
+function channelBadge(channel) {
+  if (!channel) return '';
+  const cls = { stable:'ch-stable', beta:'ch-beta', alpha:'ch-alpha', dev:'ch-dev' };
+  const labels = { stable:'Stable', beta:'Beta', alpha:'Alpha', dev:'Dev' };
+  return `<span class="ch-badge ${cls[channel]||'ch-stable'}">${labels[channel]||channel}</span>`;
+}
+function typeBadge(type) {
+  if (!type) return '';
+  const cls = { Major:'type-major', Minor:'type-minor', Patch:'type-patch' };
+  return `<span class="type-badge ${cls[type]||'type-patch'}">${type}</span>`;
+}
+
+function renderUpdates(updates) {
+  const c = document.getElementById('updatesContainer');
+  if (!updates.length) { c.innerHTML = ''; return; }
+  const multi = updates.length > 1;
+  c.innerHTML = updates.map((u, i) => {
+    const lbl = multi ? (i === 0 ? 'Latest Update' : `Older Update #${i+1}`) : 'Available Update';
+    const applyLbl = multi ? (i === 0 ? 'Apply Latest' : 'Apply Old') : 'Apply Update';
+    const versionHtml = u.version
+      ? `<span class="update-version">v${escHtml(u.version)}</span><span>·</span>`
+      : '';
+    const featuresHtml = u.features && u.features.length
+      ? `<div class="update-features"><ul>${u.features.map(f => `<li>${escHtml(f)}</li>`).join('')}</ul></div>`
+      : '';
+    return `<div class="update-item" id="item-${u.sha}">
+      <div class="update-badges">
+        <span style="font-size:.68rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px">${lbl}</span>
+        ${channelBadge(u.channel)}
+        ${typeBadge(u.updateType)}
+      </div>
+      <div class="update-row">
+        <div class="update-info">
+          <div class="update-msg">${escHtml(u.message)}</div>
+          <div class="update-meta">${versionHtml}<span class="update-sha">${u.shortSha}</span><span>·</span><span>${escHtml(u.author)}</span><span>·</span><span>${fmtDate(u.date)}</span></div>
+          ${featuresHtml}
+        </div>
+        <div class="update-actions">
+          <button class="btn btn-primary" onclick="applyUpdate('${u.sha}',this)">🔁 ${applyLbl}</button>
+          <button class="btn btn-danger" onclick="dismissUpdate('${u.sha}',this)">❌ Dismiss</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDismissed(items) {
+  const card = document.getElementById('dismissedCard');
+  const list = document.getElementById('dismissedList');
+  if (!items || !items.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = items.map(u => `
+    <div class="dismissed-item" id="dis-${u.sha}">
+      <span class="dismissed-sha">${u.shortSha}</span>
+      <span class="dismissed-msg" title="${escHtml(u.message)}">${escHtml(u.message)}</span>
+      <div class="dismissed-actions">
+        <button class="btn btn-secondary btn-sm" onclick="undismiss('${u.sha}',this)">Undismiss</button>
+        <button class="btn btn-primary btn-sm" onclick="undismissApply('${u.sha}',this)">Undismiss & Update</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePerm('${u.sha}',this)" title="Permanently remove">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderHistory(history) {
+  const card = document.getElementById('historyCard');
+  const list = document.getElementById('historyList');
+  if (!history || !history.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = history.map(h => `
+    <div class="history-item">
+      <span class="history-sha">${h.sha}</span>
+      <span class="history-msg">${escHtml(h.message)}</span>
+      ${h.version ? `<span class="history-version">v${escHtml(h.version)}</span>` : ''}
+      <span class="history-date">${fmtDate(h.date)}</span>
+    </div>`).join('');
+}
+
+async function applyUpdate(sha, btn) {
+  btn.disabled = true; btn.textContent = '⏳...';
+  const logCard = document.getElementById('logCard');
+  const logBox = document.getElementById('logBox');
+  logCard.style.display = 'block'; logBox.textContent = '';
+  const poll = setInterval(async () => {
+    const r = await fetch('/api/updater/logs').then(x => x.json());
+    logBox.textContent = r.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+  }, 800);
+  try {
+    const result = await fetch('/api/updater/apply', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({sha}) }).then(x=>x.json());
+    clearInterval(poll);
+    const fl = await fetch('/api/updater/logs').then(x=>x.json());
+    logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+    document.getElementById('revertBanner').style.display = 'flex';
+    // Show red dot if failures
+    if (result.failed > 0) {
+      applyDot('red', 'Revert Required?');
+    }
+    lastCheckTime = 0; await checkUpdates(true);
+  } catch(e) {
+    clearInterval(poll); logBox.textContent += '\nError: '+e.message;
+    btn.disabled = false; btn.textContent = 'Apply Update';
+  }
+}
+
+async function dismissUpdate(sha, btn) {
+  btn.disabled = true;
+  await fetch('/api/updater/dismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
+}
+async function undismiss(sha, btn) {
+  btn.disabled = true;
+  await fetch('/api/updater/undismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
+}
+async function undismissApply(sha, btn) {
+  btn.disabled = true; btn.textContent = '⏳...';
+  await fetch('/api/updater/undismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
+  const item = document.getElementById('item-'+sha);
+  if (item) { const ab = item.querySelector('.btn-primary'); if (ab) ab.click(); }
+}
+async function deletePerm(sha, btn) {
+  if (!confirm('Permanently remove this update from the list? It will never show again.')) return;
+  btn.disabled = true;
+  await fetch('/api/updater/delete', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
+}
+async function doRevert() {
+  if (!confirm('Revert to the version before the last update?')) return;
+  const logCard = document.getElementById('logCard');
+  const logBox = document.getElementById('logBox');
+  logCard.style.display = 'block'; logBox.textContent = '';
+  const poll = setInterval(async () => {
+    const r = await fetch('/api/updater/logs').then(x=>x.json());
+    logBox.textContent = r.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+  }, 800);
+  try {
+    await fetch('/api/updater/revert', {method:'POST'}).then(x=>x.json());
+    clearInterval(poll);
+    const fl = await fetch('/api/updater/logs').then(x=>x.json());
+    logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+    document.getElementById('revertBanner').style.display = 'none';
+    lastCheckTime = 0; await checkUpdates(true);
+  } catch(e) { clearInterval(poll); logBox.textContent += '\nError: '+e.message; }
+}
+
+// Load dot state from server on page load (before user clicks Check)
+(async function initDot() {
+  try {
+    const r = await fetch('/api/updater/dot-status').then(x => x.json());
+    const dotMessages = {
+      green: 'Up To Date',
+      red: 'Update Required',
+      yellow: 'Check Needed',
+      gray: 'Not checked'
+    };
+    applyDot(r.dotStatus || 'gray', dotMessages[r.dotStatus] || 'Not checked');
+    if (r.installedVersion) {
+      const bvEl = document.getElementById('buildVersion');
+      bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + r.installedVersion : 'v' + r.installedVersion;
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

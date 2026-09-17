@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO+ Voice</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .music-container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #fff;
+            padding-bottom: 100px;
+        }
+
+        .music-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(19, 19, 26, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Disconnected State */
+        .join-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .join-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .join-desc {
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .select-box {
+            width: 100%;
+            padding: 15px;
+            background: #0b0b10;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            appearance: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .select-box:hover {
+            border-color: #8a2be2;
+        }
+
+        .btn-join {
+            display: inline-block;
+            background: linear-gradient(135deg, #8a2be2, #6c5ce7);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-join:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+        }
+
+        /* Playing State */
+        .guild-badge {
+            position: relative;
+            margin-top: -10px;
+            margin-bottom: 25px;
+            align-self: flex-start;
+            max-width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: 1px solid transparent;
+        }
+
+        .guild-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .guild-info {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        .channel-name {
+            color: var(--neon-purple);
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        .art-wrapper {
+            width: 260px;
+            height: 260px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .track-art {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s;
+        }
+
+        .track-art.playing {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(138, 43, 226, 0.4);
+        }
+
+        .track-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: linear-gradient(to right, #fff, #a29bfe);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .track-artist {
+            font-size: 1.1rem;
+            color: #888;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .progress-wrapper {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .time-text {
+            font-size: 0.85rem;
+            color: #aaa;
+            font-family: monospace;
+            min-width: 45px;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 8px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #8a2be2;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s linear;
+            box-shadow: 0 0 15px #8a2be2;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .btn-control {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            outline: none;
+            color: white;
+        }
+
+        .btn-control:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-control svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .btn-seek {
+            background: rgba(155, 89, 182, 0.1);
+            color: #9b59b6;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        .btn-seek:hover {
+            background: #9b59b6;
+            color: white;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+        }
+
+        .btn-prev {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-prev:hover {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-stop {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .btn-stop:hover {
+            background: #ff4757;
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .btn-skip {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-skip:hover {
+            background: #2ecc71;
+            color: white;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-pause {
+            background: rgba(241, 196, 15, 0.1);
+            color: #f1c40f;
+            border: 1px solid rgba(241, 196, 15, 0.3);
+        }
+
+        .btn-pause:hover {
+            background: #f1c40f;
+            color: #1a1a20;
+            box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4);
+        }
+
+        .btn-pause.paused {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border-color: rgba(46, 204, 113, 0.4);
+        }
+
+        /* Custom File Mode Selector */
+        .file-mode-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            display: none;
+        }
+
+        .file-mode-section.visible {
+            display: block;
+        }
+
+        .file-mode-label {
+            color: #ccc;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .file-mode-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .file-mode-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #0b0b10;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .file-mode-btn:hover {
+            border-color: #8a2be2;
+            color: #fff;
+        }
+
+        .file-mode-btn.active {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .file-mode-btn.active.repeat-mode {
+            background: rgba(46, 204, 113, 0.2);
+            border-color: #2ecc71;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .file-mode-desc {
+            font-size: 0.78rem;
+            color: #777;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .btn-play-file {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #8a2be2, #6c5ce7);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-play-file:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+        }
+
+        .btn-play-file:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .extra-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn-action {
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .btn-leave {
+            color: #ff4757;
+            border-color: rgba(255, 71, 87, 0.2);
+        }
+
+        .btn-leave:hover {
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        /* Queue */
+        .queue-card {
+            background: rgba(19, 19, 26, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .queue-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .queue-list {
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+            max-height: 500px;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 8px;
+            transition: 0.2s;
+        }
+
+        .queue-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .q-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .q-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .q-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #ddd;
+        }
+
+        .q-author {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        /* Play Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1a1a20;
+            padding: 30px;
+            border-radius: 20px;
+            width: 500px;
+            border: 1px solid #333;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .input-play {
+            width: 100%;
+            padding: 15px;
+            background: #0b0b10;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .input-play:focus {
+            outline: none;
+            border-color: #8a2be2;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .btn-confirm {
+            background: #8a2be2;
+            color: white;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .btn-confirm:hover {
+            background: #9b59b6;
+            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5);
+        }
+
+        .btn-cancel {
+            background: #333;
+            color: #ccc;
+        }
+
+        .btn-cancel:hover {
+            background: #444;
+            color: white;
+        }
+
+        @media(max-width: 900px) {
+            .music-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width: 600px) {
+            .music-container {
+                padding: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .card {
+                padding: 20px;
+                min-height: auto;
+            }
+
+            .art-wrapper {
+                width: 200px;
+                height: 200px;
+            }
+
+            .controls {
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn-control {
+                width: 50px;
+                height: 50px;
+            }
+
+            .extra-controls {
+                flex-wrap: wrap;
+            }
+
+            .extra-controls .btn-action {
+                flex: 1 !important;
+                min-width: 130px !important;
+                width: 100% !important;
+            }
+        }
+
+        @media(max-width: 480px) {
+            .controls {
+                gap: 5px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn-control {
+                width: 45px;
+                height: 45px;
+            }
+
+            .btn-control svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .extra-controls {
+                flex-wrap: wrap;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .extra-controls .btn-action {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="music-container">
+
+        <!-- JOIN UI (Disconnected) -->
+        <div id="joinUI" class="card" style="display: none;">
+            <div class="join-title">🎵 Join a Channel</div>
+            <div class="join-desc">Select a server and voice channel to start listening.</div>
+            <div class="join-container">
+                <select id="serverSelect" class="select-box" onchange="loadChannels()">
+                    <option value="">Select Server</option>
+                </select>
+                <select id="channelSelect" class="select-box">
+                    <option value="">Select Voice Channel</option>
+                </select>
+                <button class="btn-join" onclick="joinChannel()">Join Voice</button>
+            </div>
+        </div>
+
+        <!-- IDLE UI (Connected, No Music) -->
+        <div id="idleUI" class="card" style="display: none;">
+            <div class="guild-badge">
+                <img id="idleGuildIcon" src="" class="guild-icon">
+                <div class="guild-info">
+                    <span id="idleGuildName">Guild</span> • <span id="idleChannelName"
+                        class="channel-name">#Channel</span>
+                </div>
+            </div>
+            <div class="join-title" style="margin-top: 50px;">Ready to Play</div>
+            <div class="join-desc">Connected to voice. Choose what to play.</div>
+            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; width: 100%; max-width: 320px;">
+                <button class="btn-join" onclick="openPlayModal()" style="width: 100%;">
+                    <i class="fas fa-music" style="margin-right: 8px;"></i> Play Music
+                </button>
+                <button class="btn-join" onclick="openFileModal()" style="width: 100%; background: linear-gradient(135deg, #ff6b6b, #ee5a24); box-shadow: 0 4px 15px rgba(238, 90, 36, 0.4);">
+                    <i class="fas fa-file-audio" style="margin-right: 8px;"></i> Play Custom File (MP3/MP4)
+                </button>
+                <button class="btn-action btn-leave" onclick="leaveChannel()" style="margin-top: 10px; width: 100%;">Leave Voice</button>
+                <div style="display: flex; gap: 10px; margin-top: 10px; width: 100%;">
+                    <button id="btnMute" onclick="toggleMute()" style="flex:1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); color: #ccc; cursor: pointer; font-weight: 700; font-size: 0.95rem; transition: 0.2s;">🎙️ Mute: Off</button>
+                    <button id="btnDeaf" onclick="toggleDeaf()" style="flex:1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.07); color: #ccc; cursor: pointer; font-weight: 700; font-size: 0.95rem; transition: 0.2s;">🔇 Deafen: Off</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MESSAGING SECTION (shown when connected to voice) -->
+        <div id="idleMessaging" style="margin-top: 20px; width: 100%; max-width: 500px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; box-sizing: border-box;">
+            <div style="font-size: 1rem; font-weight: 700; color: #ccc; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">💬 Messaging</div>
+
+            <!-- VC Channel Message -->
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 0.8rem; color: #666; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Send Message to VC Channel</div>
+                <div style="display: flex; gap: 8px;">
+                    <input id="vcMsgInput" type="text" placeholder="Type a message..." style="flex:1; padding: 10px 14px; background: #0b0b10; border: 1px solid #333; color: #fff; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#8a2be2'" onblur="this.style.borderColor='#333'" onkeypress="if(event.key==='Enter') sendVcMsg()">
+                    <button onclick="sendVcMsg()" style="padding: 10px 18px; border-radius: 10px; border: none; background: linear-gradient(135deg, #8a2be2, #6c5ce7); color: #fff; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap;">Send</button>
+                </div>
+                <div id="vcMsgStatus" style="font-size: 0.78rem; color: #555; margin-top: 6px; min-height: 16px;"></div>
+            </div>
+
+            <!-- Soundboard -->
+            <div>
+                <div style="font-size: 0.8rem; color: #666; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Soundboard</div>
+                <div id="soundboardList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <span style="color: #444; font-size: 0.85rem;">Loading sounds...</span>
+                </div>
+                <div id="soundStatus" style="font-size: 0.78rem; color: #555; margin-top: 8px; min-height: 16px;"></div>
+            </div>
+        </div>
+
+        <!-- PLAYER UI (Playing) -->
+        <div class="music-grid" id="playerUI" style="display: none;">
+            <div class="card">
+                <div class="guild-badge">
+                    <img id="guildIcon" src="" class="guild-icon">
+                    <div class="guild-info">
+                        <span id="guildName">Guild</span> • <span id="channelName" class="channel-name">#Channel</span>
+                    </div>
+                </div>
+
+                <div class="art-wrapper">
+                    <img id="trackCover" src="" class="track-art playing">
+                </div>
+
+                <h1 id="trackTitle" class="track-title">Loading...</h1>
+                <div id="trackArtist" class="track-artist">Please wait</div>
+
+                <div class="progress-wrapper">
+                    <div id="currTime" class="time-text">0:00</div>
+                    <div class="progress-container">
+                        <div id="progressBar" class="progress-fill"></div>
+                    </div>
+                    <div id="totalTime" class="time-text">0:00</div>
+                </div>
+
+                <div class="volume-container"
+                    style="box-sizing: border-box; display: flex; align-items: center; gap: 15px; margin-bottom: 15px; width: 100%; max-width: 450px; background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 30px;">
+                    <svg viewBox="0 0 24 24" style="width:24px; height:24px; fill:#ccc;">
+                        <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                    <input type="range" id="volumeSlider" min="0" max="5000" value="100"
+                        style="flex:1; cursor: pointer; accent-color: #8a2be2; height: 5px; border-radius: 5px;">
+                    <span id="volumeValue"
+                        style="color:#fff; font-family:monospace; font-weight:bold; min-width: 60px; text-align: right;">100%</span>
+                </div>
+
+                <!-- Volume Preset Buttons for instant loud boost (100% up to 5000%) -->
+                <div class="volume-presets"
+                    style="display: flex; gap: 8px; justify-content: center; margin-bottom: 25px; flex-wrap: wrap;">
+                    <button class="btn-vol-preset" onclick="setVolume(50)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #aaa; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s;">50%</button>
+                    <button class="btn-vol-preset" onclick="setVolume(100)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(138, 43, 226, 0.4); background: rgba(138, 43, 226, 0.2); color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s;">100%</button>
+                    <button class="btn-vol-preset" onclick="setVolume(200)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255, 159, 67, 0.4); background: rgba(255, 159, 67, 0.15); color: #ff9f43; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s;">200% &#128226;</button>
+                    <button class="btn-vol-preset" onclick="setVolume(500)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255, 71, 87, 0.4); background: rgba(255, 71, 87, 0.15); color: #ff4757; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: 0.2s;">500% &#128227;</button>
+                    <button class="btn-vol-preset" onclick="setVolume(1000)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(231, 76, 60, 0.5); background: rgba(231, 76, 60, 0.2); color: #ff6b6b; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.2s;">1000% &#128640;</button>
+                    <button class="btn-vol-preset" onclick="setVolume(2000)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(192, 57, 43, 0.6); background: rgba(192, 57, 43, 0.25); color: #ff4757; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: 0.2s;">2000% &#128293;</button>
+                    <button class="btn-vol-preset" onclick="setVolume(5000)" style="padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(180, 0, 0, 0.7); background: rgba(180, 0, 0, 0.3); color: #ff1744; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.2s;">5000% &#128165;</button>
+                </div>
+
+                <div class="controls">
+                    <button class="btn-control btn-seek" onclick="seek(-10000)" title="Rewind 10s">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
+                        </svg>
+                    </button>
+                    <button class="btn-control btn-prev" onclick="prevSong()" title="Previous"><svg viewBox="0 0 24 24">
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                        </svg></button>
+                    <button class="btn-control btn-stop" onclick="stopMusic()" title="Stop"><svg viewBox="0 0 24 24">
+                            <path d="M6 6h12v12H6z" />
+                        </svg></button>
+                    <button class="btn-control btn-pause" id="btnPauseResume" onclick="togglePauseResume()" title="Pause/Resume (Manual Mode)">
+                        <svg viewBox="0 0 24 24" id="pauseResumeIcon">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg>
+                    </button>
+                    <button class="btn-control btn-skip" onclick="skipSong()" title="Skip"><svg viewBox="0 0 24 24">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                        </svg></button>
+                    <button class="btn-control btn-seek" onclick="seek(10000)" title="Forward 10s">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="extra-controls"
+                    style="margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-action" id="btnRepeat" onclick="openRepeatModal()" title="Click to change repeat mode"
+                        style="background: rgba(138, 43, 226, 0.1); color: #8a2be2; border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; justify-content: center; width: 200px; border-radius: 30px;">
+                        <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;">
+                            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" opacity="0.5" />
+                        </svg> <span id="btnRepeatLabel">Repeat: Once</span>
+                    </button>
+                    <button class="btn-action" id="btnAutoplay" onclick="toggleAutoplay()" title="Autoplay: Off"
+                        style="background: rgba(138, 43, 226, 0.1); color: #8a2be2; border: 1px solid rgba(138, 43, 226, 0.3); display: flex; align-items: center; justify-content: center; width: 160px; border-radius: 30px;">
+                        <svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+                                opacity="0.5" />
+                        </svg> Autoplay: Off
+                    </button>
+                </div>
+
+                <div id="loopStatusMsg"
+                    style="color: #a29bfe; font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px; text-align: center; opacity: 0; transition: opacity 0.3s; font-weight: 500; height: 20px;">
+                </div>
+
+                <!-- Extra Controls Removed as per request -->
+            </div>
+
+            <div class="queue-card">
+                <div class="queue-header">
+                    <span>Up Next</span>
+                    <span id="queueCount"
+                        style="background:#8a2be2; padding:2px 8px; border-radius:6px; font-size:0.8rem;">0</span>
+                </div>
+                <div id="queueList" class="queue-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Play Modal -->
+    <div id="playModal" class="modal">
+        <div class="modal-content">
+            <h2>Play Music</h2>
+            <input type="text" id="playInput" class="input-play" placeholder="Enter song name or link..."
+                onkeypress="handleEnter(event)">
+            <div class="modal-btns" style="margin-bottom: 20px;">
+                <button class="btn-modal btn-confirm" onclick="playSong()">Play / Add</button>
+                <button class="btn-modal btn-cancel"
+                    onclick="document.getElementById('playModal').style.display='none'">Cancel</button>
+            </div>
+
+            <div class="playlists-section" style="border-top: 1px solid #333; padding-top: 15px;">
+                <h3 style="font-size: 1.1rem; margin-top: 0; margin-bottom: 10px; color: #ccc;">Your Favorites (Play
+                    All)</h3>
+                <div id="playlistContainer" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <span style="color: #777;">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Play Custom File Modal -->
+    <div id="fileModal" class="modal">
+        <div class="modal-content" style="width: 520px;">
+            <h2><i class="fas fa-file-audio" style="color: #ff6b6b; margin-right: 8px;"></i>Play Custom File</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-top: 0; margin-bottom: 20px;">
+                Upload an <b>MP3</b> or <b>MP4</b> file. Max size ~200MB.<br>
+                <span style="color: #ff9f43;">⚠</span> File is hosted on a public service so the remote Lavalink can stream it. Files may expire after ~1 hour — use <b>Repeat</b> to keep playing.
+            </p>
+
+            <label for="fileInput" style="display: block; padding: 30px; border: 2px dashed #444; border-radius: 14px; text-align: center; cursor: pointer; transition: 0.3s; background: #0b0b10;"
+                id="fileDropZone" onmouseover="this.style.borderColor='#8a2be2'" onmouseout="this.style.borderColor='#444'">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #8a2be2; margin-bottom: 10px; display: block;"></i>
+                <div id="fileLabelText" style="color: #ccc; font-weight: 600;">Click to choose a file</div>
+                <div style="color: #666; font-size: 0.8rem; margin-top: 5px;">MP3, M4A, WAV, MP4, MKV, etc.</div>
+            </label>
+            <input type="file" id="fileInput" accept="audio/*,video/*,.mp3,.mp4,.m4a,.wav,.ogg,.flac,.mkv,.webm" style="display: none;"
+                onchange="onFileSelected()">
+
+            <div id="fileStatus" style="margin: 15px 0; color: #aaa; font-size: 0.9rem; display: none;"></div>
+
+            <div id="fileProgressBarContainer" style="display: none; margin: 15px 0; background: #333; border-radius: 10px; height: 8px; overflow: hidden;">
+                <div id="fileProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #8a2be2, #ff6b6b); transition: width 0.3s;"></div>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-modal btn-confirm" id="uploadBtn" onclick="uploadFile()" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <i class="fas fa-upload" style="margin-right: 6px;"></i> Upload
+                </button>
+                <button class="btn-modal btn-cancel" onclick="closeFileModal()">Cancel</button>
+            </div>
+
+            <!-- Mode selector + Play button — appears AFTER upload succeeds (no auto-play) -->
+            <div id="fileModeSection" class="file-mode-section">
+                <div class="file-mode-label">Select Playback Mode</div>
+                <div class="file-mode-buttons">
+                    <button class="file-mode-btn active" id="modeManualBtn" onclick="setFileMode('manual')">
+                        <div style="font-size: 1.3rem;">▶️</div>
+                        <div>Manual</div>
+                        <div class="file-mode-desc">Play / Pause yourself.<br>Replay as many times as you want.</div>
+                    </button>
+                    <button class="file-mode-btn" id="modeRepeatBtn" onclick="setFileMode('repeat')">
+                        <div style="font-size: 1.3rem;">🔁</div>
+                        <div>Repeat</div>
+                        <div class="file-mode-desc">Auto-play the file<br>again and again forever.</div>
+                    </button>
+                </div>
+                <button class="btn-play-file" id="playUploadedBtn" onclick="playUploadedFile()">
+                    <i class="fas fa-play" style="margin-right: 8px;"></i> Play Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Repeat Mode Modal -->
+    <div id="repeatModal" class="modal">
+        <div class="modal-content" style="width: 460px;">
+            <h2><i class="fas fa-redo" style="color: #8a2be2; margin-right: 8px;"></i>Repeat Mode</h2>
+            <p style="color: #888; font-size: 0.9rem; margin-top: 0; margin-bottom: 20px;">
+                Choose how the current track should be repeated.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button class="repeat-option" onclick="setRepeatMode('once')" data-mode="once"
+                    style="padding: 16px; border-radius: 12px; border: 1px solid #333; background: #0b0b10; color: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: 0.2s;">
+                    <span style="font-size: 1.5rem;">▶️</span>
+                    <div>
+                        <div style="font-weight: 700;">Once</div>
+                        <div style="font-size: 0.8rem; color: #888;">Play one time, then move to next</div>
+                    </div>
+                </button>
+
+                <button class="repeat-option" onclick="setRepeatMode('loop')" data-mode="loop"
+                    style="padding: 16px; border-radius: 12px; border: 1px solid #333; background: #0b0b10; color: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: 0.2s;">
+                    <span style="font-size: 1.5rem;">🔂</span>
+                    <div>
+                        <div style="font-weight: 700;">Loop Infinite</div>
+                        <div style="font-size: 0.8rem; color: #888;">Repeat the same track forever</div>
+                    </div>
+                </button>
+
+                <button class="repeat-option" onclick="setRepeatMode('queue')" data-mode="queue"
+                    style="padding: 16px; border-radius: 12px; border: 1px solid #333; background: #0b0b10; color: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: 0.2s;">
+                    <span style="font-size: 1.5rem;">🔁</span>
+                    <div>
+                        <div style="font-weight: 700;">Loop Queue</div>
+                        <div style="font-size: 0.8rem; color: #888;">Restart queue from beginning after end</div>
+                    </div>
+                </button>
+
+                <button class="repeat-option" onclick="setRepeatMode('repeatN')" data-mode="repeatN"
+                    style="padding: 16px; border-radius: 12px; border: 1px solid #333; background: #0b0b10; color: #fff; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 12px; transition: 0.2s;">
+                    <span style="font-size: 1.5rem;">🔢</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700;">Repeat N Times</div>
+                        <div style="font-size: 0.8rem; color: #888;">Play the track N times, then continue</div>
+                    </div>
+                    <input type="number" id="repeatNInput" value="5" min="1" max="100" onclick="event.stopPropagation()" onchange="event.stopPropagation()"
+                        style="width: 70px; padding: 8px; background: #1a1a20; border: 1px solid #444; color: #fff; border-radius: 8px; text-align: center; font-weight: 700;">
+                </button>
+            </div>
+
+            <div class="modal-btns" style="margin-top: 20px;">
+                <button class="btn-modal btn-cancel" onclick="document.getElementById('repeatModal').style.display='none'">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <%- include('partials/super_button') %>
+
+        <script>
+            let currentGuildId = null;
+            let isDraggingVolume = false;
+
+            function formatTime(ms) {
+                if (isNaN(ms)) return '0:00';
+                const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            async function updateState() {
+                try {
+                    const res = await fetch('/api/music/status');
+                    const data = await res.json();
+
+                    const joinUI = document.getElementById('joinUI');
+                    const idleUI = document.getElementById('idleUI');
+                    const playerUI = document.getElementById('playerUI');
+
+                    if (data.isPlaying) {
+                        // Show Player, Hide others
+                        joinUI.style.display = 'none';
+                        idleUI.style.display = 'none';
+                        playerUI.style.display = 'grid'; // Grid layout
+                        const msgSection = document.getElementById('idleMessaging');
+                        if (msgSection) msgSection.style.display = 'none';
+
+                        currentGuildId = data.activeGuildId;
+                        updatePlayerUI(data);
+                    } else if (data.isConnectedToVoice) {
+                        // Show Idle, Hide others
+                        joinUI.style.display = 'none';
+                        playerUI.style.display = 'none';
+                        idleUI.style.display = 'flex';
+
+                        currentGuildId = data.activeGuildId;
+                        document.getElementById('idleGuildName').innerText = data.guildName;
+                        document.getElementById('idleChannelName').innerText = data.channelName;
+                        document.getElementById('idleGuildIcon').src = data.guildIcon || 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+                        // Show messaging section and load soundboard
+                        const msgSection = document.getElementById('idleMessaging');
+                        if (msgSection) {
+                            msgSection.style.display = 'block';
+                            loadSoundboard(data.activeGuildId);
+                        }
+                    } else {
+                        // Show Join, Hide others
+                        playerUI.style.display = 'none';
+                        idleUI.style.display = 'none';
+                        joinUI.style.display = 'flex';
+                        const msgSection = document.getElementById('idleMessaging');
+                        if (msgSection) msgSection.style.display = 'none';
+                        loadedSoundboardGuild = null;
+
+                        currentGuildId = null;
+                        if (document.getElementById('serverSelect').children.length <= 1) loadServers();
+                    }
+                } catch (e) { }
+            }
+
+            function updatePlayerUI(data) {
+                document.getElementById('guildName').innerText = data.guildName;
+                document.getElementById('channelName').innerText = data.channelName;
+                document.getElementById('guildIcon').src = data.guildIcon || 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+                document.getElementById('trackTitle').innerText = data.nowPlaying.title;
+                document.getElementById('trackArtist').innerText = data.nowPlaying.author;
+                document.getElementById('trackCover').src = data.nowPlaying.cover;
+
+                const percent = data.duration ? Math.min(100, (data.position / data.duration) * 100) : 0;
+                document.getElementById('progressBar').style.width = percent + '%';
+                document.getElementById('currTime').innerText = formatTime(data.position);
+                document.getElementById('totalTime').innerText = formatTime(data.duration);
+
+                const btnRepeat = document.getElementById('btnRepeat');
+                const repeatLabel = document.getElementById('btnRepeatLabel');
+                const svgRepeatLoop = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>';
+                const svgRepeatOne = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-4-2V9h-1l-2 1v1h1.5v4H13z"/></svg>';
+                const svgRepeatQueue = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>';
+                const svgRepeatNone = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" opacity="0.5"/></svg>';
+
+                // Determine current repeat mode (prefer new repeatMode, fall back to legacy loop field)
+                let rMode = data.repeatMode || 'once';
+                if (!data.repeatMode && data.loop) {
+                    // Legacy compat
+                    if (data.loop === 'track') rMode = 'loop';
+                    else if (data.loop === 'queue') rMode = 'queue';
+                    else rMode = 'once';
+                }
+
+                if (rMode === 'loop') {
+                    btnRepeat.innerHTML = svgRepeatOne + ' <span id="btnRepeatLabel">Repeat: Loop</span>';
+                    btnRepeat.title = 'Repeat: Loop (infinite)';
+                    btnRepeat.style.background = 'rgba(46, 204, 113, 0.2)';
+                    btnRepeat.style.color = '#2ecc71';
+                    btnRepeat.style.borderColor = 'rgba(46, 204, 113, 0.4)';
+                } else if (rMode === 'queue') {
+                    btnRepeat.innerHTML = svgRepeatQueue + ' <span id="btnRepeatLabel">Repeat: Queue</span>';
+                    btnRepeat.title = 'Repeat: Queue loop';
+                    btnRepeat.style.background = 'rgba(52, 152, 219, 0.2)';
+                    btnRepeat.style.color = '#3498db';
+                    btnRepeat.style.borderColor = 'rgba(52, 152, 219, 0.4)';
+                } else if (rMode === 'repeatN') {
+                    const n = data.repeatCount || 1;
+                    const c = data.currentRepeat || 0;
+                    btnRepeat.innerHTML = svgRepeatLoop + ` <span id="btnRepeatLabel">Repeat: ${c}/${n}x</span>`;
+                    btnRepeat.title = `Repeat: ${n} times (currently ${c}/${n})`;
+                    btnRepeat.style.background = 'rgba(255, 159, 67, 0.2)';
+                    btnRepeat.style.color = '#ff9f43';
+                    btnRepeat.style.borderColor = 'rgba(255, 159, 67, 0.4)';
+                } else {
+                    btnRepeat.innerHTML = svgRepeatNone + ' <span id="btnRepeatLabel">Repeat: Once</span>';
+                    btnRepeat.title = 'Repeat: Once (no repeat)';
+                    btnRepeat.style.background = 'rgba(138, 43, 226, 0.1)';
+                    btnRepeat.style.color = '#8a2be2';
+                    btnRepeat.style.borderColor = 'rgba(138, 43, 226, 0.3)';
+                }
+
+                // Highlight the matching option in the repeat modal
+                document.querySelectorAll('.repeat-option').forEach(opt => {
+                    if (opt.dataset.mode === rMode) {
+                        opt.style.borderColor = '#8a2be2';
+                        opt.style.background = 'rgba(138, 43, 226, 0.15)';
+                    } else {
+                        opt.style.borderColor = '#333';
+                        opt.style.background = '#0b0b10';
+                    }
+                });
+
+                const btnAutoplay = document.getElementById('btnAutoplay');
+                const svgApOn = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Autoplay: On';
+                const svgApOff = '<svg viewBox="0 0 24 24" style="width:20px; height:20px; fill:currentColor; margin-right:5px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" opacity="0.5"/></svg> Autoplay: Off';
+
+                if (data.autoplay) {
+                    btnAutoplay.innerHTML = svgApOn;
+                    btnAutoplay.title = 'Autoplay: On';
+                    btnAutoplay.style.background = 'rgba(255, 159, 67, 0.2)';
+                    btnAutoplay.style.color = '#ff9f43';
+                    btnAutoplay.style.borderColor = 'rgba(255, 159, 67, 0.4)';
+                } else {
+                    btnAutoplay.innerHTML = svgApOff;
+                    btnAutoplay.title = 'Autoplay: Off';
+                    btnAutoplay.style.background = 'rgba(138, 43, 226, 0.1)';
+                    btnAutoplay.style.color = '#8a2be2';
+                    btnAutoplay.style.borderColor = 'rgba(138, 43, 226, 0.3)';
+                }
+
+                if (!isDraggingVolume) {
+                    const vol = data.volume !== undefined ? data.volume : 100;
+                    document.getElementById('volumeSlider').value = vol;
+                    document.getElementById('volumeValue').innerText = vol + '%';
+                }
+
+                // Sync pause state from server (for manual mode control)
+                if (typeof data.paused === 'boolean' && data.paused !== isPaused) {
+                    isPaused = data.paused;
+                    updatePauseResumeUI();
+                }
+
+                document.getElementById('queueCount').innerText = data.queueCount;
+                const list = document.getElementById('queueList');
+                list.innerHTML = '';
+
+                if (data.queue.length === 0) list.innerHTML = '<div style="text-align:center; color:#555; margin-top:20px;">Queue is empty</div>';
+                else {
+                    data.queue.forEach((song, i) => {
+                        const cover = song.cover || 'https://i.imgur.com/2ce2t5e.png';
+                        list.innerHTML += `
+                     <div class="queue-item">
+                         <div style="font-weight:bold; width:20px; color:#555;">${i + 1}</div>
+                         <img src="${cover}" class="q-img">
+                         <div class="q-info">
+                             <div class="q-title">${song.title}</div>
+                             <div class="q-author">${song.author}</div>
+                         </div>
+                     </div>`;
+                    });
+                }
+            }
+
+            // --- Interaction Logic ---
+
+            async function loadServers() {
+                const res = await fetch('/api/discord/guilds');
+                const guilds = await res.json();
+                const sel = document.getElementById('serverSelect');
+                sel.innerHTML = '<option value="">Select Server</option>';
+                guilds.forEach(g => {
+                    sel.innerHTML += `<option value="${g.id}">${g.name}</option>`;
+                });
+            }
+
+            async function loadChannels() {
+                const guildId = document.getElementById('serverSelect').value;
+                const sel = document.getElementById('channelSelect');
+                if (!guildId) { sel.innerHTML = '<option value="">Select Voice Channel</option>'; return; }
+
+                sel.innerHTML = '<option>Loading...</option>';
+                const res = await fetch(`/api/discord/channels/${guildId}`);
+                const channels = await res.json();
+                sel.innerHTML = '<option value="">Select Voice Channel</option>';
+                channels.forEach(c => {
+                    sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                });
+            }
+
+            async function joinChannel() {
+                const guildId = document.getElementById('serverSelect').value;
+                const channelId = document.getElementById('channelSelect').value;
+                if (!guildId || !channelId) return alert('Select server and channel');
+
+                const btn = document.querySelector('.btn-join');
+                btn.innerText = 'Joining...';
+                await fetch('/api/music/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guildId, channelId })
+                });
+                // State update automatic
+                setTimeout(() => { btn.innerText = 'Join Voice'; }, 3000);
+            }
+
+            async function leaveChannel() {
+                if (!currentGuildId) return;
+                await fetch('/api/music/leave', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guildId: currentGuildId })
+                });
+            }
+
+            async function openPlayModal() {
+                document.getElementById('playModal').style.display = 'flex';
+                document.getElementById('playInput').focus();
+
+                const container = document.getElementById('playlistContainer');
+                container.innerHTML = '<span style="color: #777;">Loading...</span>';
+                try {
+                    const res = await fetch('/api/music/playlists');
+                    const data = await res.json();
+                    if (data.success && data.playlists && data.playlists.includes('fav')) {
+                        container.innerHTML = '';
+                        const btn = document.createElement('button');
+                        btn.className = 'btn-action';
+                        btn.style.padding = '8px 15px';
+                        btn.style.fontSize = '0.9rem';
+                        btn.style.background = 'linear-gradient(45deg, #ff6b81, #ff4757)';
+                        btn.style.border = 'none';
+                        btn.style.boxShadow = '0 4px 15px rgba(255, 71, 87, 0.4)';
+                        btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px; height:16px; fill:#fff; vertical-align: middle; margin-right: 5px; margin-top: -2px;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Load Favorites`;
+                        btn.onclick = () => loadPlaylist('fav');
+                        container.appendChild(btn);
+                    } else {
+                        container.innerHTML = '<span style="color: #777;">No favorites found yet. Add some using `!fav` in Discord!</span>';
+                    }
+                } catch (e) {
+                    container.innerHTML = '<span style="color: #ff4757;">Error loading favorites.</span>';
+                }
+            }
+
+            async function loadPlaylist(name) {
+                if (!currentGuildId) return alert('Error: No active guild');
+
+                const container = document.getElementById('playlistContainer');
+                const origHtml = container.innerHTML;
+                container.innerHTML = `<span style="color: #8a2be2;">Loading playlist '${name}'...</span>`;
+
+                try {
+                    const res = await fetch('/api/music/playlist/load', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, name })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        container.innerHTML = `<span style="color: #2ecc71;">Loaded ${data.added} tracks!</span>`;
+                        setTimeout(() => {
+                            document.getElementById('playModal').style.display = 'none';
+                        }, 1000);
+                        updateState();
+                    } else {
+                        alert('Error: ' + data.message);
+                        container.innerHTML = origHtml;
+                    }
+                } catch (e) {
+                    alert('Network error');
+                    container.innerHTML = origHtml;
+                }
+            }
+
+            function handleEnter(e) { if (e.key === 'Enter') playSong(); }
+
+            async function playSong() {
+                const query = document.getElementById('playInput').value;
+                if (!query) return;
+                if (!currentGuildId) return alert('Error: No active guild');
+
+                const btn = document.querySelector('.btn-confirm');
+                const originalText = btn.innerText;
+                btn.innerText = 'Searching...';
+
+                try {
+                    const res = await fetch('/api/music/play', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, query })
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        btn.innerText = 'Added!';
+                        setTimeout(() => {
+                            document.getElementById('playModal').style.display = 'none';
+                            document.getElementById('playInput').value = '';
+                            btn.innerText = originalText;
+                        }, 1000);
+                        updateState();
+                    } else {
+                        alert('Error: ' + (result.message || 'Failed'));
+                        btn.innerText = originalText;
+                    }
+                } catch (e) {
+                    alert('Network error');
+                    btn.innerText = originalText;
+                }
+            }
+
+            async function skipSong() { await fetch('/api/music/skip', { method: 'POST' }); updateState(); }
+            async function prevSong() { await fetch('/api/music/previous', { method: 'POST' }); updateState(); }
+            async function stopMusic() { if (confirm('Stop music?')) await fetch('/api/music/stop', { method: 'POST' }); updateState(); }
+
+            async function seek(amount) {
+                if (!currentGuildId) return;
+                try {
+                    await fetch('/api/music/seek', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, amount: amount })
+                    });
+                } catch (e) { }
+                updateState();
+            }
+
+            async function toggleLoop() {
+                // Legacy compat — open the new repeat modal instead
+                openRepeatModal();
+            }
+
+            function openRepeatModal() {
+                document.getElementById('repeatModal').style.display = 'flex';
+            }
+
+            async function setRepeatMode(mode) {
+                if (!currentGuildId) return alert('Error: No active guild');
+
+                let count = 1;
+                if (mode === 'repeatN') {
+                    const input = document.getElementById('repeatNInput');
+                    count = parseInt(input.value) || 1;
+                    if (count < 1) count = 1;
+                    if (count > 100) count = 100;
+                    input.value = count;
+                }
+
+                try {
+                    const res = await fetch('/api/music/loop', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            guildId: currentGuildId,
+                            mode: mode,
+                            count: count
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        let label = 'Once';
+                        if (mode === 'loop') label = 'Loop (infinite)';
+                        else if (mode === 'queue') label = 'Queue loop';
+                        else if (mode === 'repeatN') label = `Repeat ${count} times`;
+                        showLoopMessage(label);
+                        document.getElementById('repeatModal').style.display = 'none';
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed'));
+                    }
+                } catch (e) {
+                    alert('Network error');
+                }
+                updateState();
+            }
+
+            async function toggleAutoplay() {
+                if (!currentGuildId) return;
+                try {
+                    const res = await fetch('/api/music/autoplay', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        showLoopMessage(data.autoplay ? 'autoplay ON' : 'autoplay OFF');
+                    }
+                } catch (e) { }
+                updateState();
+            }
+
+            let loopMsgTimeout;
+            function showLoopMessage(state) {
+                const msgDiv = document.getElementById('loopStatusMsg');
+                if (!msgDiv) return;
+                msgDiv.innerText = "Repeat mode set to: " + state.toUpperCase();
+                msgDiv.style.opacity = '1';
+                clearTimeout(loopMsgTimeout);
+                loopMsgTimeout = setTimeout(() => {
+                    msgDiv.style.opacity = '0';
+                }, 5000);
+            }
+
+            // --- Custom File Upload ---
+            let selectedFile = null;
+            let uploadedFileUrl = null;   // Set after a successful upload
+            let uploadedFileName = null;
+            let selectedFileMode = 'manual';  // 'manual' or 'repeat'
+            let isPaused = false;
+
+            function openFileModal() {
+                document.getElementById('fileModal').style.display = 'flex';
+                // Reset state
+                selectedFile = null;
+                uploadedFileUrl = null;
+                uploadedFileName = null;
+                selectedFileMode = 'manual';
+                document.getElementById('fileInput').value = '';
+                document.getElementById('fileLabelText').innerText = 'Click to choose a file';
+                document.getElementById('fileStatus').style.display = 'none';
+                document.getElementById('fileProgressBarContainer').style.display = 'none';
+                document.getElementById('fileProgressBar').style.width = '0%';
+                document.getElementById('fileModeSection').classList.remove('visible');
+
+                // Reset mode buttons
+                document.getElementById('modeManualBtn').classList.add('active');
+                document.getElementById('modeManualBtn').classList.remove('repeat-mode');
+                document.getElementById('modeRepeatBtn').classList.remove('active', 'repeat-mode');
+
+                const uploadBtn = document.getElementById('uploadBtn');
+                uploadBtn.disabled = false;
+                uploadBtn.style.opacity = '1';
+                uploadBtn.style.cursor = 'pointer';
+                uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right: 6px;"></i> Upload';
+            }
+
+            function closeFileModal() {
+                document.getElementById('fileModal').style.display = 'none';
+            }
+
+            function onFileSelected() {
+                const input = document.getElementById('fileInput');
+                if (!input.files || !input.files[0]) return;
+                const file = input.files[0];
+
+                // Validate type
+                const validExts = ['mp3', 'mp4', 'm4a', 'wav', 'ogg', 'flac', 'aac', 'mkv', 'webm', 'mov', 'avi'];
+                const ext = file.name.split('.').pop().toLowerCase();
+                const isAudio = file.type.startsWith('audio/');
+                const isVideo = file.type.startsWith('video/');
+                if (!validExts.includes(ext) && !isAudio && !isVideo) {
+                    alert('Please select an audio or video file (MP3, MP4, etc.)');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate size (200MB max for catbox.moe)
+                const maxSize = 200 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert(`File too large! Max is 200MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+                    input.value = '';
+                    return;
+                }
+
+                selectedFile = file;
+                const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                document.getElementById('fileLabelText').innerHTML = `<i class="fas fa-check-circle" style="color: #2ecc71; margin-right: 6px;"></i><b>${file.name}</b><br><span style="color:#888; font-size:0.85rem;">${sizeMB} MB</span>`;
+                
+                const status = document.getElementById('fileStatus');
+                status.style.display = 'block';
+                status.style.color = '#aaa';
+                status.innerText = 'Ready to upload. Click "Upload" to host the file. Playback will not start automatically.';
+
+                const uploadBtn = document.getElementById('uploadBtn');
+                uploadBtn.disabled = false;
+                uploadBtn.style.opacity = '1';
+                uploadBtn.style.cursor = 'pointer';
+
+                // Hide mode section until upload completes
+                document.getElementById('fileModeSection').classList.remove('visible');
+                uploadedFileUrl = null;
+            }
+
+            // Upload only — does NOT auto-play. After success, shows mode selector + Play button.
+            async function uploadFile() {
+                if (!selectedFile) return alert('Please select a file first');
+                if (!currentGuildId) {
+                    alert('Error: No active guild. Join a voice channel first.');
+                    return;
+                }
+
+                const uploadBtn = document.getElementById('uploadBtn');
+                const originalText = uploadBtn.innerHTML;
+                uploadBtn.disabled = true;
+                uploadBtn.style.opacity = '0.7';
+                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Uploading...';
+
+                const status = document.getElementById('fileStatus');
+                const progressBarContainer = document.getElementById('fileProgressBarContainer');
+                const progressBar = document.getElementById('fileProgressBar');
+                progressBarContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressBar.style.background = 'linear-gradient(90deg, #8a2be2, #ff6b6b)';
+                status.style.color = '#8a2be2';
+                status.innerText = 'Uploading file to public host...';
+
+                try {
+                    // Use XMLHttpRequest for progress events
+                    const fileUrl = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', '/api/voice/upload');
+                        xhr.setRequestHeader('X-Filename', encodeURIComponent(selectedFile.name));
+                        xhr.setRequestHeader('Content-Type', selectedFile.type || 'application/octet-stream');
+
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const pct = Math.round((e.loaded / e.total) * 100);
+                                progressBar.style.width = pct + '%';
+                                status.innerText = `Uploading... ${pct}%`;
+                            }
+                        });
+
+                        xhr.addEventListener('load', () => {
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                if (data.success) {
+                                    resolve(data.url);
+                                } else {
+                                    reject(new Error(data.message || 'Upload failed'));
+                                }
+                            } catch (e) {
+                                reject(new Error('Invalid server response'));
+                            }
+                        });
+
+                        xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+                        xhr.addEventListener('timeout', () => reject(new Error('Upload timed out')));
+                        xhr.timeout = 600000; // 10 minutes max
+                        xhr.send(selectedFile);
+                    });
+
+                    uploadedFileUrl = fileUrl;
+                    uploadedFileName = selectedFile.name;
+
+                    progressBar.style.width = '100%';
+                    progressBar.style.background = '#2ecc71';
+                    status.style.color = '#2ecc71';
+                    status.innerText = '✓ File uploaded! Choose a mode below, then click "Play Now".';
+
+                    uploadBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Uploaded';
+                    uploadBtn.style.opacity = '0.6';
+                    uploadBtn.style.cursor = 'default';
+
+                    // Show the mode selector + Play button (NO auto-play)
+                    document.getElementById('fileModeSection').classList.add('visible');
+
+                } catch (e) {
+                    console.error('Upload error:', e);
+                    status.style.color = '#ff4757';
+                    status.innerText = '✗ Error: ' + e.message;
+                    progressBar.style.background = '#ff4757';
+                    uploadBtn.innerHTML = originalText;
+                    uploadBtn.disabled = false;
+                    uploadBtn.style.opacity = '1';
+                    uploadBtn.style.cursor = 'pointer';
+                }
+            }
+
+            // Set the file playback mode (Manual or Repeat)
+            function setFileMode(mode) {
+                if (!['manual', 'repeat'].includes(mode)) return;
+                selectedFileMode = mode;
+                const manualBtn = document.getElementById('modeManualBtn');
+                const repeatBtn = document.getElementById('modeRepeatBtn');
+                if (mode === 'manual') {
+                    manualBtn.classList.add('active');
+                    manualBtn.classList.remove('repeat-mode');
+                    repeatBtn.classList.remove('active', 'repeat-mode');
+                } else {
+                    repeatBtn.classList.add('active', 'repeat-mode');
+                    manualBtn.classList.remove('active');
+                }
+            }
+
+            // Play the uploaded file using the selected mode (Manual or Repeat).
+            // This is the explicit user action — upload alone never starts playback.
+            async function playUploadedFile() {
+                if (!uploadedFileUrl) return alert('Upload a file first');
+                if (!currentGuildId) return alert('Error: No active guild');
+
+                const playBtn = document.getElementById('playUploadedBtn');
+                const originalText = playBtn.innerHTML;
+                playBtn.disabled = true;
+                playBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Starting...';
+
+                try {
+                    // Start playing the file
+                    const playRes = await fetch('/api/music/play', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, query: uploadedFileUrl })
+                    });
+                    const playData = await playRes.json();
+
+                    if (!playData.success) {
+                        throw new Error(playData.message || playData.reason || 'Failed to play');
+                    }
+
+                    // Apply the chosen repeat mode AFTER playback starts
+                    if (selectedFileMode === 'repeat') {
+                        // Set infinite loop
+                        await fetch('/api/music/loop', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ guildId: currentGuildId, mode: 'loop', count: 1 })
+                        });
+                        showLoopMessage('Repeat mode: LOOP (file will auto-replay forever)');
+                    } else {
+                        // Manual mode: ensure repeat is OFF so playback ends naturally
+                        await fetch('/api/music/loop', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ guildId: currentGuildId, mode: 'once', count: 1 })
+                        });
+                        showLoopMessage('Manual mode: use ▶/⏸ to control. File will not auto-replay.');
+                    }
+
+                    playBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Playing!';
+                    setTimeout(() => {
+                        closeFileModal();
+                        playBtn.innerHTML = originalText;
+                        playBtn.disabled = false;
+                    }, 1500);
+                    updateState();
+                } catch (e) {
+                    console.error('Play uploaded file error:', e);
+                    alert('Error: ' + e.message);
+                    playBtn.innerHTML = originalText;
+                    playBtn.disabled = false;
+                }
+            }
+
+            // Toggle pause/resume for Manual mode control
+            async function togglePauseResume() {
+                if (!currentGuildId) return;
+                try {
+                    const res = await fetch('/api/music/pause', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, pause: !isPaused })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        isPaused = data.paused;
+                        updatePauseResumeUI();
+                        showLoopMessage(isPaused ? 'Paused' : 'Resumed');
+                    }
+                } catch (e) { }
+                updateState();
+            }
+
+            function updatePauseResumeUI() {
+                const btn = document.getElementById('btnPauseResume');
+                const icon = document.getElementById('pauseResumeIcon');
+                if (isPaused) {
+                    btn.classList.add('paused');
+                    btn.title = 'Resume (Manual Mode)';
+                    // Play icon
+                    icon.innerHTML = '<path d="M8 5v14l11-7z" />';
+                } else {
+                    btn.classList.remove('paused');
+                    btn.title = 'Pause (Manual Mode)';
+                    // Pause icon
+                    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />';
+                }
+            }
+
+            // --- Volume Presets ---
+            async function setVolume(vol) {
+                if (!currentGuildId) return alert('Join a voice channel first');
+                const slider = document.getElementById('volumeSlider');
+                slider.value = vol;
+                document.getElementById('volumeValue').innerText = vol + '%';
+                try {
+                    await fetch('/api/music/volume', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, volume: vol })
+                    });
+                    showLoopMessage(`Volume: ${vol}%`);
+                } catch (e) { }
+                updateState();
+            }
+
+            // Volume Logic
+            const vSlider = document.getElementById('volumeSlider');
+            vSlider.addEventListener('mousedown', () => isDraggingVolume = true);
+            vSlider.addEventListener('touchstart', () => isDraggingVolume = true);
+
+            async function sendVolume() {
+                if (!currentGuildId) return;
+                const vol = vSlider.value;
+                try {
+                    await fetch('/api/music/volume', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, volume: vol })
+                    });
+                } catch (e) { }
+                setTimeout(() => isDraggingVolume = false, 500);
+            }
+
+            vSlider.addEventListener('mouseup', sendVolume);
+            vSlider.addEventListener('touchend', sendVolume);
+            vSlider.addEventListener('change', sendVolume);
+
+            vSlider.addEventListener('input', function () {
+                document.getElementById('volumeValue').innerText = this.value + '%';
+            });
+
+            // --- Mute / Deafen ---
+            let isMuted = false;
+            let isDeafened = false;
+
+            async function applyVoiceState() {
+                if (!currentGuildId) return;
+                await fetch('/api/music/voice-state', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guildId: currentGuildId, mute: isMuted, deaf: isDeafened })
+                });
+                const btnM = document.getElementById('btnMute');
+                const btnD = document.getElementById('btnDeaf');
+                if (btnM) {
+                    btnM.innerText = `🎙️ Mute: ${isMuted ? 'On' : 'Off'}`;
+                    btnM.style.background = isMuted ? 'rgba(255,71,87,0.2)' : 'rgba(255,255,255,0.07)';
+                    btnM.style.color = isMuted ? '#ff4757' : '#ccc';
+                    btnM.style.borderColor = isMuted ? 'rgba(255,71,87,0.4)' : 'rgba(255,255,255,0.15)';
+                }
+                if (btnD) {
+                    btnD.innerText = `🔇 Deafen: ${isDeafened ? 'On' : 'Off'}`;
+                    btnD.style.background = isDeafened ? 'rgba(255,71,87,0.2)' : 'rgba(255,255,255,0.07)';
+                    btnD.style.color = isDeafened ? '#ff4757' : '#ccc';
+                    btnD.style.borderColor = isDeafened ? 'rgba(255,71,87,0.4)' : 'rgba(255,255,255,0.15)';
+                }
+            }
+
+            function toggleMute() { isMuted = !isMuted; applyVoiceState(); }
+            function toggleDeaf() { isDeafened = !isDeafened; applyVoiceState(); }
+
+            // --- Messaging Section ---
+            async function sendVcMsg() {
+                if (!currentGuildId) return;
+                const input = document.getElementById('vcMsgInput');
+                const status = document.getElementById('vcMsgStatus');
+                const msg = input.value.trim();
+                if (!msg) return;
+                try {
+                    const res = await fetch('/api/music/vc-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, message: msg })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        status.style.color = '#2ecc71';
+                        status.innerText = '\u2713 Sent!';
+                        input.value = '';
+                    } else {
+                        status.style.color = '#ff4757';
+                        status.innerText = 'Error: ' + data.message;
+                    }
+                } catch (e) {
+                    status.style.color = '#ff4757';
+                    status.innerText = 'Network error';
+                }
+                setTimeout(() => { status.innerText = ''; }, 3000);
+            }
+
+            let loadedSoundboardGuild = null;
+            async function loadSoundboard(guildId) {
+                if (loadedSoundboardGuild === guildId) return;
+                loadedSoundboardGuild = guildId;
+                const container = document.getElementById('soundboardList');
+                container.innerHTML = '<span style="color:#444; font-size:0.85rem;">Loading...</span>';
+                try {
+                    const res = await fetch(`/api/music/soundboard/${guildId}`);
+                    const data = await res.json();
+                    if (!data.sounds || data.sounds.length === 0) {
+                        container.innerHTML = '<span style="color:#444; font-size:0.85rem;">No sounds found in this server.</span>';
+                        return;
+                    }
+                    container.innerHTML = '';
+                    data.sounds.forEach(s => {
+                        const btn = document.createElement('button');
+                        btn.style.cssText = 'padding: 7px 14px; border-radius: 20px; border: 1px solid rgba(138,43,226,0.3); background: rgba(138,43,226,0.1); color: #a29bfe; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s;';
+                        btn.innerHTML = (s.emoji ? s.emoji + ' ' : '\uD83D\uDD0A ') + s.name;
+                        btn.onmouseover = () => { btn.style.background = 'rgba(138,43,226,0.3)'; btn.style.color = '#fff'; };
+                        btn.onmouseout = () => { btn.style.background = 'rgba(138,43,226,0.1)'; btn.style.color = '#a29bfe'; };
+                        btn.onclick = () => playSound(s.id);
+                        container.appendChild(btn);
+                    });
+                } catch (e) {
+                    container.innerHTML = '<span style="color:#ff4757; font-size:0.85rem;">Failed to load sounds.</span>';
+                }
+            }
+
+            async function playSound(soundId) {
+                if (!currentGuildId) return;
+                const status = document.getElementById('soundStatus');
+                try {
+                    const res = await fetch('/api/music/soundboard/play', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ guildId: currentGuildId, soundId })
+                    });
+                    const data = await res.json();
+                    status.style.color = data.success ? '#2ecc71' : '#ff4757';
+                    status.innerText = data.success ? '\u2713 Playing!' : 'Error: ' + data.message;
+                } catch (e) {
+                    status.style.color = '#ff4757';
+                    status.innerText = 'Network error';
+                }
+                setTimeout(() => { status.innerText = ''; }, 3000);
+            }
+
+            setInterval(updateState, 3000);
+            updateState();
+        </script>
+</body>
+
+</html>

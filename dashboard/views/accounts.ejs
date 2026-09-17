@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO+ Accounts</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .accounts-wrap {
+            width: 95%;
+            max-width: 700px;
+            margin: 40px auto;
+            padding-bottom: 100px;
+            color: #fff;
+        }
+        .accounts-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 6px; }
+        .accounts-sub { color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+
+        .account-card {
+            background: rgba(19,19,26,0.85);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: 0.2s;
+        }
+        .account-card.active-card {
+            border-color: rgba(138,43,226,0.6);
+            background: rgba(138,43,226,0.08);
+            box-shadow: 0 0 20px rgba(138,43,226,0.15);
+        }
+
+        /* Avatar */
+        .acc-avatar-wrap { position: relative; flex-shrink: 0; }
+        .acc-avatar {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: #111;
+        }
+        .active-card .acc-avatar { border-color: #8a2be2; box-shadow: 0 0 10px rgba(138,43,226,0.5); }
+        .acc-online-dot {
+            position: absolute; bottom: 1px; right: 1px;
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            border: 2px solid #13131a;
+        }
+        .dot-online  { background: #2ecc71; }
+        .dot-dnd     { background: #ff4757; }
+        .dot-idle    { background: #f1c40f; }
+        .dot-invisible, .dot-offline { background: #747f8d; }
+
+        /* Info */
+        .acc-info { flex: 1; overflow: hidden; }
+        .acc-name-row {
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 700; font-size: 1rem; color: #fff;
+        }
+        .acc-discriminator { color: #555; font-weight: 400; font-size: 0.9rem; }
+        .active-badge {
+            background: rgba(46,204,113,0.2);
+            border: 1px solid rgba(46,204,113,0.4);
+            color: #2ecc71;
+            font-size: 0.68rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .acc-token-label {
+            font-size: 0.78rem;
+            color: #444;
+            margin-top: 3px;
+            font-family: monospace;
+        }
+
+        /* Actions */
+        .acc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-switch {
+            padding: 8px 16px; border-radius: 10px;
+            border: 1px solid rgba(138,43,226,0.4);
+            background: rgba(138,43,226,0.15);
+            color: #a29bfe; cursor: pointer;
+            font-weight: 600; font-size: 0.85rem; transition: 0.2s;
+        }
+        .btn-switch:hover { background: #8a2be2; color: #fff; }
+        .btn-switch:disabled { opacity: 0.35; cursor: default; }
+        .btn-del {
+            padding: 8px 14px; border-radius: 10px;
+            border: 1px solid rgba(255,71,87,0.3);
+            background: rgba(255,71,87,0.1);
+            color: #ff4757; cursor: pointer;
+            font-weight: 600; font-size: 0.85rem; transition: 0.2s;
+        }
+        .btn-del:hover { background: #ff4757; color: #fff; }
+
+        /* Skeleton loader */
+        .skeleton {
+            background: linear-gradient(90deg, #1a1a22 25%, #222230 50%, #1a1a22 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .skel-avatar { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
+        .skel-line { height: 14px; margin-bottom: 6px; }
+        .skel-line.short { width: 120px; }
+        .skel-line.long { width: 200px; }
+
+        /* Add card */
+        .add-card {
+            background: rgba(19,19,26,0.6);
+            border: 1px dashed rgba(255,255,255,0.12);
+            border-radius: 16px; padding: 24px; margin-top: 20px;
+        }
+        .add-title { font-size: 1rem; font-weight: 700; margin-bottom: 14px; color: #ccc; }
+        .token-input {
+            width: 100%; padding: 13px 16px;
+            background: #0b0b10; border: 1px solid #333;
+            color: #fff; border-radius: 12px;
+            font-family: monospace; font-size: 0.9rem;
+            box-sizing: border-box; margin-bottom: 12px; transition: 0.2s;
+        }
+        .token-input:focus { outline: none; border-color: #8a2be2; }
+        .btn-add {
+            padding: 12px 28px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #8a2be2, #6c5ce7);
+            color: #fff; font-weight: 700; font-size: 0.95rem;
+            cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(138,43,226,0.3);
+        }
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(138,43,226,0.5); }
+
+        .notice {
+            margin-top: 20px; padding: 14px 18px;
+            background: rgba(46,204,113,0.06);
+            border: 1px solid rgba(46,204,113,0.2);
+            border-radius: 12px; color: #2ecc71;
+            font-size: 0.85rem; line-height: 1.6;
+        }
+        .toast {
+            position: fixed; bottom: 100px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #1a1a20; border: 1px solid #333;
+            color: #fff; padding: 12px 24px; border-radius: 30px;
+            font-size: 0.9rem; font-weight: 600;
+            opacity: 0; transition: 0.3s; z-index: 9999; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .empty-state { text-align: center; color: #555; padding: 30px; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <!-- Pre-login Navigation (shown if not yet logged in; harmless after login) -->
+    <% if (!user) { %>
+    <nav style="position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;background:rgba(5,5,8,0.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:100;">
+        <span style="font-size:1rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-right:12px">PRO+</span>
+        <a href="/login" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:#888;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);transition:.2s">🔑 Login</a>
+        <a href="/accounts" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:#c084fc;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(138,43,226,0.3);background:rgba(138,43,226,0.1);transition:.2s">👤 Multi Account Manager</a>
+        <a href="/commands/updater" style="display:inline-flex;align-items:center;gap:7px;padding:7px 16px;border-radius:10px;color:#888;text-decoration:none;font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);transition:.2s">🔄 Pro+ Updater</a>
+    </nav>
+    <% } %>
+    <div class="accounts-wrap" style="<%= !user ? 'margin-top:70px' : '' %>">
+        <% if (typeof setupMode !== 'undefined' && setupMode) { %>
+        <div style="background: rgba(138,43,226,0.12); border: 1px solid rgba(138,43,226,0.4); border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px;">
+            <span style="font-size: 2rem;">👋</span>
+            <div>
+                <div style="font-weight: 700; font-size: 1rem; color: #a29bfe; margin-bottom: 4px;">Welcome to PRO+</div>
+                <div style="color: #888; font-size: 0.88rem;">No account found. Paste your Discord token below to get started. The bot will start automatically.</div>
+            </div>
+        </div>
+        <% } %>
+        <div class="accounts-title">👤 Multi Account Manager</div>
+        <div class="accounts-sub">Switch between accounts instantly. Each account is fully isolated.</div>
+
+        <div id="accountList">
+            <!-- Skeleton while loading -->
+            <% for(let i = 0; i < accounts.length; i++) { %>
+            <div class="account-card" id="card-<%= accounts[i].index %>">
+                <div class="skeleton skel-avatar"></div>
+                <div class="acc-info">
+                    <div class="skeleton skel-line long"></div>
+                    <div class="skeleton skel-line short"></div>
+                </div>
+            </div>
+            <% } %>
+            <% if (accounts.length === 0) { %>
+                <div class="empty-state">No accounts found. Add one below.</div>
+            <% } %>
+        </div>
+
+        <div class="add-card">
+            <div class="add-title">➕ Add Account</div>
+            <input type="text" id="newToken" class="token-input" placeholder="Paste Discord token here...">
+            <button class="btn-add" onclick="addAccount()">Add Account</button>
+        </div>
+
+        <div class="notice">
+            ⚡ Switching is <strong>instant</strong> — the bot logs out and logs into the new account automatically. All features are isolated per account.
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <%- include('partials/super_button') %>
+
+    <script>
+        const ACTIVE_INDEX = <%= active %>;
+
+        function showToast(msg, color) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.borderColor = color || '#333';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        async function loadAccounts() {
+            const res = await fetch('/api/accounts/list');
+            const data = await res.json();
+            const list = document.getElementById('accountList');
+            list.innerHTML = '';
+
+            if (!data.accounts || data.accounts.length === 0) {
+                list.innerHTML = '<div class="empty-state">No accounts found. Add one below.</div>';
+                return;
+            }
+
+            data.accounts.forEach(acc => {
+                const isActive = acc.active;
+                const tag = acc.discriminator && acc.discriminator !== '0'
+                    ? `${acc.username}<span class="acc-discriminator">#${acc.discriminator}</span>`
+                    : acc.username;
+
+                const tokenKey = acc.index === 0 ? 'TOKEN' : `TOKEN${acc.index}`;
+
+                list.innerHTML += `
+                <div class="account-card ${isActive ? 'active-card' : ''}" id="card-${acc.index}">
+                    <div class="acc-avatar-wrap">
+                        <img class="acc-avatar" src="${acc.avatar}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                        <div class="acc-online-dot dot-${acc.status || 'offline'}"></div>
+                    </div>
+                    <div class="acc-info">
+                        <div class="acc-name-row">
+                            ${tag}
+                            ${isActive ? '<span class="active-badge">● ACTIVE</span>' : ''}
+                        </div>
+                        <div class="acc-token-label">${tokenKey}</div>
+                    </div>
+                    <div class="acc-actions">
+                        <button class="btn-switch" onclick="switchAccount(${acc.index})" ${isActive ? 'disabled' : ''}>
+                            ${isActive ? '✓ Active' : '⇄ Switch'}
+                        </button>
+                        <button class="btn-del" onclick="deleteAccount(${acc.index})">✕</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        async function switchAccount(index) {
+            const btn = document.querySelector(`#card-${index} .btn-switch`);
+            const orig = btn.innerText;
+            btn.innerText = '⏳ Switching...';
+            btn.disabled = true;
+            const res = await fetch('/api/accounts/switch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✓ Switched to Account #${index}!`, '#2ecc71');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('Error: ' + data.message, '#ff4757');
+                btn.innerText = orig;
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteAccount(index) {
+            if (!confirm(`Delete Account #${index}? This cannot be undone.`)) return;
+            const res = await fetch('/api/accounts/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ index })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`Account #${index} deleted.`, '#ff4757');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Error: ' + data.message, '#ff4757');
+            }
+        }
+
+        async function addAccount() {
+            const token = document.getElementById('newToken').value.trim();
+            if (!token) return showToast('Please enter a token.', '#ff4757');
+            const btn = document.querySelector('.btn-add');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+            const res = await fetch('/api/accounts/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            const data = await res.json();
+            btn.disabled = false;
+            btn.textContent = 'Add Account';
+            if (data.success) {
+                if (data.isFirst) {
+                    showToast('\u2713 Token added! Starting bot...', '#2ecc71');
+                    document.getElementById('newToken').value = '';
+                    // Poll until bot is ready then go home
+                    const poll = async () => {
+                        try {
+                            const r = await fetch('/api/bot-ready');
+                            const d = await r.json();
+                            if (d.ready) { window.location.href = '/'; return; }
+                        } catch(e) {}
+                        setTimeout(poll, 1500);
+                    };
+                    setTimeout(poll, 2000);
+                } else {
+                    showToast(`Account #${data.index} added!`, '#2ecc71');
+                    document.getElementById('newToken').value = '';
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } else {
+                showToast('Error: ' + data.message, '#ff4757');
+            }
+        }
+
+        // Load real data on page load (replaces skeletons)
+        loadAccounts();
+    </script>
+</body>
+</html>

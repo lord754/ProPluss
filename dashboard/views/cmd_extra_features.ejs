@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extra Features - PRO+</title>
+<link rel="stylesheet" href="/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+.container{width:95%;max-width:900px;margin:0 auto;padding:40px 20px 120px}
+.page-header{text-align:center;margin-bottom:40px}
+.page-header h1{font-size:2.5rem;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.section-card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:25px;margin-bottom:20px}
+.section-title{font-size:1.1rem;color:#a29bfe;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;margin-bottom:15px}
+.back-btn{position:absolute;top:30px;left:30px;color:rgba(255,255,255,0.5);text-decoration:none;font-size:1rem;display:flex;align-items:center;gap:5px;transition:.3s}
+.back-btn:hover{color:#fff}
+.feature-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.feature-row:last-child{border-bottom:none}
+.feature-info{flex:1}
+.feature-name{color:#fff;font-size:.95rem;font-weight:600}
+.feature-desc{color:#666;font-size:.8rem;margin-top:2px}
+.toggle{position:relative;width:46px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#2a2a3a;border-radius:24px;cursor:pointer;transition:.3s}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+input:checked+.slider{background:linear-gradient(90deg,#8a2be2,#6c5ce7)}
+input:checked+.slider:before{transform:translateX(22px)}
+.input-row{display:flex;gap:10px;align-items:flex-end;margin-top:10px}
+.input-field{flex:1;padding:10px 14px;background:#050508;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:10px;outline:none;font-family:'Outfit',sans-serif;font-size:.9rem;transition:.3s}
+.input-field:focus{border-color:#8a2be2}
+.btn{padding:10px 20px;border:none;border-radius:10px;font-weight:700;cursor:pointer;transition:.3s;font-family:'Outfit',sans-serif;font-size:.88rem}
+.btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff}
+.btn-primary:hover{filter:brightness(1.15)}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-danger:hover{filter:brightness(1.15)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e1e2e;border:1px solid rgba(138,43,226,0.4);color:#fff;padding:12px 24px;border-radius:12px;font-size:.9rem;opacity:0;transition:.3s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<a href="/commands" class="back-btn">← Back</a>
+<div class="container">
+  <div class="page-header">
+    <h1>⭐ Extra Features</h1>
+    <p style="color:#888">Toggle features directly from the dashboard.</p>
+  </div>
+
+  <!-- Anti-GC -->
+  <div class="section-card">
+    <div class="section-title">🛡️ Anti-GC & Security</div>
+    <div class="feature-row">
+      <div class="feature-info">
+        <div class="feature-name">Anti Group Chat</div>
+        <div class="feature-desc">Auto-leave + block when added to a group chat</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="agct" onchange="toggleFeature('agct',this.checked)"><span class="slider"></span></label>
+    </div>
+    <div class="feature-row">
+      <div class="feature-info">
+        <div class="feature-name">Silent Anti-GC</div>
+        <div class="feature-desc">Silently leave group chats without blocking</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="silentantigc" onchange="toggleFeature('silentantigc',this.checked)"><span class="slider"></span></label>
+    </div>
+    <div class="feature-row">
+      <div class="feature-info">
+        <div class="feature-name">Auto Last Word (ALW)</div>
+        <div class="feature-desc">Auto-reply when someone says "lw"</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="alw" onchange="toggleFeature('alw',this.checked)"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <!-- STFU -->
+  <div class="section-card">
+    <div class="section-title">🔇 STFU (Auto-delete user messages)</div>
+    <div class="input-row">
+      <input type="text" id="stfuUserId" class="input-field" placeholder="User ID">
+      <button class="btn btn-primary" onclick="stfuAction('on')">Enable</button>
+      <button class="btn btn-danger" onclick="stfuAction('off')">Disable</button>
+    </div>
+  </div>
+
+  <!-- Auto Reply -->
+  <div class="section-card">
+    <div class="section-title">💬 Auto Reply (ARR)</div>
+    <div class="input-row">
+      <input type="text" id="arrUserId" class="input-field" placeholder="User ID">
+      <button class="btn btn-primary" onclick="arrAction('on')">Enable</button>
+      <button class="btn btn-danger" onclick="arrAction('off')">Disable</button>
+    </div>
+  </div>
+
+  <!-- Mimic -->
+  <div class="section-card">
+    <div class="section-title">🎭 Mimic</div>
+    <div class="input-row">
+      <input type="text" id="mimicUserId" class="input-field" placeholder="User ID">
+      <button class="btn btn-primary" onclick="mimicAction('on')">Start</button>
+      <button class="btn btn-danger" onclick="mimicAction('off')">Stop</button>
+    </div>
+  </div>
+
+  <!-- Snipe -->
+  <div class="section-card">
+    <div class="section-title">🔍 Snipe</div>
+    <div class="feature-row">
+      <div class="feature-info">
+        <div class="feature-name">Snipe Logging</div>
+        <div class="feature-desc">Log deleted messages for the snipe command</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="snipe" onchange="toggleFeature('snipe',this.checked)"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <!-- Profile Tools -->
+  <div class="section-card">
+    <div class="section-title">👤 Profile Tools</div>
+    <div class="input-row">
+      <input type="text" id="pfpUrl" class="input-field" placeholder="Avatar URL">
+      <button class="btn btn-primary" onclick="setProfile('pfp')">Set PFP</button>
+    </div>
+    <div class="input-row" style="margin-top:10px">
+      <input type="text" id="bannerUrl" class="input-field" placeholder="Banner URL">
+      <button class="btn btn-primary" onclick="setProfile('banner')">Set Banner</button>
+    </div>
+    <div class="input-row" style="margin-top:10px">
+      <input type="text" id="displayName" class="input-field" placeholder="Display name">
+      <button class="btn btn-primary" onclick="setProfile('name')">Set Name</button>
+    </div>
+    <div class="input-row" style="margin-top:10px">
+      <input type="text" id="bioText" class="input-field" placeholder="Bio text">
+      <button class="btn btn-primary" onclick="setProfile('bio')">Set Bio</button>
+    </div>
+  </div>
+
+  <!-- HypeSquad -->
+  <div class="section-card">
+    <div class="section-title">🏅 HypeSquad</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="setHypesquad('bravery')">Bravery</button>
+      <button class="btn btn-primary" onclick="setHypesquad('brilliance')">Brilliance</button>
+      <button class="btn btn-primary" onclick="setHypesquad('balance')">Balance</button>
+      <button class="btn btn-danger" onclick="setHypesquad('off')">Off</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<%- include('partials/super_button') %>
+
+<script>
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'rgba(138,43,226,0.4)' : 'rgba(231,76,60,0.4)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function api(path, body) {
+  const r = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+async function loadState() {
+  try {
+    const d = await fetch('/api/extra-features').then(r=>r.json());
+    ['agct','silentantigc','alw','snipe'].forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.checked = !!d[k];
+    });
+  } catch(e) {}
+}
+
+async function toggleFeature(key, val) {
+  const r = await api('/api/extra-features/toggle', { key, value: val });
+  showToast(r.success ? `${key} ${val?'enabled':'disabled'}` : (r.error||'Error'), r.success);
+}
+
+async function stfuAction(action) {
+  const id = document.getElementById('stfuUserId').value.trim();
+  if (!id) return showToast('Enter a User ID', false);
+  const r = await api('/api/extra-features/stfu', { userId: id, action });
+  showToast(r.success ? `STFU ${action==='on'?'enabled':'disabled'} for ${id}` : (r.error||'Error'), r.success);
+}
+
+async function arrAction(action) {
+  const id = document.getElementById('arrUserId').value.trim();
+  if (!id) return showToast('Enter a User ID', false);
+  const r = await api('/api/extra-features/arr', { userId: id, action });
+  showToast(r.success ? `ARR ${action==='on'?'enabled':'disabled'} for ${id}` : (r.error||'Error'), r.success);
+}
+
+async function mimicAction(action) {
+  const id = document.getElementById('mimicUserId').value.trim();
+  if (action === 'on' && !id) return showToast('Enter a User ID', false);
+  const r = await api('/api/extra-features/mimic', { userId: id, action });
+  showToast(r.success ? `Mimic ${action==='on'?'started':'stopped'}` : (r.error||'Error'), r.success);
+}
+
+async function setProfile(type) {
+  const map = { pfp: 'pfpUrl', banner: 'bannerUrl', name: 'displayName', bio: 'bioText' };
+  const val = document.getElementById(map[type]).value.trim();
+  if (!val) return showToast('Enter a value', false);
+  const r = await api('/api/extra-features/profile', { type, value: val });
+  showToast(r.success ? 'Profile updated!' : (r.error||'Error'), r.success);
+}
+
+async function setHypesquad(house) {
+  const r = await api('/api/extra-features/hypesquad', { house });
+  showToast(r.success ? `HypeSquad set to ${house}` : (r.error||'Error'), r.success);
+}
+
+loadState();
+</script>
+</body>
+</html>
