@@ -2296,22 +2296,6 @@ module.exports = (clientRef, clientsMap) => {
 
     app.get('/api/extra-features', (req, res) => res.json(loadEF()));
 
-    app.post('/api/extra-features/toggle', (req, res) => {
-        const { key, value } = req.body;
-        const allowed = ['agct', 'silentantigc', 'alw', 'snipe'];
-        if (!allowed.includes(key)) return res.json({ success: false, error: 'Unknown key' });
-        const d = loadEF(); d[key] = !!value; saveEF(d);
-        try {
-            const big5 = require('../commands/big5');
-            const cid = getClient().user?.id;
-            if (cid) {
-                if (key === 'agct') value ? big5.agctOn.add(cid) : big5.agctOn.delete(cid);
-                if (key === 'silentantigc') value ? big5.silentAgctOn.add(cid) : big5.silentAgctOn.delete(cid);
-                if (key === 'alw') value ? big5.alwOn.add(cid) : big5.alwOn.delete(cid);
-            }
-        } catch {}
-        res.json({ success: true });
-    });
 
     app.post('/api/extra-features/stfu', (req, res) => {
         const { userId, action } = req.body;
@@ -2387,6 +2371,230 @@ module.exports = (clientRef, clientsMap) => {
             if (!id) return res.json({ success: false, error: 'Invalid house' });
             const r = await fetch('https://discord.com/api/v9/hypesquad/online', { method: 'POST', headers, body: JSON.stringify({ house_id: id }) });
             res.json(r.ok ? { success: true } : { success: false, error: `Discord returned ${r.status}` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    // --- EXTRA FEATURES — EXTENDED BIG5 APIS ---
+
+    // Toggle extended toggles: murder, kill, multilast, blackify, autobump, triggertyping, antiafk, pinginsult, pingreact, autoedit
+    app.post('/api/extra-features/toggle', (req, res) => {
+        const { key, value } = req.body;
+        const allowed = ['agct','silentantigc','alw','snipe','pinginsult','pingreact','blackify','antiafk','triggertyping','autobump','autoedit'];
+        if (!allowed.includes(key)) return res.json({ success: false, error: 'Unknown key' });
+        const d = loadEF(); d[key] = !!value; saveEF(d);
+        try {
+            const big5 = require('../commands/big5');
+            const cid = getClient().user?.id;
+            if (cid) {
+                if (key === 'agct') value ? big5.agctOn.add(cid) : big5.agctOn.delete(cid);
+                if (key === 'silentantigc') value ? big5.silentAgctOn.add(cid) : big5.silentAgctOn.delete(cid);
+                if (key === 'alw') value ? big5.alwOn.add(cid) : big5.alwOn.delete(cid);
+                if (key === 'pinginsult') value ? big5.insultEnabled.add(cid) : big5.insultEnabled.delete(cid);
+            }
+        } catch {}
+        res.json({ success: true });
+    });
+
+    app.post('/api/extra-features/ghostping', async (req, res) => {
+        const { userId, count } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            res.json({ success: true, message: `Ghost ping queued for ${userId} x${count||1} — use .ghostping in Discord` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/murder', (req, res) => {
+        const { userId, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            const cid = getClient().user?.id;
+            if (!cid) return res.json({ success: false, error: 'Bot not ready' });
+            if (action === 'on') big5.murderRunning.set(cid, true);
+            else big5.murderRunning.set(cid, false);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/kill', (req, res) => {
+        const { action } = req.body;
+        try {
+            const big5 = require('../commands/big5');
+            const cid = getClient().user?.id;
+            if (!cid) return res.json({ success: false, error: 'Bot not ready' });
+            if (action === 'on') big5.killLoops.set(cid, true);
+            else big5.killLoops.set(cid, false);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/multilast', (req, res) => {
+        const { action } = req.body;
+        try {
+            const big5 = require('../commands/big5');
+            const cid = getClient().user?.id;
+            if (!cid) return res.json({ success: false, error: 'Bot not ready' });
+            if (action === 'on') big5.outlastRunning.set(cid, true);
+            else big5.outlastRunning.set(cid, false);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/autoflood', (req, res) => {
+        const { userId, message: msg, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            const key = `${userId}-global`;
+            if (action === 'on' && msg) big5.autoFloodUsers.set(key, msg);
+            else big5.autoFloodUsers.delete(key);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/dreact', (req, res) => {
+        const { userId, emojis, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            if (action === 'on' && emojis) {
+                const list = emojis.split(',').map(e => e.trim()).filter(Boolean);
+                big5.dreactUsers.set(userId, { emojis: list, idx: 0 });
+            } else big5.dreactUsers.delete(userId);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/autoreact', (req, res) => {
+        const { userId, emoji, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            if (action === 'on' && emoji) big5.autoreactUsers.set(userId, emoji);
+            else big5.autoreactUsers.delete(userId);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/blackify', (req, res) => {
+        const { userId, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            big5.blackifyTasks.set(userId, action === 'on');
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/autonick', (req, res) => {
+        const { userId, nick, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            if (action === 'on' && nick) big5.forcedNicks.set(userId, nick);
+            else big5.forcedNicks.delete(userId);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/status-rotator', (req, res) => {
+        const { statuses, delay, action } = req.body;
+        try {
+            const big5 = require('../commands/big5');
+            const cid = getClient().user?.id;
+            if (!cid) return res.json({ success: false, error: 'Bot not ready' });
+            if (action === 'off') {
+                const sr = big5.statusRotators.get(cid);
+                if (sr) { clearInterval(sr.timer); big5.statusRotators.delete(cid); }
+                return res.json({ success: true });
+            }
+            if (!statuses) return res.json({ success: false, error: 'statuses required' });
+            const list = statuses.split(',').map(s => s.trim()).filter(Boolean);
+            if (!list.length) return res.json({ success: false, error: 'No statuses' });
+            const token = getClient().token;
+            if (big5.statusRotators.has(cid)) { clearInterval(big5.statusRotators.get(cid).timer); }
+            let idx = 0;
+            const tick = async () => {
+                const text = list[idx % list.length]; idx++;
+                try { await fetch('https://discord.com/api/v9/users/@me/settings', { method: 'PATCH', headers: { Authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify({ custom_status: { text } }) }); } catch {}
+            };
+            tick();
+            const timer = setInterval(tick, (delay || 8) * 1000);
+            big5.statusRotators.set(cid, { timer, list, idx });
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/setstatus', async (req, res) => {
+        const { status } = req.body;
+        const token = getClient().token;
+        if (!token) return res.json({ success: false, error: 'Bot not ready' });
+        try {
+            const r = await fetch('https://discord.com/api/v9/users/@me/settings', { method: 'PATCH', headers: { Authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+            res.json(r.ok ? { success: true } : { success: false, error: `Discord returned ${r.status}` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/stealpfp', async (req, res) => {
+        const { userId } = req.body;
+        const token = getClient().token;
+        if (!token || !userId) return res.json({ success: false, error: 'Missing params' });
+        try {
+            const userR = await fetch(`https://discord.com/api/v9/users/${userId}`, { headers: { Authorization: token } });
+            const user = await userR.json();
+            if (!user.avatar) return res.json({ success: false, error: 'No avatar' });
+            const avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${user.avatar}.png?size=512`;
+            const imgR = await fetch(avatarUrl);
+            const buf = await imgR.arrayBuffer();
+            const ct = imgR.headers.get('content-type') || 'image/png';
+            const r = await fetch('https://discord.com/api/v9/users/@me', { method: 'PATCH', headers: { Authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar: `data:${ct};base64,${Buffer.from(buf).toString('base64')}` }) });
+            res.json(r.ok ? { success: true } : { success: false, error: `Discord returned ${r.status}` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/pronouns', async (req, res) => {
+        const { pronouns } = req.body;
+        const token = getClient().token;
+        if (!token) return res.json({ success: false, error: 'Bot not ready' });
+        try {
+            const r = await fetch('https://discord.com/api/v9/users/@me/profile', { method: 'PATCH', headers: { Authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify({ pronouns: pronouns || '' }) });
+            res.json(r.ok ? { success: true } : { success: false, error: `Discord returned ${r.status}` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/friend', async (req, res) => {
+        const { userId, action } = req.body;
+        const token = getClient().token;
+        if (!token || !userId) return res.json({ success: false, error: 'Missing params' });
+        try {
+            let r;
+            if (action === 'add') r = await fetch(`https://discord.com/api/v9/users/@me/relationships/${userId}`, { method: 'PUT', headers: { Authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+            else r = await fetch(`https://discord.com/api/v9/users/@me/relationships/${userId}`, { method: 'DELETE', headers: { Authorization: token } });
+            res.json(r.ok ? { success: true } : { success: false, error: `Discord returned ${r.status}` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/block', async (req, res) => {
+        const { userId, action } = req.body;
+        const token = getClient().token;
+        if (!token || !userId) return res.json({ success: false, error: 'Missing params' });
+        try {
+            let r;
+            if (action === 'block') r = await fetch(`https://discord.com/api/v9/users/@me/relationships/${userId}`, { method: 'PUT', headers: { Authorization: token, 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 2 }) });
+            else r = await fetch(`https://discord.com/api/v9/users/@me/relationships/${userId}`, { method: 'DELETE', headers: { Authorization: token } });
+            res.json(r.ok ? { success: true } : { success: false, error: `Discord returned ${r.status}` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    app.post('/api/extra-features/tokuser', async (req, res) => {
+        const { token: tok } = req.body;
+        if (!tok) return res.json({ success: false, error: 'token required' });
+        try {
+            const r = await fetch('https://discord.com/api/v10/users/@me', { headers: { Authorization: tok } });
+            if (!r.ok) return res.json({ success: false, error: 'Invalid token' });
+            const d = await r.json();
+            res.json({ success: true, user: { username: d.username, id: d.id, email: d.email || 'N/A', nitro: d.premium_type ? 'Yes' : 'No', mfa: d.mfa_enabled ? 'Yes' : 'No', phone: d.phone || 'N/A', verified: d.verified ? 'Yes' : 'No' } });
         } catch (e) { res.json({ success: false, error: e.message }); }
     });
 
