@@ -884,29 +884,40 @@ module.exports = (clientRef, clientsMap) => {
     // --- Allowed ID Routes ---
     app.get('/api/allowed', async (req, res) => {
         const allowedManager = require('../commands/allowedManager');
-        const data = allowedManager.loadData();
+        const { active } = require('../accountManager').getAccounts();
+        const data = allowedManager.loadData(active);
 
         // Enrich user data
         const enrichedUsers = await Promise.all(data.allowedUsers.map(async (id) => {
-            const u = await client.users.fetch(id).catch(() => null);
+            const u = await getClient().users.fetch(id).catch(() => null);
+            const isSelf = getClient().user && id === getClient().user.id;
             return {
                 id,
                 username: u ? u.username : 'Unknown User',
-                avatar: u ? u.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png'
+                avatar: u ? u.displayAvatarURL({ dynamic: true }) : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                isSelf
             };
         }));
 
-        res.json({ allowedUsers: enrichedUsers });
+        res.json({ allowedUsers: enrichedUsers, enabled: data.enabled !== false });
     });
 
     app.post('/api/allowed', (req, res) => {
         const { action, id } = req.body;
         const allowedManager = require('../commands/allowedManager');
+        const { active } = require('../accountManager').getAccounts();
 
         if (action === 'add') {
-            allowedManager.addAllowedUser(id);
+            allowedManager.addAllowedUser(id, active);
         } else if (action === 'remove') {
-            allowedManager.removeAllowedUser(id);
+            // Prevent removing self
+            if (getClient().user && id === getClient().user.id)
+                return res.json({ success: false, error: 'Cannot remove the logged-in account from its own allowed list.' });
+            allowedManager.removeAllowedUser(id, active);
+        } else if (action === 'enable') {
+            allowedManager.setEnabled(true, active);
+        } else if (action === 'disable') {
+            allowedManager.setEnabled(false, active);
         }
         res.json({ success: true });
     });

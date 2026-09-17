@@ -1,60 +1,97 @@
+'use strict';
 const fs = require('fs');
 const path = require('path');
+const accountManager = require('../accountManager');
 
-const ALLOWED_PATH = path.join(__dirname, '../data/allowed.json');
+// ── Per-account data path ─────────────────────────────────────────────────────
+// Each account (token) gets its own allowed.json inside data/account_N/
+function getAllowedPath(accountIndex) {
+    const dir = accountManager.getAccountDataDir(
+        accountIndex !== undefined ? accountIndex : getActiveIndex()
+    );
+    return path.join(dir, 'allowed.json');
+}
 
-function loadData() {
+function getActiveIndex() {
+    const { active } = accountManager.getAccounts();
+    return active;
+}
+
+// ── Load / Save ───────────────────────────────────────────────────────────────
+function loadData(accountIndex) {
+    const filePath = getAllowedPath(accountIndex);
     try {
-        if (!fs.existsSync(ALLOWED_PATH)) {
-            const dir = path.dirname(ALLOWED_PATH);
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-            const defaultData = { allowedUsers: [] };
-            fs.writeFileSync(ALLOWED_PATH, JSON.stringify(defaultData, null, 4));
+        if (!fs.existsSync(filePath)) {
+            const defaultData = { enabled: true, allowedUsers: [] };
+            fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 4));
             return defaultData;
         }
-        const data = JSON.parse(fs.readFileSync(ALLOWED_PATH, 'utf8'));
-        // Ensure structure
-        if (!data.allowedUsers) data.allowedUsers = [];
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        if (!data.allowedUsers)  data.allowedUsers = [];
+        if (data.enabled === undefined) data.enabled = true;
         return data;
     } catch (e) {
-        console.error('[Allowed Manager] Error loading data:', e);
-        return { allowedUsers: [] };
+        console.error('[AllowedManager] Error loading data:', e);
+        return { enabled: true, allowedUsers: [] };
     }
 }
 
-function saveData(data) {
+function saveData(data, accountIndex) {
+    const filePath = getAllowedPath(accountIndex);
     try {
-        const dir = path.dirname(ALLOWED_PATH);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(ALLOWED_PATH, JSON.stringify(data, null, 4));
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 4));
     } catch (e) {
-        console.error('[Allowed Manager] Error saving data:', e);
+        console.error('[AllowedManager] Error saving data:', e);
     }
 }
 
-function addAllowedUser(userId) {
-    const data = loadData();
+// ── Self-add: call this on client ready so the token owner is always allowed ──
+function ensureSelfAllowed(userId, accountIndex) {
+    const idx = accountIndex !== undefined ? accountIndex : getActiveIndex();
+    const data = loadData(idx);
+    if (!data.allowedUsers.includes(userId)) {
+        data.allowedUsers.unshift(userId); // put self first
+        saveData(data, idx);
+        console.log(`[AllowedManager] Auto-added self (${userId}) to account ${idx} allowed list`);
+    }
+}
+
+// ── CRUD ──────────────────────────────────────────────────────────────────────
+function addAllowedUser(userId, accountIndex) {
+    const idx = accountIndex !== undefined ? accountIndex : getActiveIndex();
+    const data = loadData(idx);
     if (!data.allowedUsers.includes(userId)) {
         data.allowedUsers.push(userId);
-        saveData(data);
+        saveData(data, idx);
         return true;
     }
     return false;
 }
 
-function removeAllowedUser(userId) {
-    const data = loadData();
+function removeAllowedUser(userId, accountIndex) {
+    const idx = accountIndex !== undefined ? accountIndex : getActiveIndex();
+    const data = loadData(idx);
     if (data.allowedUsers.includes(userId)) {
         data.allowedUsers = data.allowedUsers.filter(id => id !== userId);
-        saveData(data);
+        saveData(data, idx);
         return true;
     }
     return false;
 }
 
-function isAllowed(userId) {
-    const data = loadData();
+function isAllowed(userId, accountIndex) {
+    const idx = accountIndex !== undefined ? accountIndex : getActiveIndex();
+    const data = loadData(idx);
+    // If feature is disabled, allow everyone (no restriction)
+    if (!data.enabled) return true;
     return data.allowedUsers.includes(userId);
+}
+
+function setEnabled(enabled, accountIndex) {
+    const idx = accountIndex !== undefined ? accountIndex : getActiveIndex();
+    const data = loadData(idx);
+    data.enabled = !!enabled;
+    saveData(data, idx);
 }
 
 module.exports = {
@@ -62,5 +99,8 @@ module.exports = {
     saveData,
     addAllowedUser,
     removeAllowedUser,
-    isAllowed
+    isAllowed,
+    setEnabled,
+    ensureSelfAllowed,
+    getActiveIndex,
 };

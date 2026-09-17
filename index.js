@@ -92,6 +92,13 @@ async function bootClient(token, accountIndex) {
         require('./commands/waifuManager').initialize(client);
         require('./commands/big5').initialize(client);
 
+        // Auto-add the logged-in account's own user ID to its allowed list
+        try {
+            require('./commands/allowedManager').ensureSelfAllowed(client.user.id, accountIndex);
+        } catch (e) {
+            console.error('[AllowedManager] ensureSelfAllowed failed:', e.message);
+        }
+
         // Heartbeat for this account (every 30 min to reduce CPU)
         setInterval(async () => {
             try {
