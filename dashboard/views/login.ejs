@@ -197,7 +197,7 @@
         </form>
     </div>
 
-    <!-- Quick access links below login card -->
+    <!-- Quick access links below login card (kept as fallback) -->
     <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:20px;width:100%;max-width:400px;">
         <div style="font-size:.75rem;color:#333;letter-spacing:.5px;text-transform:uppercase">Quick Access</div>
         <div style="display:flex;gap:10px;width:100%">
@@ -256,6 +256,7 @@
             }
         }
     </script>
+    <%- include('partials/pre_login_menu') %>
 </body>
 
 </html>

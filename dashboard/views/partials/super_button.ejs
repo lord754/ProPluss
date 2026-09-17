@@ -17,7 +17,7 @@
             <span class="label">Commands</span>
         </a>
 
-        <a href="/commands/rpc" class="menu-item">
+        <a href="/commands/rpc" class="menu-item <%= page === 'rpc' ? 'active' : '' %>">
             <span class="icon">🎮</span>
             <span class="label">Rich Presence</span>
         </a>
@@ -29,7 +29,7 @@
 
         <a href="/music" class="menu-item <%= page === 'music' ? 'active' : '' %>">
             <span class="icon">🎙️</span>
-            <span class="label">Voice</span>
+            <span class="label">Music</span>
         </a>
 
         <a href="/quest" class="menu-item <%= page === 'quest' ? 'active' : '' %>">
@@ -39,7 +39,7 @@
 
         <a href="/spammer" class="menu-item <%= page === 'spammer' ? 'active' : '' %>">
             <span class="icon">💣</span>
-            <span class="label">Spammer</span>
+            <span class="label">Bomber</span>
         </a>
 
         <a href="/server-cloner" class="menu-item <%= page === 'cloner' ? 'active' : '' %>">
@@ -52,7 +52,12 @@
             <span class="label">Accounts</span>
         </a>
 
-        <div class="menu-version" id="menuVersion">v1.0</div>
+        <a href="/commands/updater" class="menu-item <%= page === 'updater' ? 'active' : '' %>">
+            <span class="icon">🔄</span>
+            <span class="label">Updater</span>
+        </a>
+
+        <div class="menu-version" id="menuVersion">v1.1.1.1b</div>
     </div>
 
     <button class="super-btn" id="superBtn" onclick="toggleSuperMenu()"
@@ -87,7 +92,7 @@
         overlay.classList.toggle('visible');
     }
 
-    // Load version for menu footer
+    // Load live version for menu footer
     (async function loadMenuVersion() {
         try {
             const r = await fetch('/api/updater/dot-status').then(x => x.json());
