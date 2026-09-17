@@ -19,8 +19,8 @@ const STATE_FILE = path.join(__dirname, 'data', 'updater.json');
 // s = auto-detected (stable commits, no special keyword)
 // b = auto-detected (commit contains beta/preview/rc keywords)
 // a = manually assigned (you tell me which commits are alpha)
-const CURRENT_VERSION = '1.1.1.2b';
-const CURRENT_CHANNEL = 'beta'; // stable | alpha | beta | dev
+const CURRENT_VERSION = '1.2s';
+const CURRENT_CHANNEL = 'stable'; // stable | alpha | beta | dev
 
 // Channel letter → full name
 const CHANNEL_NAMES  = { d: 'dev', s: 'stable', a: 'alpha', b: 'beta' };

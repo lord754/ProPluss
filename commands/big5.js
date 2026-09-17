@@ -219,12 +219,307 @@ function initialize(client) {
     });
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// COMMAND REGISTRY — every command with its args, description, and flags
+// ══════════════════════════════════════════════════════════════════════════════
+const CMD_REGISTRY = {
+    // ── Auto Features ──────────────────────────────────────────────────────────
+    agct:         { args: [], desc: 'Auto-leave + block when added to a group chat (toggle)' },
+    silentantigc: { args: [], desc: 'Silently leave group chats without blocking (toggle)' },
+    alw:          { args: ['on/off'], desc: 'Auto-reply "last word" when someone says "lw"' },
+    stfu:         { args: ['@user'], desc: 'Auto-delete every message from a user' },
+    stfuoff:      { args: ['@user'], desc: 'Stop auto-deleting messages from a user' },
+    arr:          { args: ['@user'], desc: 'Continuously auto-reply to a user' },
+    arrend:       { args: [], desc: 'Stop auto-reply in this channel' },
+    ar1:          { args: ['@user', 'reply1, reply2, ...'], desc: 'Cycle custom replies when user sends a message' },
+    ar2:          { args: ['@user', 'text'], desc: 'Spaced auto-reply when user sends a message' },
+    dreact:       { args: ['@user', 'emoji1 emoji2 ...'], desc: 'Cycle emoji reactions on a user\'s messages' },
+    dreactoff:    { args: ['@user'], desc: 'Stop cycling reactions on a user' },
+    autoreact:    { args: ['@user', 'emoji'], desc: 'Auto-react with an emoji to a user\'s messages' },
+    autoreactoff: { args: ['@user'], desc: 'Stop auto-reacting to a user' },
+    autoflood:    { args: ['@user', 'message'], desc: 'Flood-reply every message from a user' },
+    stopautoflood:{ args: ['@user'], desc: 'Stop flooding a user' },
+    mimic:        { args: ['@user'], desc: 'Copy and resend everything a user types' },
+    mimicoff:     { args: [], desc: 'Stop mimicking' },
+    blackify:     { args: ['@user'], desc: 'Spam reaction emojis on a user\'s messages' },
+    unblackify:   { args: ['@user'], desc: 'Stop blackifying a user' },
+    antiafk:      { args: ['@user'], desc: 'Watch a user and respond to AFK checks' },
+    afke:         { args: ['@user'], desc: 'Stop monitoring a user for AFK checks' },
+    afkcheck:     { args: ['@user', 'count'], desc: 'Ping a user N times to check if AFK' },
+    afkcheckoff:  { args: ['@user (optional)'], desc: 'Stop AFK check for user or all in channel' },
+    triggertyping:{ args: ['duration (e.g. 30s, 5m)'], desc: 'Show "typing..." in channel for a duration' },
+    triggertypingoff: { args: [], desc: 'Stop typing indicator' },
+    pingresponse: { args: ['toggle/set/clear', 'response (if set)'], desc: 'Auto-reply when you get pinged' },
+    pinginsult:   { args: ['toggle/list/clear'], desc: 'Auto-insult when you get pinged' },
+    pingreact:    { args: ['toggle/list/clear', 'emoji (optional)'], desc: 'Auto-react when you get pinged' },
+    autobump:     { args: [], desc: 'Auto-bump server every 2 hours' },
+    autobumpoff:  { args: [], desc: 'Stop auto-bump' },
+    cord:         { args: ['@user'], desc: 'Mirror messages to another user' },
+    cordoff:      { args: [], desc: 'Stop cord mode' },
+    cap:          { args: [], desc: 'Toggle AlTeRnAtE cApS on every message' },
+    webhookcopy:  { args: [], desc: 'Copy messages via webhook automatically' },
+    webhookcopyoff: { args: [], desc: 'Stop webhook copy' },
+
+    // ── Snipe & Logging ────────────────────────────────────────────────────────
+    snipe:        { args: [], desc: 'Show last deleted message in this channel' },
+    log:          { args: ['on/off'], desc: 'Log all DMs and GC messages to file' },
+    display:      { args: ['number'], desc: 'Show a specific log entry by number' },
+    displaylog:   { args: [], desc: 'Show entire message log file' },
+    clearlog:     { args: [], desc: 'Clear the message log' },
+
+    // ── Profile ────────────────────────────────────────────────────────────────
+    setpfp:       { args: ['url'], desc: 'Change your profile picture via URL' },
+    setbanner:    { args: ['url'], desc: 'Change your profile banner via URL' },
+    setname:      { args: ['name'], desc: 'Change your global display name' },
+    setbio:       { args: ['bio text'], desc: 'Change your profile bio' },
+    setpronoun:   { args: ['pronouns'], desc: 'Change your profile pronouns' },
+    stealpfp:     { args: ['@user'], desc: 'Copy another user\'s avatar' },
+    stealbanner:  { args: ['@user'], desc: 'Copy another user\'s banner' },
+    stealbio:     { args: ['@user'], desc: 'Copy another user\'s bio' },
+    stealpronoun: { args: ['@user'], desc: 'Copy another user\'s pronouns' },
+    copyprofile:  { args: ['@user'], desc: 'Copy another user\'s full profile' },
+    pbackup:      { args: [], desc: 'Back up your current profile data' },
+    hypesquad:    { args: ['bravery/brilliance/balance/off'], desc: 'Change your HypeSquad badge' },
+
+    // ── Status ─────────────────────────────────────────────────────────────────
+    setstatus:    { args: ['online/idle/dnd/invisible'], desc: 'Change your online presence status' },
+    rstatus:      { args: ['status1, status2, ...'], desc: 'Start rotating custom statuses' },
+    stopstatus:   { args: [], desc: 'Stop status rotation' },
+    remoji:       { args: ['emoji1, emoji2, ...'], desc: 'Rotate emojis in your status' },
+    stopemoji:    { args: [], desc: 'Stop emoji rotation' },
+    stream:       { args: ['stream1, stream2, ...'], desc: 'Rotate streaming statuses' },
+    streamoff:    { args: [], desc: 'Stop stream status rotation' },
+    playing:      { args: ['activity name'], desc: 'Set Playing activity' },
+    listening:    { args: ['activity name'], desc: 'Set Listening activity' },
+    watching:     { args: ['activity name'], desc: 'Set Watching activity' },
+    stopactivity: { args: [], desc: 'Clear current activity' },
+    rg:           { args: [], desc: 'Start guild rotation' },
+    rge:          { args: [], desc: 'Stop guild rotation' },
+    nickloop:     { args: ['nick1, nick2, ...'], desc: 'Rotate through multiple nicknames' },
+    stopnickloop: { args: [], desc: 'Stop nickname loop' },
+
+    // ── Nickname & Text ────────────────────────────────────────────────────────
+    nickname:     { args: ['new nickname'], desc: 'Change your nickname in this server' },
+    bold:         { args: [], desc: 'Make all your messages bold' },
+    unbold:       { args: [], desc: 'Stop bold mode' },
+    italicon:     { args: [], desc: 'Make all your messages italic' },
+    italicoff:    { args: [], desc: 'Stop italic mode' },
+    hashon:       { args: [], desc: 'Add # headers to all messages' },
+    hashoff:      { args: [], desc: 'Stop hash mode' },
+    strongon:     { args: [], desc: 'Enable strong formatting' },
+    strongoff:    { args: [], desc: 'Disable strong formatting' },
+
+    // ── Friend & Block ─────────────────────────────────────────────────────────
+    friend:       { args: ['user_id'], desc: 'Send a friend request by user ID' },
+    unfriend:     { args: ['user_id'], desc: 'Remove a friend by user ID' },
+    unfriendall:  { args: [], desc: 'Remove all friends', dangerous: true, consequences: 'This will unfriend EVERYONE on your account. This cannot be undone.' },
+    block:        { args: ['user_id'], desc: 'Block a user by ID' },
+    unblock:      { args: ['user_id'], desc: 'Unblock a user by ID' },
+    fnick:        { args: ['user_id', 'nickname'], desc: 'Set a nickname for a friend' },
+    fnote:        { args: ['user_id', 'note text'], desc: 'Set a private note for a user' },
+    mdm:          { args: ['count', 'message'], desc: 'Send a DM to N friends at once' },
+
+    // ── Token Tools ────────────────────────────────────────────────────────────
+    ct:           { args: ['v/i', 'token'], desc: 'Check if a token is valid or invalid' },
+    tokuser:      { args: ['token'], desc: 'Get account info for a token' },
+    tpfp:         { args: ['url'], desc: 'Change avatar for multiple tokens' },
+    tleave:       { args: ['server_id'], desc: 'Make tokens leave a server' },
+    tstatus:      { args: ['status text'], desc: 'Set custom status for tokens' },
+    tstatusoff:   { args: [], desc: 'Clear status for all tokens' },
+    tnickname:    { args: ['server_id', 'nickname'], desc: 'Set nickname for tokens in a server' },
+    tpronouns:    { args: ['pronouns'], desc: 'Set pronouns for all tokens' },
+    tbio:         { args: ['bio text'], desc: 'Set bio for all tokens' },
+    pfpscrape:    { args: ['amount (optional)'], desc: 'Scrape and save profile pictures from this channel' },
+    gcleave:      { args: [], desc: 'Leave this group chat' },
+    gcleaveall:   { args: [], desc: 'Leave all group chats', dangerous: true, consequences: 'This will leave ALL group chats your account is in. You will need to be re-added to rejoin them.' },
+    gentoken:     { args: ['count (optional)'], desc: 'Generate fake Discord tokens (demo only)' },
+    tjoin:        { args: ['invite', 'count (optional)'], desc: 'Join a server with multiple tokens' },
+
+    // ── Multi-Token Spammer ─────────────────────────────────────────────────────
+    murder:       { args: ['@user'], desc: 'All tokens spam a user with murder messages' },
+    murderstop:   { args: [], desc: 'Stop murder spam' },
+    kill:         { args: ['@user'], desc: 'Outlast a user in chat continuously' },
+    kille:        { args: [], desc: 'Stop outlaster' },
+    multilast:    { args: ['@user'], desc: 'All tokens outlast a user' },
+    stopmultilast:{ args: [], desc: 'Stop multilast' },
+    ghostping:    { args: ['@user'], desc: 'Ping a user and immediately delete the message' },
+    ghostspam:    { args: ['count', '@user'], desc: 'Send N ghost pings to a user' },
+    purge:        { args: ['count (optional)'], desc: 'Delete your own messages in DM/GC' },
+    sp:           { args: ['times', 'message'], desc: 'Spam a message N times' },
+    fs:           { args: ['times', 'message'], desc: 'Flood-send a message N times' },
+
+    // ── Server / Nuke ──────────────────────────────────────────────────────────
+    massban:      { args: [], desc: 'Ban all members in this server', dangerous: true, consequences: 'This will BAN every non-bot member in the server. They will need to be manually unbanned one by one. This is irreversible.' },
+    masskick:     { args: [], desc: 'Kick all members in this server', dangerous: true, consequences: 'This will KICK every non-bot member in the server. They will all be removed simultaneously.' },
+    massrole:     { args: ['count (optional)', 'name (optional)'], desc: 'Create many roles in the server', dangerous: true, consequences: 'This will create up to 10 roles in the server. This can clutter your server\'s role list.' },
+    masschannel:  { args: ['count (optional)', 'name (optional)'], desc: 'Create many channels in the server', dangerous: true, consequences: 'This will create up to 10 text channels in the server.' },
+    massroledel:  { args: [], desc: 'Delete all roles in the server', dangerous: true, consequences: 'This will DELETE every role in the server (except @everyone). All role assignments are lost permanently.' },
+    massdelemoji: { args: [], desc: 'Delete all custom emojis', dangerous: true, consequences: 'This will permanently DELETE all custom emojis in the server. They cannot be recovered.' },
+    destroy:      { args: [], desc: 'Webhook-spam nuke a server', dangerous: true, consequences: 'This will spam every webhook in the server with messages. This can get your account banned and damage the server permanently.' },
+    dynomb:       { args: [], desc: 'Use Dyno to mass-ban members', dangerous: true, consequences: 'This uses Dyno bot to ban all members. This is irreversible and will get your account flagged.' },
+    srvprune:     { args: ['days (optional)'], desc: 'Prune inactive members from server', dangerous: true, consequences: 'This will kick all members who have been inactive for the specified number of days. Default: 7 days.' },
+    nukechannel:  { args: ['name (optional)'], desc: 'Delete and recreate the current channel', dangerous: true, consequences: 'This will DELETE this channel and create a new one with the given name. All message history is lost.' },
+    massdm:       { args: ['count', 'message'], desc: 'Send DMs to N friends', dangerous: true, consequences: 'This will send mass DMs to your friends. Discord may rate-limit or flag your account.' },
+
+    // ── Utility ────────────────────────────────────────────────────────────────
+    ping:         { args: [], desc: 'Show bot latency, uptime, and stats' },
+    whois:        { args: ['@user (optional)'], desc: 'Get info about a user' },
+    av:           { args: ['@user (optional)'], desc: 'Show a user\'s avatar' },
+    firstmessage: { args: [], desc: 'Get the first message in this channel' },
+    hostinfo:     { args: [], desc: 'Show system info (OS, CPU, RAM, uptime)' },
+    help:         { args: ['command (optional)'], desc: 'Show help for a command' },
+    menu:         { args: ['page (optional)'], desc: 'Show command list' },
+    defw:         { args: ['word'], desc: 'Look up a word definition' },
+    spotify:      { args: ['action', 'args (optional)'], desc: 'Control Spotify playback' },
+    tweet:        { args: ['username', 'message'], desc: 'Generate a fake tweet image' },
+    ip:           { args: ['@user'], desc: 'Show a random fake IP for a user' },
+    insult:       { args: ['@user'], desc: 'Send a random insult at a user' },
+    setprefix:    { args: ['new prefix'], desc: 'Change the bot command prefix' },
+    reload:       { args: [], desc: 'Restart the bot process' },
+    cls:          { args: [], desc: 'Clear the console display' },
+};
+
+// ── ANSI colour helpers (for embed-style messages) ────────────────────────────
+const A = {
+    reset:   '\u001b[0m',
+    bold:    '\u001b[1m',
+    purple:  '\u001b[0;35m',
+    cyan:    '\u001b[0;36m',
+    green:   '\u001b[0;32m',
+    yellow:  '\u001b[0;33m',
+    red:     '\u001b[0;31m',
+    white:   '\u001b[0;37m',
+    grey:    '\u001b[0;90m',
+};
+
+// ── Build a rich help embed for a command ─────────────────────────────────────
+async function showHelp(message, cmdName, prefix) {
+    const info = CMD_REGISTRY[cmdName];
+    if (!info) return; // unknown command, fall through
+
+    const p = prefix || '.';
+    const hasArgs = info.args && info.args.length > 0;
+
+    // Build the ANSI embed
+    let body = `\`\`\`ansi\n`;
+    body += `${A.purple}${A.bold}⚡ THE BIG 5 — Command Help${A.reset}\n`;
+    body += `${A.grey}${'─'.repeat(36)}${A.reset}\n\n`;
+    body += `${A.cyan}Command:${A.reset}  ${A.white}${A.bold}${p}${cmdName}${A.reset}\n`;
+    body += `${A.cyan}About:${A.reset}    ${A.white}${info.desc}${A.reset}\n\n`;
+
+    if (hasArgs) {
+        body += `${A.yellow}${A.bold}Usage:${A.reset}\n`;
+        body += `${A.white}  ${p}${cmdName} ${info.args.map(a => `<${a}>`).join(' ')}${A.reset}\n\n`;
+        body += `${A.green}${A.bold}Arguments:${A.reset}\n`;
+        for (const arg of info.args) {
+            body += `${A.grey}  •${A.reset} ${A.cyan}${arg}${A.reset}\n`;
+        }
+        body += `\n${A.grey}Reply with the missing argument(s) to continue, or type ${A.red}cancel${A.grey} to abort.${A.reset}\n`;
+    } else {
+        body += `${A.yellow}${A.bold}Usage:${A.reset}\n`;
+        body += `${A.white}  ${p}${cmdName}${A.reset}\n\n`;
+        body += `${A.green}This command takes no arguments.${A.reset}\n`;
+    }
+
+    if (info.dangerous) {
+        body += `\n${A.red}${A.bold}⚠ DANGEROUS COMMAND${A.reset}\n`;
+        body += `${A.red}Executing this can cause irreversible damage.${A.reset}\n`;
+    }
+    body += `\`\`\``;
+
+    const helpMsg = await message.channel.send(body);
+
+    if (!hasArgs) return; // no args needed, caller will execute
+
+    // Wait for user's reply with the argument(s)
+    try {
+        const filter = m => m.author.id === message.author.id && m.channel.id === message.channel.id;
+        const collected = await message.channel.awaitMessages({ filter, max: 1, time: 30000, errors: ['time'] });
+        const reply = collected.first();
+        const input = reply.content.trim();
+
+        try { await helpMsg.delete(); } catch {}
+        try { await reply.delete(); } catch {}
+        try { await message.delete(); } catch {}
+
+        if (input.toLowerCase() === 'cancel') {
+            await message.channel.send('```Cancelled.```');
+            return null; // signal: do not execute
+        }
+
+        return input; // return the collected arg string
+    } catch {
+        // timed out
+        try { await helpMsg.edit('```Timed out — command cancelled.```'); } catch {}
+        return null;
+    }
+}
+
+// ── Dangerous command confirmation ─────────────────────────────────────────────
+async function confirmDangerous(message, cmdName, prefix) {
+    const info = CMD_REGISTRY[cmdName];
+    const p = prefix || '.';
+
+    let body = `\`\`\`ansi\n`;
+    body += `${A.red}${A.bold}⚠  DANGEROUS COMMAND — ${p}${cmdName}${A.reset}\n`;
+    body += `${A.grey}${'─'.repeat(40)}${A.reset}\n\n`;
+    body += `${A.white}${info.desc}${A.reset}\n\n`;
+    body += `${A.red}${A.bold}Consequences:${A.reset}\n`;
+    body += `${A.yellow}${info.consequences}${A.reset}\n\n`;
+    body += `${A.grey}Reply ${A.green}${A.bold}yes${A.reset} ${A.grey}to confirm, or ${A.red}${A.bold}no${A.grey} to cancel.${A.reset}\n`;
+    body += `\`\`\``;
+
+    const confirmMsg = await message.channel.send(body);
+
+    try {
+        const filter = m => m.author.id === message.author.id && m.channel.id === message.channel.id;
+        const collected = await message.channel.awaitMessages({ filter, max: 1, time: 20000, errors: ['time'] });
+        const reply = collected.first();
+        const input = reply.content.trim().toLowerCase();
+
+        try { await confirmMsg.delete(); } catch {}
+        try { await reply.delete(); } catch {}
+
+        if (input === 'yes' || input === 'y') return true;
+        await message.channel.send('```Cancelled — no action taken.```');
+        return false;
+    } catch {
+        try { await confirmMsg.edit('```Timed out — command cancelled.```'); } catch {}
+        return false;
+    }
+}
+
 // ── execute ───────────────────────────────────────────────────────────────────
 async function execute(message, args, client) {
     const prefix = process.env.PREFIX || '!';
     const cmd = message.content.slice(prefix.length).trim().split(/\s+/)[0].toLowerCase();
     const token = client.token;
     const cid = client.user?.id;
+
+    // ── SMART HELP & DANGEROUS CONFIRMATION ───────────────────────────────────
+    const regInfo = CMD_REGISTRY[cmd];
+    if (regInfo) {
+        // Check if command requires args and none were supplied
+        const needsArgs = regInfo.args && regInfo.args.length > 0;
+        const hasArgs   = args && args.length > 0;
+
+        if (needsArgs && !hasArgs) {
+            // Show help embed and collect args from user
+            const collected = await showHelp(message, cmd, prefix);
+            if (collected === null) return; // cancelled or timed out
+            // Re-parse the collected input as new args and re-enter execute
+            const newArgs = collected.trim().split(/\s+/);
+            // Rebuild message content so existing command handlers can parse mentions etc.
+            message.content = `${prefix}${cmd} ${collected}`;
+            args = newArgs;
+        }
+
+        // Dangerous confirmation (runs whether args were collected above or provided directly)
+        if (regInfo.dangerous) {
+            const ok = await confirmDangerous(message, cmd, prefix);
+            if (!ok) return;
+        }
+    }
 
     // ── STATUS ROTATOR ────────────────────────────────────────────────────────
     if (cmd === 'rstatus') {
