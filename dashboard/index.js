@@ -473,6 +473,13 @@ module.exports = (clientRef, clientsMap) => {
         res.json({ success: true });
     });
 
+    app.post('/api/updater/delete', (req, res) => {
+        const { sha } = req.body;
+        if (!sha) return res.json({ success: false });
+        updater.deleteUpdate(sha);
+        res.json({ success: true });
+    });
+
     app.get('/commands/rpc', (req, res) => {
         res.render('cmd_rpc', { user: client.user, page: 'commands' });
     });

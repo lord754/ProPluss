@@ -11,70 +11,74 @@
 .upd-wrap{width:95%;max-width:860px;margin:0 auto;padding:30px 20px 120px}
 .back-btn{position:fixed;top:20px;left:20px;z-index:100;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#aaa;text-decoration:none;font-size:.85rem;font-weight:600;transition:.2s}
 .back-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
-.upd-header{text-align:center;margin:60px 0 32px}
+.upd-header{text-align:center;margin:60px 0 28px}
 .upd-header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
 .upd-header p{color:#555;font-size:.9rem}
-.card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:16px}
-.card-title{font-size:.9rem;font-weight:700;color:#a29bfe;margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px}
-.btn{padding:10px 20px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:.85rem;transition:.2s;font-family:'Outfit',sans-serif;display:inline-flex;align-items:center;gap:6px}
+.card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:14px}
+.card-title{font-size:.85rem;font-weight:700;color:#a29bfe;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.btn{padding:9px 18px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;font-family:'Outfit',sans-serif;display:inline-flex;align-items:center;gap:5px}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff;box-shadow:0 4px 12px rgba(138,43,226,0.3)}
+.btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff;box-shadow:0 4px 12px rgba(138,43,226,0.25)}
 .btn-primary:not(:disabled):hover{filter:brightness(1.15);transform:translateY(-1px)}
 .btn-secondary{background:rgba(255,255,255,0.06);color:#aaa;border:1px solid rgba(255,255,255,0.1)}
 .btn-secondary:not(:disabled):hover{background:rgba(255,255,255,0.12);color:#fff}
-.btn-danger{background:rgba(255,71,87,0.12);color:#ff4757;border:1px solid rgba(255,71,87,0.25)}
+.btn-danger{background:rgba(255,71,87,0.1);color:#ff4757;border:1px solid rgba(255,71,87,0.2)}
 .btn-danger:not(:disabled):hover{background:#ff4757;color:#fff}
-.btn-warn{background:rgba(243,156,18,0.12);color:#f39c12;border:1px solid rgba(243,156,18,0.25)}
+.btn-warn{background:rgba(243,156,18,0.1);color:#f39c12;border:1px solid rgba(243,156,18,0.2)}
 .btn-warn:not(:disabled):hover{background:#f39c12;color:#fff}
+.btn-sm{padding:5px 11px;font-size:.75rem;border-radius:8px}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700}
-.badge-green{background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.25)}
-.badge-purple{background:rgba(138,43,226,0.12);color:#c084fc;border:1px solid rgba(138,43,226,0.25)}
+.badge-green{background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2)}
+.badge-purple{background:rgba(138,43,226,0.1);color:#c084fc;border:1px solid rgba(138,43,226,0.2)}
 .badge-gray{background:rgba(255,255,255,0.04);color:#555;border:1px solid rgba(255,255,255,0.07)}
-.badge-orange{background:rgba(243,156,18,0.12);color:#f39c12;border:1px solid rgba(243,156,18,0.25)}
-.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.dot-green{background:#2ecc71}
-.dot-orange{background:#f39c12}
-.dot-gray{background:#555}
+.badge-orange{background:rgba(243,156,18,0.1);color:#f39c12;border:1px solid rgba(243,156,18,0.2)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:#2ecc71}.dot-orange{background:#f39c12}.dot-gray{background:#555}
+.check-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.installed-note{font-size:.75rem;color:#444;margin-top:6px}
+.installed-note span{color:#8a2be2;font-family:monospace}
 
-/* Check row */
-.check-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-
-/* Update item card */
-.update-item{background:#0d0d12;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 18px;margin-top:12px}
-.update-item-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.update-item-info{flex:1;min-width:0}
-.update-commit{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.update-meta{font-size:.75rem;color:#555;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Update items */
+.update-item{background:#0d0d12;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:14px 16px;margin-top:10px}
+.update-label{font-size:.68rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.update-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.update-info{flex:1;min-width:0}
+.update-msg{font-size:.92rem;font-weight:700;color:#fff;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.update-meta{font-size:.73rem;color:#555;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .update-sha{font-family:monospace;color:#8a2be2}
-.update-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
-.update-label{font-size:.7rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-
-/* Log box */
-.log-box{background:#050508;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px;height:220px;overflow-y:auto;font-family:monospace;font-size:.75rem;color:#888;white-space:pre-wrap;word-break:break-all}
-.log-box::-webkit-scrollbar{width:4px}
-.log-box::-webkit-scrollbar-thumb{background:#1e1e2a;border-radius:2px}
+.update-actions{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;align-items:flex-start}
 
 /* Revert banner */
-.revert-banner{background:rgba(243,156,18,0.08);border:1px solid rgba(243,156,18,0.2);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.revert-text{font-size:.88rem;color:#f39c12;font-weight:600}
-.revert-sub{font-size:.75rem;color:#a07010;margin-top:2px}
+.revert-banner{background:rgba(243,156,18,0.07);border:1px solid rgba(243,156,18,0.18);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.revert-text{font-size:.86rem;color:#f39c12;font-weight:600}
+.revert-sub{font-size:.73rem;color:#7a5a00;margin-top:2px}
 
-/* Dismissed section */
-.dismissed-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:12px}
+/* Log */
+.log-box{background:#050508;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:12px;height:200px;overflow-y:auto;font-family:monospace;font-size:.73rem;color:#888;white-space:pre-wrap;word-break:break-all}
+.log-box::-webkit-scrollbar{width:4px}
+.log-box::-webkit-scrollbar-thumb{background:#1a1a24;border-radius:2px}
+
+/* Dismissed dropdown */
+.dropdown-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:4px 0}
+.dropdown-toggle:hover .dropdown-label{color:#ccc}
+.dropdown-label{font-size:.85rem;font-weight:700;color:#a29bfe;text-transform:uppercase;letter-spacing:.5px;transition:.2s}
+.dropdown-arrow{font-size:.75rem;color:#555;transition:transform .2s}
+.dropdown-arrow.open{transform:rotate(180deg)}
+.dropdown-body{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.dropdown-body.open{max-height:600px}
+.dismissed-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);flex-wrap:wrap}
 .dismissed-item:last-child{border-bottom:none}
-.dismissed-sha{font-family:monospace;color:#555;font-size:.78rem;min-width:52px}
-.dismissed-msg{font-size:.83rem;color:#666;flex:1}
-.dismissed-actions{display:flex;gap:6px;flex-shrink:0}
+.dismissed-sha{font-family:monospace;color:#555;font-size:.75rem;min-width:50px;flex-shrink:0}
+.dismissed-msg{font-size:.82rem;color:#555;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dismissed-actions{display:flex;gap:5px;flex-shrink:0}
 
 /* History */
-.history-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.history-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
 .history-item:last-child{border-bottom:none}
-.history-sha{font-family:monospace;color:#8a2be2;font-size:.78rem;min-width:52px}
-.history-msg{font-size:.83rem;color:#ccc;flex:1}
-.history-date{font-size:.72rem;color:#444;white-space:nowrap}
-
-.empty-state{text-align:center;color:#444;padding:20px;font-size:.85rem}
-.divider{height:1px;background:rgba(255,255,255,0.06);margin:14px 0}
+.history-sha{font-family:monospace;color:#8a2be2;font-size:.75rem;min-width:50px;flex-shrink:0}
+.history-msg{font-size:.82rem;color:#ccc;flex:1}
+.history-date{font-size:.7rem;color:#444;white-space:nowrap;flex-shrink:0}
+.empty{text-align:center;color:#444;padding:16px;font-size:.82rem}
 </style>
 </head>
 <body>
@@ -86,7 +90,7 @@
     <p>Check and apply GitHub updates without touching your config or tokens.</p>
   </div>
 
-  <!-- Revert Banner (shown if revert available) -->
+  <!-- Revert Banner -->
   <div class="revert-banner" id="revertBanner" style="display:none">
     <div>
       <div class="revert-text">⚠️ Bugs after the last update?</div>
@@ -95,10 +99,13 @@
     <button class="btn btn-warn" onclick="doRevert()">↩ Revert Update</button>
   </div>
 
-  <!-- Check Card -->
+  <!-- Main Check Card -->
   <div class="card">
     <div class="check-row">
-      <div id="statusBadge" class="badge badge-gray"><span class="dot dot-gray"></span>Not checked yet</div>
+      <div>
+        <div id="statusBadge" class="badge badge-gray"><span class="dot dot-gray"></span>Not checked yet</div>
+        <div class="installed-note" id="installedNote" style="display:none">Currently on <span id="installedSha"></span></div>
+      </div>
       <button class="btn btn-secondary" id="checkBtn" onclick="checkUpdates()">🔍 Check Updates</button>
     </div>
     <div id="updatesContainer"></div>
@@ -110,13 +117,19 @@
     <div class="log-box" id="logBox"></div>
   </div>
 
-  <!-- Dismissed Updates -->
+  <!-- Dismissed Dropdown Card -->
   <div class="card" id="dismissedCard" style="display:none">
-    <div class="card-title">Dismissed Updates</div>
-    <div id="dismissedList"></div>
+    <div class="dropdown-toggle" onclick="toggleDismissed()">
+      <div class="dropdown-label">Dismissed Updates</div>
+      <div class="dropdown-arrow" id="dismissedArrow">▼</div>
+    </div>
+    <div class="dropdown-body" id="dismissedBody">
+      <div style="height:10px"></div>
+      <div id="dismissedList"></div>
+    </div>
   </div>
 
-  <!-- Update History -->
+  <!-- History Card -->
   <div class="card" id="historyCard" style="display:none">
     <div class="card-title">Update History</div>
     <div id="historyList"></div>
@@ -126,108 +139,111 @@
 <%- include('partials/super_button') %>
 
 <script>
-let checkResult = null;
-// Rate limit: track last check time per session
 let lastCheckTime = 0;
-const CHECK_COOLDOWN = 60000; // 1 min
+const COOLDOWN = 60000;
 
 function fmtDate(d) {
-  if (!d) return 'Unknown';
+  if (!d) return '';
   const dt = new Date(d);
   if (isNaN(dt.getTime())) return d;
-  return dt.toLocaleString(undefined, { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  return dt.toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toggleDismissed() {
+  const body = document.getElementById('dismissedBody');
+  const arrow = document.getElementById('dismissedArrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
 }
 
-async function checkUpdates() {
+async function checkUpdates(force) {
   const now = Date.now();
   const btn = document.getElementById('checkBtn');
   const badge = document.getElementById('statusBadge');
-
-  // Rate limit: 1 check per minute (unless forced via undismiss)
-  if (now - lastCheckTime < CHECK_COOLDOWN && lastCheckTime !== 0) {
-    const secs = Math.ceil((CHECK_COOLDOWN - (now - lastCheckTime)) / 1000);
+  if (!force && now - lastCheckTime < COOLDOWN && lastCheckTime !== 0) {
+    const s = Math.ceil((COOLDOWN - (now - lastCheckTime)) / 1000);
     badge.className = 'badge badge-gray';
-    badge.innerHTML = `<span class="dot dot-gray"></span>Wait ${secs}s before checking again`;
+    badge.innerHTML = `<span class="dot dot-gray"></span>Wait ${s}s`;
     return;
   }
-
   btn.disabled = true; btn.textContent = '⏳ Checking...';
   badge.className = 'badge badge-gray';
   badge.innerHTML = '<span class="dot dot-gray"></span>Checking...';
-
   try {
     const r = await fetch('/api/updater/check').then(x => x.json());
-    checkResult = r;
     lastCheckTime = Date.now();
 
-    // Revert banner
-    document.getElementById('revertBanner').style.display = r.canRevert ? 'flex' : 'none';
-
-    // Status badge
-    if (r.hasUpdate) {
-      badge.className = 'badge badge-purple';
-      badge.innerHTML = '<span class="dot dot-orange"></span>Updates Available';
-    } else {
-      badge.className = 'badge badge-green';
-      badge.innerHTML = '<span class="dot dot-green"></span>Up to Date';
+    // Show installed sha
+    if (r.installedShortSha) {
+      document.getElementById('installedNote').style.display = 'block';
+      document.getElementById('installedSha').textContent = r.installedShortSha;
     }
 
-    renderUpdates(r.updates);
-    if (r.dismissed && r.dismissed.length) renderDismissed(r.updates, r.dismissed);
-    else { document.getElementById('dismissedCard').style.display = 'none'; }
-    if (r.history && r.history.length) renderHistory(r.history);
+    document.getElementById('revertBanner').style.display = r.canRevert ? 'flex' : 'none';
+
+    if (r.isUpToDate && !r.hasUpdate) {
+      badge.className = 'badge badge-green';
+      badge.innerHTML = '<span class="dot dot-green"></span>Up to Date';
+      document.getElementById('updatesContainer').innerHTML = '';
+    } else if (r.hasUpdate) {
+      badge.className = 'badge badge-purple';
+      badge.innerHTML = '<span class="dot dot-orange"></span>Updates Available';
+      renderUpdates(r.updates.filter(u => !u.isDismissed));
+    } else {
+      // All new commits are dismissed
+      badge.className = 'badge badge-gray';
+      badge.innerHTML = '<span class="dot dot-gray"></span>Updates Dismissed';
+      document.getElementById('updatesContainer').innerHTML = '';
+    }
+
+    renderDismissed(r.dismissedItems);
+    renderHistory(r.history);
   } catch(e) {
     badge.className = 'badge badge-gray';
-    badge.innerHTML = `<span class="dot dot-gray"></span>Check failed: ${e.message}`;
+    badge.innerHTML = `<span class="dot dot-gray"></span>Failed: ${e.message}`;
   }
   btn.disabled = false; btn.textContent = '🔍 Check Updates';
 }
 
 function renderUpdates(updates) {
-  const container = document.getElementById('updatesContainer');
-  // Only show non-dismissed, up to 4
-  const visible = updates.filter(u => !u.isDismissed).slice(0, 4);
-  if (!visible.length) { container.innerHTML = ''; return; }
-
-  const isMulti = visible.length > 1;
-  container.innerHTML = visible.map((u, i) => {
-    const label = isMulti ? (i === 0 ? 'Latest Update' : `Older Update`) : 'Available Update';
-    const applyLabel = isMulti ? (i === 0 ? 'Apply Latest 🔁' : 'Apply Old 🔁') : 'Apply Update 🔁';
-    const dismissLabel = isMulti ? (i === 0 ? 'Dismiss Latest ❌' : 'Dismiss Old ❌') : 'Dismiss ❌';
-    return `
-    <div class="update-item" id="item-${u.sha}">
-      <div class="update-label">${label}</div>
-      <div class="update-item-header">
-        <div class="update-item-info">
-          <div class="update-commit">${escHtml(u.message)}</div>
-          <div class="update-meta">
-            <span class="update-sha">${u.shortSha}</span>
-            <span>·</span><span>${escHtml(u.author)}</span>
-            <span>·</span><span>${fmtDate(u.date)}</span>
-          </div>
+  const c = document.getElementById('updatesContainer');
+  if (!updates.length) { c.innerHTML = ''; return; }
+  const multi = updates.length > 1;
+  c.innerHTML = updates.map((u, i) => {
+    const lbl = multi ? (i === 0 ? 'Latest Update' : 'Older Update') : 'Available Update';
+    const applyLbl = multi ? (i === 0 ? 'Apply Latest 🔁' : 'Apply Old 🔁') : 'Apply Update 🔁';
+    const dismissLbl = multi ? (i === 0 ? 'Dismiss Latest ❌' : 'Dismiss Old ❌') : 'Dismiss ❌';
+    return `<div class="update-item" id="item-${u.sha}">
+      <div class="update-label">${lbl}</div>
+      <div class="update-row">
+        <div class="update-info">
+          <div class="update-msg">${escHtml(u.message)}</div>
+          <div class="update-meta"><span class="update-sha">${u.shortSha}</span><span>·</span><span>${escHtml(u.author)}</span><span>·</span><span>${fmtDate(u.date)}</span></div>
         </div>
         <div class="update-actions">
-          <button class="btn btn-primary" onclick="applyUpdate('${u.sha}', this)">${applyLabel}</button>
-          <button class="btn btn-danger" onclick="dismissUpdate('${u.sha}', this)">${dismissLabel}</button>
+          <button class="btn btn-primary" onclick="applyUpdate('${u.sha}',this)">${applyLbl}</button>
+          <button class="btn btn-danger" onclick="dismissUpdate('${u.sha}',this)">${dismissLbl}</button>
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-function renderDismissed(updates, dismissedShas) {
+function renderDismissed(items) {
   const card = document.getElementById('dismissedCard');
   const list = document.getElementById('dismissedList');
-  const items = updates.filter(u => dismissedShas.includes(u.sha));
-  if (!items.length) { card.style.display = 'none'; return; }
+  if (!items || !items.length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
   list.innerHTML = items.map(u => `
-    <div class="dismissed-item" id="dismissed-${u.sha}">
+    <div class="dismissed-item" id="dis-${u.sha}">
       <span class="dismissed-sha">${u.shortSha}</span>
-      <span class="dismissed-msg">${escHtml(u.message)}</span>
+      <span class="dismissed-msg" title="${escHtml(u.message)}">${escHtml(u.message)}</span>
       <div class="dismissed-actions">
-        <button class="btn btn-secondary" style="padding:6px 12px;font-size:.75rem" onclick="undismissUpdate('${u.sha}', this)">Undismiss</button>
-        <button class="btn btn-primary" style="padding:6px 12px;font-size:.75rem" onclick="undismissAndApply('${u.sha}', this)">Undismiss & Update</button>
+        <button class="btn btn-secondary btn-sm" onclick="undismiss('${u.sha}',this)">Undismiss</button>
+        <button class="btn btn-primary btn-sm" onclick="undismissApply('${u.sha}',this)">Undismiss & Update</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePerm('${u.sha}',this)" title="Permanently remove from list">🗑 Delete</button>
       </div>
     </div>`).join('');
 }
@@ -235,7 +251,7 @@ function renderDismissed(updates, dismissedShas) {
 function renderHistory(history) {
   const card = document.getElementById('historyCard');
   const list = document.getElementById('historyList');
-  if (!history.length) return;
+  if (!history || !history.length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
   list.innerHTML = history.map(h => `
     <div class="history-item">
@@ -246,103 +262,70 @@ function renderHistory(history) {
 }
 
 async function applyUpdate(sha, btn) {
-  btn.disabled = true; btn.textContent = '⏳ Updating...';
+  btn.disabled = true; btn.textContent = '⏳...';
   const logCard = document.getElementById('logCard');
   const logBox = document.getElementById('logBox');
-  logCard.style.display = 'block';
-  logBox.textContent = '';
-
+  logCard.style.display = 'block'; logBox.textContent = '';
   const poll = setInterval(async () => {
     const r = await fetch('/api/updater/logs').then(x => x.json());
-    logBox.textContent = r.logs.join('\n');
-    logBox.scrollTop = logBox.scrollHeight;
+    logBox.textContent = r.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
   }, 800);
-
   try {
-    const r = await fetch('/api/updater/apply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sha })
-    }).then(x => x.json());
-
+    await fetch('/api/updater/apply', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({sha}) }).then(x=>x.json());
     clearInterval(poll);
-    const finalLogs = await fetch('/api/updater/logs').then(x => x.json());
-    logBox.textContent = finalLogs.logs.join('\n');
-    logBox.scrollTop = logBox.scrollHeight;
-
-    document.getElementById('statusBadge').className = 'badge badge-green';
-    document.getElementById('statusBadge').innerHTML = '<span class="dot dot-green"></span>Updated Successfully';
+    const fl = await fetch('/api/updater/logs').then(x=>x.json());
+    logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
     document.getElementById('revertBanner').style.display = 'flex';
-
-    if (r.history) renderHistory(r.history);
-    // Re-check to refresh update list
-    lastCheckTime = 0;
-    await checkUpdates();
+    lastCheckTime = 0; await checkUpdates(true);
   } catch(e) {
-    clearInterval(poll);
-    logBox.textContent += '\nError: ' + e.message;
+    clearInterval(poll); logBox.textContent += '\nError: '+e.message;
     btn.disabled = false; btn.textContent = 'Apply Update 🔁';
   }
 }
 
 async function dismissUpdate(sha, btn) {
   btn.disabled = true;
-  await fetch('/api/updater/dismiss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sha }) });
-  lastCheckTime = 0;
-  await checkUpdates();
+  await fetch('/api/updater/dismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
 }
-
-async function undismissUpdate(sha, btn) {
+async function undismiss(sha, btn) {
   btn.disabled = true;
-  await fetch('/api/updater/undismiss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sha }) });
-  lastCheckTime = 0;
-  await checkUpdates();
+  await fetch('/api/updater/undismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
 }
-
-async function undismissAndApply(sha, btn) {
+async function undismissApply(sha, btn) {
   btn.disabled = true; btn.textContent = '⏳...';
-  await fetch('/api/updater/undismiss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sha }) });
-  lastCheckTime = 0;
-  await checkUpdates();
-  // Find the apply button for this sha and click it
-  const item = document.getElementById('item-' + sha);
-  if (item) { const applyBtn = item.querySelector('.btn-primary'); if (applyBtn) applyBtn.click(); }
+  await fetch('/api/updater/undismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
+  const item = document.getElementById('item-'+sha);
+  if (item) { const ab = item.querySelector('.btn-primary'); if (ab) ab.click(); }
 }
-
+async function deletePerm(sha, btn) {
+  if (!confirm('Permanently remove this update from the list? It will never show again.')) return;
+  btn.disabled = true;
+  await fetch('/api/updater/delete', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
+  lastCheckTime = 0; await checkUpdates(true);
+}
 async function doRevert() {
   if (!confirm('Revert to the version before the last update?')) return;
   const logCard = document.getElementById('logCard');
   const logBox = document.getElementById('logBox');
-  logCard.style.display = 'block';
-  logBox.textContent = '';
-
+  logCard.style.display = 'block'; logBox.textContent = '';
   const poll = setInterval(async () => {
-    const r = await fetch('/api/updater/logs').then(x => x.json());
-    logBox.textContent = r.logs.join('\n');
-    logBox.scrollTop = logBox.scrollHeight;
+    const r = await fetch('/api/updater/logs').then(x=>x.json());
+    logBox.textContent = r.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
   }, 800);
-
   try {
-    const r = await fetch('/api/updater/revert', { method: 'POST' }).then(x => x.json());
+    await fetch('/api/updater/revert', {method:'POST'}).then(x=>x.json());
     clearInterval(poll);
-    const finalLogs = await fetch('/api/updater/logs').then(x => x.json());
-    logBox.textContent = finalLogs.logs.join('\n');
-    logBox.scrollTop = logBox.scrollHeight;
+    const fl = await fetch('/api/updater/logs').then(x=>x.json());
+    logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
     document.getElementById('revertBanner').style.display = 'none';
-    document.getElementById('statusBadge').className = 'badge badge-orange';
-    document.getElementById('statusBadge').innerHTML = '<span class="dot dot-orange"></span>Reverted';
-  } catch(e) {
-    clearInterval(poll);
-    logBox.textContent += '\nError: ' + e.message;
-  }
+    lastCheckTime = 0; await checkUpdates(true);
+  } catch(e) { clearInterval(poll); logBox.textContent += '\nError: '+e.message; }
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Auto-check on load
-checkUpdates();
+checkUpdates(true);
 </script>
 </body>
 </html>
