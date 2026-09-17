@@ -53,7 +53,15 @@ function getAccounts() {
         const index = key === 'TOKEN' ? 0 : parseInt(key.replace('TOKEN', ''));
         if (data[key] && data[key].trim()) accounts.push({ index, key, token: data[key].trim() });
     }
-    return { accounts, active: parseInt(data.ACTIVE_ACCOUNT || 0) };
+    let active = parseInt(data.ACTIVE_ACCOUNT || 0);
+    // Auto-fallback: if active index has no token, switch to first available
+    const activeExists = accounts.some(a => a.index === active);
+    if (!activeExists && accounts.length > 0) {
+        active = accounts[0].index;
+        data.ACTIVE_ACCOUNT = active;
+        writeTokensFile(data);
+    }
+    return { accounts, active };
 }
 
 function getActiveToken() {

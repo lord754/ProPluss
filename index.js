@@ -340,6 +340,9 @@ process.on('uncaughtExceptionMonitor', (error) => { console.error('[Anti-Crash]'
 const dashboard = require('./dashboard/index');
 dashboard(clientRef, clients);
 
+// Track restart for updater revert window
+try { require('./updater').trackRestart(); } catch(e) {}
+
 // Boot ALL saved accounts simultaneously (skip if none — dashboard handles setup)
 const { accounts, active: activeIdx } = accountManager.getAccounts();
 if (accounts.length === 0) {
