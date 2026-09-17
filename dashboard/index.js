@@ -454,6 +454,7 @@ module.exports = (clientRef, clientsMap) => {
                 installedChannel: state.installedChannel || updater.CURRENT_CHANNEL,
                 lastSha: state.lastSha,
                 lastCheckTime: state.lastCheckTime,
+                lastUpdateFailed: !!state.lastUpdateFailed,
             });
         } catch(e) { res.json({ dotStatus: 'yellow', error: e.message }); }
     });

@@ -162,7 +162,6 @@
       <!-- CENTER: Check button -->
       <div class="check-row-center">
         <button class="btn btn-secondary" id="checkBtn" onclick="checkUpdates()">🔍 Check For Update</button>
-        <div id="cooldownNote" style="font-size:.72rem;color:#444;display:none;text-align:center"></div>
       </div>
       <!-- RIGHT: status dot + label -->
       <div class="check-row-right">
@@ -205,7 +204,6 @@
 
 <script>
 let lastCheckTime = 0;
-const COOLDOWN = 60000; // 1 minute
 
 function fmtDate(d) {
   if (!d) return '';
@@ -221,26 +219,6 @@ function toggleDismissed() {
   const arrow = document.getElementById('dismissedArrow');
   body.classList.toggle('open');
   arrow.classList.toggle('open');
-}
-
-// Cooldown countdown display (in the note span, not blocking the button label)
-let cooldownInterval = null;
-function startCooldownTimer() {
-  const note = document.getElementById('cooldownNote');
-  if (cooldownInterval) clearInterval(cooldownInterval);
-  cooldownInterval = setInterval(() => {
-    const remaining = COOLDOWN - (Date.now() - lastCheckTime);
-    if (remaining <= 0) {
-      clearInterval(cooldownInterval);
-      cooldownInterval = null;
-      note.style.display = 'none';
-      note.textContent = '';
-      return;
-    }
-    const s = Math.ceil(remaining / 1000);
-    note.style.display = 'inline';
-    note.textContent = `(cooldown ${s}s)`;
-  }, 500);
 }
 
 // Apply the 3-state dot
@@ -273,18 +251,12 @@ function applyDot(dotStatus, statusText) {
 }
 
 async function checkUpdates(force) {
-  const now = Date.now();
   const btn = document.getElementById('checkBtn');
-  if (!force && now - lastCheckTime < COOLDOWN && lastCheckTime !== 0) {
-    startCooldownTimer();
-    return;
-  }
   btn.disabled = true; btn.textContent = '⏳ Checking...';
   applyDot('gray', 'Checking...');
   try {
     const r = await fetch('/api/updater/check').then(x => x.json());
     lastCheckTime = Date.now();
-    startCooldownTimer();
 
     // Show installed info in LEFT column
     if (r.installedVersion || r.installedShortSha) {
@@ -433,9 +405,9 @@ async function applyUpdate(sha, btn) {
     document.getElementById('revertBanner').style.display = 'flex';
     // Show red dot if failures
     if (result.failed > 0) {
-      applyDot('red', 'Revert Required?');
+      applyDot('red', 'Revert Required');
     }
-    lastCheckTime = 0; await checkUpdates(true);
+    await checkUpdates(true);
   } catch(e) {
     clearInterval(poll); logBox.textContent += '\nError: '+e.message;
     btn.disabled = false; btn.textContent = 'Apply Update';
@@ -495,6 +467,8 @@ async function doRevert() {
       gray: 'Not checked'
     };
     applyDot(r.dotStatus || 'gray', dotMessages[r.dotStatus] || 'Not checked');
+    // Override label if update failed
+    if (r.lastUpdateFailed) applyDot('red', 'Revert Required');
 
     // Populate left column
     if (r.installedVersion) {

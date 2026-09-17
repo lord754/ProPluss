@@ -8,26 +8,35 @@ const RAW = 'https://raw.githubusercontent.com';
 const STATE_FILE = path.join(__dirname, 'data', 'updater.json');
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-// Format: x.x.x.x where positions are major1.major2.minor1.minor2
-// Channel suffixes: dev, stable (no suffix = stable), alpha, beta
-// Examples: 1.0, 1.0.1, 2.2br, 2ba, 1.0.0.1alpha, 1.0.0.1dev
-const CURRENT_VERSION = '1.0';
+// Format: x.x.x.x + channel letter suffix
+// Suffix letters: s=stable, a=alpha, b=beta, d=dev (dev only on explicit instruction)
+// Position meaning: [0].[1] = major,  [2].[3] = minor
+// Auto-suffix rules: major update → s, minor → a, beta → b, dev → d (explicit only)
+// Examples: 1.0s, 1.1s, 1.0.1a, 2.2b, 1.0.0.1d
+const CURRENT_VERSION = '1.1s';
 const CURRENT_CHANNEL = 'stable'; // alpha | beta | stable | dev
 
 // Parse a version string into components
 function parseVersion(raw) {
     if (!raw) return null;
     const s = String(raw).trim().toLowerCase();
-    // Detect channel suffix
     let channel = 'stable';
     let core = s;
-    if (core.endsWith('dev')) { channel = 'dev'; core = core.slice(0, -3); }
-    else if (core.endsWith('alpha')) { channel = 'alpha'; core = core.slice(0, -5); }
-    else if (core.endsWith('beta') || core.endsWith('bt')) { channel = 'beta'; core = core.replace(/bt$|beta$/, ''); }
-    // Letter suffixes like "br", "ba", "b", "a", "r" after last digit group
-    const letterMatch = core.match(/^([\d.]+)([a-z]+)$/);
     let letterSuffix = '';
-    if (letterMatch) { core = letterMatch[1]; letterSuffix = letterMatch[2]; }
+
+    // Detect trailing channel letter(s): d=dev, s=stable, a=alpha, b=beta
+    // Must be at end after digits, e.g. "1.0s", "1.1a", "2.2b", "1.0.0.1d"
+    const channelMatch = core.match(/^([\d.]+)(d|s|a|b|br|ba|bt|dev|stable|alpha|beta)$/);
+    if (channelMatch) {
+        core = channelMatch[1];
+        const sfx = channelMatch[2];
+        if (sfx === 'd' || sfx === 'dev') channel = 'dev';
+        else if (sfx === 's' || sfx === 'stable') channel = 'stable';
+        else if (sfx === 'a' || sfx === 'alpha' || sfx === 'ba') channel = 'alpha';
+        else if (sfx === 'b' || sfx === 'beta' || sfx === 'br' || sfx === 'bt') channel = 'beta';
+        letterSuffix = sfx;
+    }
+
     // Remove trailing dots
     core = core.replace(/\.+$/, '');
     const parts = core.split('.').map(n => parseInt(n, 10) || 0);
@@ -37,6 +46,15 @@ function parseVersion(raw) {
     return { raw: String(raw), core, parts: parts.slice(0, 4), maj1, maj2, min1, min2, channel, letterSuffix, isMajor };
 }
 
+// Auto-determine channel suffix for a new update based on update type
+// Major → s, Minor → a, Beta → b, Dev → d (only explicit)
+function autoChannelForType(updateType, existingChannel) {
+    if (existingChannel === 'dev') return 'd';
+    if (existingChannel === 'beta' || updateType === 'Minor' && existingChannel === 'beta') return 'b';
+    if (updateType === 'Major') return 's';
+    if (updateType === 'Minor') return 'a';
+    return 's';
+}
 // Compare two parsed versions: >0 means a is newer
 function versionCompare(a, b) {
     if (!a || !b) return 0;
@@ -53,8 +71,9 @@ function formatVersionDisplay(parsed) {
     let s = parsed.parts.filter((v, i) => i === 0 || v > 0 || i < 2).join('.');
     // Trim trailing .0.0
     s = s.replace(/(?:\.0)+$/, '') || '0';
-    if (parsed.letterSuffix) s += parsed.letterSuffix;
-    if (parsed.channel && parsed.channel !== 'stable') s += ' ' + parsed.channel.toUpperCase();
+    // Always append single-letter channel suffix: s, a, b, d
+    const channelLetter = { stable: 's', alpha: 'a', beta: 'b', dev: 'd' };
+    s += (channelLetter[parsed.channel] || 's');
     return s;
 }
 
@@ -150,7 +169,9 @@ async function getJson(url) {
 // red    = update required OR revert required (damaged install)
 // yellow = not checked in 24h OR repo issues OR other errors
 function computeDotStatus(state, checkResult) {
-    // Red: revert available (last update may have been damaged)
+    // Red: last update had failures — revert required
+    if (state.lastUpdateFailed) return 'red';
+    // Red: revert available (update was applied, revert window open)
     if (state.revertSha) return 'red';
     // If never checked, yellow
     if (!state.lastCheckTime) return 'yellow';
@@ -165,7 +186,7 @@ function computeDotStatus(state, checkResult) {
     if (checkResult.isUpToDate && !checkResult.hasUpdate) return 'green';
     // Red: updates available
     if (checkResult.hasUpdate) return 'red';
-    // All dismissed → yellow (not truly up to date, just ignored)
+    // All dismissed → yellow
     if (!checkResult.isUpToDate && !checkResult.hasUpdate) return 'yellow';
     return 'yellow';
 }
