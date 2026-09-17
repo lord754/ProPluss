@@ -3,216 +3,642 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Extra Features - PRO+</title>
+<title>Extra Features — THE BIG 5 | PRO+</title>
 <link rel="stylesheet" href="/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-.container{width:95%;max-width:900px;margin:0 auto;padding:40px 20px 120px}
-.page-header{text-align:center;margin-bottom:40px}
-.page-header h1{font-size:2.5rem;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.section-card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:25px;margin-bottom:20px}
-.section-title{font-size:1.1rem;color:#a29bfe;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;margin-bottom:15px}
-.back-btn{position:absolute;top:30px;left:30px;color:rgba(255,255,255,0.5);text-decoration:none;font-size:1rem;display:flex;align-items:center;gap:5px;transition:.3s}
-.back-btn:hover{color:#fff}
-.feature-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
-.feature-row:last-child{border-bottom:none}
-.feature-info{flex:1}
-.feature-name{color:#fff;font-size:.95rem;font-weight:600}
-.feature-desc{color:#666;font-size:.8rem;margin-top:2px}
-.toggle{position:relative;width:46px;height:24px;flex-shrink:0}
+body{min-height:100vh;background:#050508;color:#fff;font-family:'Outfit',sans-serif}
+.container{width:95%;max-width:960px;margin:0 auto;padding:30px 20px 140px}
+.back-btn{position:fixed;top:20px;left:20px;z-index:100;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#aaa;text-decoration:none;font-size:.85rem;font-weight:600;transition:.2s}
+.back-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.page-header{text-align:center;margin:60px 0 32px}
+.page-header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.page-header p{color:#555;font-size:.9rem;margin-top:6px}
+.section{background:#111116;border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:22px;margin-bottom:16px}
+.section-title{font-size:.82rem;font-weight:800;color:#a29bfe;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid rgba(255,255,255,0.07);padding-bottom:10px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:10px;flex-wrap:wrap}
+.row:last-child{border-bottom:none}
+.row-info{flex:1;min-width:0}
+.row-name{color:#fff;font-size:.9rem;font-weight:600}
+.row-desc{color:#555;font-size:.76rem;margin-top:2px}
+.row-cmd{font-family:monospace;font-size:.72rem;color:#6c5ce7;background:rgba(108,92,231,0.1);padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+.row-actions{display:flex;gap:7px;align-items:center;flex-shrink:0;flex-wrap:wrap}
+/* Toggle */
+.toggle{position:relative;width:44px;height:23px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.slider{position:absolute;inset:0;background:#2a2a3a;border-radius:24px;cursor:pointer;transition:.3s}
-.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
-input:checked+.slider{background:linear-gradient(90deg,#8a2be2,#6c5ce7)}
-input:checked+.slider:before{transform:translateX(22px)}
-.input-row{display:flex;gap:10px;align-items:flex-end;margin-top:10px}
-.input-field{flex:1;padding:10px 14px;background:#050508;border:1px solid rgba(255,255,255,0.1);color:#fff;border-radius:10px;outline:none;font-family:'Outfit',sans-serif;font-size:.9rem;transition:.3s}
-.input-field:focus{border-color:#8a2be2}
-.btn{padding:10px 20px;border:none;border-radius:10px;font-weight:700;cursor:pointer;transition:.3s;font-family:'Outfit',sans-serif;font-size:.88rem}
-.btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff}
-.btn-primary:hover{filter:brightness(1.15)}
-.btn-danger{background:#e74c3c;color:#fff}
-.btn-danger:hover{filter:brightness(1.15)}
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e1e2e;border:1px solid rgba(138,43,226,0.4);color:#fff;padding:12px 24px;border-radius:12px;font-size:.9rem;opacity:0;transition:.3s;pointer-events:none;z-index:9999}
+.slider{position:absolute;inset:0;background:#1e1e2e;border:1px solid rgba(255,255,255,0.1);border-radius:23px;cursor:pointer;transition:.3s}
+.slider:before{content:'';position:absolute;width:17px;height:17px;left:2px;top:2px;background:#555;border-radius:50%;transition:.3s}
+input:checked+.slider{background:linear-gradient(90deg,#8a2be2,#6c5ce7);border-color:transparent}
+input:checked+.slider:before{background:#fff;transform:translateX(21px)}
+/* Inputs */
+.inp{flex:1;min-width:100px;padding:8px 12px;background:#050508;border:1px solid rgba(255,255,255,0.08);color:#fff;border-radius:9px;outline:none;font-family:'Outfit',sans-serif;font-size:.85rem;transition:.2s}
+.inp:focus{border-color:#8a2be2}
+.inp::placeholder{color:#333}
+/* Buttons */
+.btn{padding:7px 14px;border:none;border-radius:9px;font-weight:700;cursor:pointer;font-size:.78rem;transition:.2s;font-family:'Outfit',sans-serif;white-space:nowrap}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-p{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff}
+.btn-p:not(:disabled):hover{filter:brightness(1.15)}
+.btn-d{background:rgba(231,76,60,0.1);color:#e74c3c;border:1px solid rgba(231,76,60,0.2)}
+.btn-d:not(:disabled):hover{background:#e74c3c;color:#fff}
+.btn-s{background:rgba(255,255,255,0.05);color:#aaa;border:1px solid rgba(255,255,255,0.08)}
+.btn-s:not(:disabled):hover{background:rgba(255,255,255,0.1);color:#fff}
+.btn-w{background:rgba(243,156,18,0.1);color:#f39c12;border:1px solid rgba(243,156,18,0.2)}
+.btn-w:not(:disabled):hover{background:#f39c12;color:#fff}
+.btn-g{background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2)}
+.btn-g:not(:disabled):hover{background:#2ecc71;color:#000}
+/* Grid layouts */
+.input-group{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.input-group .inp{min-width:140px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+/* Result box */
+.result-box{background:#050508;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px;font-size:.8rem;color:#888;font-family:monospace;margin-top:10px;display:none;white-space:pre-wrap;word-break:break-all}
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1e1e2e;border:1px solid rgba(138,43,226,0.4);color:#fff;padding:12px 24px;border-radius:12px;font-size:.88rem;opacity:0;transition:.3s;pointer-events:none;z-index:9999;max-width:360px;text-align:center}
 .toast.show{opacity:1}
+/* Status dot */
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-on{background:#2ecc71;box-shadow:0 0 5px rgba(46,204,113,0.6)}
+.dot-off{background:#555}
+/* Search */
+.search-bar{width:100%;padding:11px 16px;background:#0d0d12;border:1px solid rgba(255,255,255,0.08);color:#fff;border-radius:12px;outline:none;font-family:'Outfit',sans-serif;font-size:.9rem;margin-bottom:20px;transition:.2s}
+.search-bar:focus{border-color:#8a2be2}
+.search-bar::placeholder{color:#333}
+/* Category badge */
+.cat-badge{font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.4px}
+.cat-red{background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.25)}
+.cat-purple{background:rgba(138,43,226,0.12);color:#c084fc;border:1px solid rgba(138,43,226,0.2)}
+.cat-green{background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2)}
+.cat-blue{background:rgba(52,152,219,0.12);color:#3498db;border:1px solid rgba(52,152,219,0.2)}
+.cat-orange{background:rgba(243,156,18,0.1);color:#f39c12;border:1px solid rgba(243,156,18,0.2)}
+/* Section collapse */
+.section-toggle{cursor:pointer;user-select:none}
+.section-toggle:hover .section-title{color:#c084fc}
+.section-body{transition:max-height .3s ease;overflow:hidden}
+.chevron{font-size:.7rem;color:#555;margin-left:auto;transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+@media(max-width:560px){.row{flex-direction:column;align-items:flex-start}.row-actions{width:100%}}
 </style>
 </head>
 <body>
 <a href="/commands" class="back-btn">← Back</a>
 <div class="container">
   <div class="page-header">
-    <h1>⭐ Extra Features</h1>
-    <p style="color:#888">Toggle features directly from the dashboard.</p>
+    <h1>⚡ Extra Features</h1>
+    <p>Full Big5 control panel — all 221+ commands accessible from dashboard</p>
   </div>
 
-  <!-- Anti-GC -->
-  <div class="section-card">
-    <div class="section-title">🛡️ Anti-GC & Security</div>
-    <div class="feature-row">
-      <div class="feature-info">
-        <div class="feature-name">Anti Group Chat</div>
-        <div class="feature-desc">Auto-leave + block when added to a group chat</div>
+  <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Search commands..." oninput="filterSections()">
+
+  <!-- ── 1. AUTO FEATURES ── -->
+  <div class="section searchable" data-keywords="agct anti gc silentantigc alw last word snipe stfu autodelete dreact autoreact autoflood arr auto reply mimic blackify autonick autobump triggertyping antiafk">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🛡️ Auto Features <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Anti-GC Trap <span class="status-dot dot-off" id="dot-agct"></span></div><div class="row-desc">Auto-leave + block when added to group chat</div><span class="row-cmd">.agct on/off</span></div>
+        <label class="toggle"><input type="checkbox" id="agct" onchange="toggleFeature('agct',this.checked)"><span class="slider"></span></label>
       </div>
-      <label class="toggle"><input type="checkbox" id="agct" onchange="toggleFeature('agct',this.checked)"><span class="slider"></span></label>
-    </div>
-    <div class="feature-row">
-      <div class="feature-info">
-        <div class="feature-name">Silent Anti-GC</div>
-        <div class="feature-desc">Silently leave group chats without blocking</div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Silent Anti-GC <span class="status-dot dot-off" id="dot-silentantigc"></span></div><div class="row-desc">Silently leave group chats without blocking</div><span class="row-cmd">.silentantigc on/off</span></div>
+        <label class="toggle"><input type="checkbox" id="silentantigc" onchange="toggleFeature('silentantigc',this.checked)"><span class="slider"></span></label>
       </div>
-      <label class="toggle"><input type="checkbox" id="silentantigc" onchange="toggleFeature('silentantigc',this.checked)"><span class="slider"></span></label>
-    </div>
-    <div class="feature-row">
-      <div class="feature-info">
-        <div class="feature-name">Auto Last Word (ALW)</div>
-        <div class="feature-desc">Auto-reply when someone says "lw"</div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Auto Last Word (ALW) <span class="status-dot dot-off" id="dot-alw"></span></div><div class="row-desc">Auto-reply when someone says "lw"</div><span class="row-cmd">.alw on/off</span></div>
+        <label class="toggle"><input type="checkbox" id="alw" onchange="toggleFeature('alw',this.checked)"><span class="slider"></span></label>
       </div>
-      <label class="toggle"><input type="checkbox" id="alw" onchange="toggleFeature('alw',this.checked)"><span class="slider"></span></label>
-    </div>
-  </div>
-
-  <!-- STFU -->
-  <div class="section-card">
-    <div class="section-title">🔇 STFU (Auto-delete user messages)</div>
-    <div class="input-row">
-      <input type="text" id="stfuUserId" class="input-field" placeholder="User ID">
-      <button class="btn btn-primary" onclick="stfuAction('on')">Enable</button>
-      <button class="btn btn-danger" onclick="stfuAction('off')">Disable</button>
-    </div>
-  </div>
-
-  <!-- Auto Reply -->
-  <div class="section-card">
-    <div class="section-title">💬 Auto Reply (ARR)</div>
-    <div class="input-row">
-      <input type="text" id="arrUserId" class="input-field" placeholder="User ID">
-      <button class="btn btn-primary" onclick="arrAction('on')">Enable</button>
-      <button class="btn btn-danger" onclick="arrAction('off')">Disable</button>
-    </div>
-  </div>
-
-  <!-- Mimic -->
-  <div class="section-card">
-    <div class="section-title">🎭 Mimic</div>
-    <div class="input-row">
-      <input type="text" id="mimicUserId" class="input-field" placeholder="User ID">
-      <button class="btn btn-primary" onclick="mimicAction('on')">Start</button>
-      <button class="btn btn-danger" onclick="mimicAction('off')">Stop</button>
-    </div>
-  </div>
-
-  <!-- Snipe -->
-  <div class="section-card">
-    <div class="section-title">🔍 Snipe</div>
-    <div class="feature-row">
-      <div class="feature-info">
-        <div class="feature-name">Snipe Logging</div>
-        <div class="feature-desc">Log deleted messages for the snipe command</div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Snipe Logging <span class="status-dot dot-off" id="dot-snipe"></span></div><div class="row-desc">Log deleted messages for .snipe command</div><span class="row-cmd">.snipe</span></div>
+        <label class="toggle"><input type="checkbox" id="snipe" onchange="toggleFeature('snipe',this.checked)"><span class="slider"></span></label>
       </div>
-      <label class="toggle"><input type="checkbox" id="snipe" onchange="toggleFeature('snipe',this.checked)"><span class="slider"></span></label>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Ping Insults <span class="status-dot dot-off" id="dot-pinginsult"></span></div><div class="row-desc">Reply with insults when pinged</div><span class="row-cmd">.pinginsult toggle</span></div>
+        <label class="toggle"><input type="checkbox" id="pinginsult" onchange="toggleFeature('pinginsult',this.checked)"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Anti-AFK <span class="status-dot dot-off" id="dot-antiafk"></span></div><div class="row-desc">Send typing every few seconds to prevent AFK kick</div><span class="row-cmd">.antiafk [secs] / .afke</span></div>
+        <div class="row-actions">
+          <input type="number" class="inp" id="antiafkInterval" placeholder="Interval (s)" value="10" style="width:110px">
+          <button class="btn btn-p" onclick="toggleAntiAfk('on')">Enable</button>
+          <button class="btn btn-d" onclick="toggleAntiAfk('off')">Disable</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Trigger Typing</div><div class="row-desc">Show typing indicator on a loop</div><span class="row-cmd">.triggertyping [secs] / .triggertypingoff</span></div>
+        <div class="row-actions">
+          <button class="btn btn-p" onclick="efApi('/api/extra-features/toggle',{key:'triggertyping',value:true})">Enable</button>
+          <button class="btn btn-d" onclick="efApi('/api/extra-features/toggle',{key:'triggertyping',value:false})">Disable</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Auto Bump</div><div class="row-desc">Auto-run !d bump every interval</div><span class="row-cmd">.autobump [mins] / .autobumpoff</span></div>
+        <div class="row-actions">
+          <input type="number" class="inp" id="bumpInterval" placeholder="Interval (m)" value="120" style="width:110px">
+          <button class="btn btn-p" onclick="efApi('/api/extra-features/toggle',{key:'autobump',value:true})">Enable</button>
+          <button class="btn btn-d" onclick="efApi('/api/extra-features/toggle',{key:'autobump',value:false})">Disable</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Profile Tools -->
-  <div class="section-card">
-    <div class="section-title">👤 Profile Tools</div>
-    <div class="input-row">
-      <input type="text" id="pfpUrl" class="input-field" placeholder="Avatar URL">
-      <button class="btn btn-primary" onclick="setProfile('pfp')">Set PFP</button>
-    </div>
-    <div class="input-row" style="margin-top:10px">
-      <input type="text" id="bannerUrl" class="input-field" placeholder="Banner URL">
-      <button class="btn btn-primary" onclick="setProfile('banner')">Set Banner</button>
-    </div>
-    <div class="input-row" style="margin-top:10px">
-      <input type="text" id="displayName" class="input-field" placeholder="Display name">
-      <button class="btn btn-primary" onclick="setProfile('name')">Set Name</button>
-    </div>
-    <div class="input-row" style="margin-top:10px">
-      <input type="text" id="bioText" class="input-field" placeholder="Bio text">
-      <button class="btn btn-primary" onclick="setProfile('bio')">Set Bio</button>
+  <!-- ── 2. STFU / AUTODELETE ── -->
+  <div class="section searchable" data-keywords="stfu auto delete autodele user messages">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🔇 STFU — Auto-delete User Messages <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="input-group">
+        <input type="text" class="inp" id="stfuUserId" placeholder="User ID">
+        <button class="btn btn-p" onclick="stfuAction('on')">Enable</button>
+        <button class="btn btn-d" onclick="stfuAction('off')">Disable</button>
+      </div>
+      <div class="row-desc" style="margin-top:8px;color:#555">Auto-deletes every message from the specified user. Use with care — selfbot only.</div>
     </div>
   </div>
 
-  <!-- HypeSquad -->
-  <div class="section-card">
-    <div class="section-title">🏅 HypeSquad</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="setHypesquad('bravery')">Bravery</button>
-      <button class="btn btn-primary" onclick="setHypesquad('brilliance')">Brilliance</button>
-      <button class="btn btn-primary" onclick="setHypesquad('balance')">Balance</button>
-      <button class="btn btn-danger" onclick="setHypesquad('off')">Off</button>
+  <!-- ── 3. AUTO REPLY / ARR ── -->
+  <div class="section searchable" data-keywords="arr auto reply flood dreact autoreact mimic">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">💬 Auto Reply & Reactions <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Auto Reply (ARR)</div><div class="row-desc">Auto-reply with random insults to a user</div><span class="row-cmd">.arr @user / .arrend</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="arrUserId" placeholder="User ID">
+          <button class="btn btn-p" onclick="arrAction('on')">Enable</button>
+          <button class="btn btn-d" onclick="arrAction('off')">Disable</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Mimic User</div><div class="row-desc">Mirror everything a user says</div><span class="row-cmd">.mimic @user / .mimicoff</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="mimicUserId" placeholder="User ID">
+          <button class="btn btn-p" onclick="mimicAction('on')">Start</button>
+          <button class="btn btn-d" onclick="mimicAction('off')">Stop</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Dreact</div><div class="row-desc">React to every message from a user with cycling emojis</div><span class="row-cmd">.dreact @user 😂 💀 🔥</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="dreactUserId" placeholder="User ID">
+          <input type="text" class="inp" id="dreactEmojis" placeholder="Emojis (comma-separated)">
+          <button class="btn btn-p" onclick="dreactAction('on')">Enable</button>
+          <button class="btn btn-d" onclick="dreactAction('off')">Disable</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Autoreact</div><div class="row-desc">React to every message from a user with one emoji</div><span class="row-cmd">.autoreact @user 😂</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="autoreactUserId" placeholder="User ID">
+          <input type="text" class="inp" id="autoreactEmoji" placeholder="Emoji">
+          <button class="btn btn-p" onclick="autoreactAction('on')">Enable</button>
+          <button class="btn btn-d" onclick="autoreactAction('off')">Disable</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Auto Flood</div><div class="row-desc">Reply to every message from a user with a flood message</div><span class="row-cmd">.autoflood @user msg / .stopautoflood</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="autofloodUserId" placeholder="User ID">
+          <input type="text" class="inp" id="autofloodMsg" placeholder="Message">
+          <button class="btn btn-p" onclick="autofloodAction('on')">Enable</button>
+          <button class="btn btn-d" onclick="autofloodAction('off')">Disable</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Blackify</div><div class="row-desc">Reply to user with racial "jokes" + reactions</div><span class="row-cmd">.blackify @user / .unblackify @user</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="blackifyUserId" placeholder="User ID">
+          <button class="btn btn-p" onclick="blackifyAction('on')">Enable</button>
+          <button class="btn btn-d" onclick="blackifyAction('off')">Disable</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. ATTACK TOOLS ── -->
+  <div class="section searchable" data-keywords="murder kill multilast ghost ping spam outlast">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">⚔️ Attack Tools <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Murder</div><div class="row-desc">Spam a user with attack messages in a loop</div><span class="row-cmd">.murder @user / .murderstop</span></div>
+        <div class="row-actions">
+          <button class="btn btn-d" onclick="efApi('/api/extra-features/murder',{action:'on'})">Start</button>
+          <button class="btn btn-s" onclick="efApi('/api/extra-features/murder',{action:'off'})">Stop</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Kill (Outlaster)</div><div class="row-desc">Rapid-fire outlast messages at a user</div><span class="row-cmd">.kill @user / .kille</span></div>
+        <div class="row-actions">
+          <button class="btn btn-d" onclick="efApi('/api/extra-features/kill',{action:'on'})">Start</button>
+          <button class="btn btn-s" onclick="efApi('/api/extra-features/kill',{action:'off'})">Stop</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Multilast</div><div class="row-desc">Keep sending last-word messages at extreme speed</div><span class="row-cmd">.multilast @user / .stopmultilast</span></div>
+        <div class="row-actions">
+          <button class="btn btn-d" onclick="efApi('/api/extra-features/multilast',{action:'on'})">Start</button>
+          <button class="btn btn-s" onclick="efApi('/api/extra-features/multilast',{action:'off'})">Stop</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Ghost Ping</div><div class="row-desc">Ping a user then immediately delete the message</div><span class="row-cmd">.ghostping @user [count]</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="ghostpingUserId" placeholder="User ID">
+          <input type="number" class="inp" id="ghostpingCount" placeholder="Count" value="1" style="width:70px">
+          <button class="btn btn-w" onclick="ghostpingAction()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. PROFILE TOOLS ── -->
+  <div class="section searchable" data-keywords="pfp banner bio name display pronoun steal copy profile setpfp setbanner setbio setname setpronoun hypesquad">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">👤 Profile Tools <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Set Avatar (PFP)</div><span class="row-cmd">.setpfp &lt;url&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="pfpUrl" placeholder="Image URL">
+          <button class="btn btn-p" onclick="setProfile('pfp')">Set PFP</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Steal PFP</div><span class="row-cmd">.stealpfp @user</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="stealPfpUserId" placeholder="User ID">
+          <button class="btn btn-w" onclick="stealPfp()">Steal</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Set Banner</div><span class="row-cmd">.setbanner &lt;url&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="bannerUrl" placeholder="Image URL">
+          <button class="btn btn-p" onclick="setProfile('banner')">Set Banner</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Set Display Name</div><span class="row-cmd">.setname &lt;name&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="displayName" placeholder="Display name">
+          <button class="btn btn-p" onclick="setProfile('name')">Set Name</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Set Bio</div><span class="row-cmd">.setbio &lt;text&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="bioText" placeholder="Bio text">
+          <button class="btn btn-p" onclick="setProfile('bio')">Set Bio</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Set Pronouns</div><span class="row-cmd">.setpronoun &lt;text&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="pronounsText" placeholder="he/him, she/her...">
+          <button class="btn btn-p" onclick="setPronouns()">Set</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">HypeSquad</div><span class="row-cmd">.hypesquad &lt;house&gt;</span></div>
+        <div class="row-actions">
+          <button class="btn btn-p" onclick="setHypesquad('bravery')">Bravery</button>
+          <button class="btn btn-p" onclick="setHypesquad('brilliance')">Brilliance</button>
+          <button class="btn btn-p" onclick="setHypesquad('balance')">Balance</button>
+          <button class="btn btn-d" onclick="setHypesquad('off')">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. STATUS TOOLS ── -->
+  <div class="section searchable" data-keywords="status rotator setstatus online dnd idle invisible rstatus stopstatus spotify stream">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🔵 Status Tools <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Online Status</div><span class="row-cmd">.setstatus online/dnd/idle/invisible</span></div>
+        <div class="row-actions">
+          <button class="btn btn-g" onclick="setStatus('online')">Online</button>
+          <button class="btn btn-d" onclick="setStatus('dnd')">DND</button>
+          <button class="btn btn-w" onclick="setStatus('idle')">Idle</button>
+          <button class="btn btn-s" onclick="setStatus('invisible')">Invisible</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Status Rotator</div><div class="row-desc">Rotate through custom statuses every few seconds</div><span class="row-cmd">.rstatus status1, status2 / .stopstatus</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="statusList" placeholder="status1, status2, status3">
+          <input type="number" class="inp" id="statusDelay" placeholder="Delay (s)" value="8" style="width:90px">
+          <button class="btn btn-p" onclick="statusRotate('on')">Start</button>
+          <button class="btn btn-d" onclick="statusRotate('off')">Stop</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Spotify Activity</div><div class="row-desc">Show as listening to a song</div><span class="row-cmd">.spotify &lt;song name&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="spotifyName" placeholder="Song name">
+          <button class="btn btn-p" onclick="efApi('/api/extra-features/setstatus',{status:'online',activity:{type:'LISTENING',name:document.getElementById(\'spotifyName\').value}})">Set</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 7. NICKNAME TOOLS ── -->
+  <div class="section searchable" data-keywords="nickname nick fnick autonick nickloop forcenick">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">✏️ Nickname Tools <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Force Nick</div><div class="row-desc">Lock a user's nickname</div><span class="row-cmd">.fnick @user &lt;nick&gt;</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="forceNickUserId" placeholder="User ID">
+          <input type="text" class="inp" id="forceNickName" placeholder="Nickname">
+          <button class="btn btn-p" onclick="autonickAction('on')">Lock</button>
+          <button class="btn btn-d" onclick="autonickAction('off')">Unlock</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 8. FRIEND / BLOCK ── -->
+  <div class="section searchable" data-keywords="friend unfriend block unblock add remove relationship">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🤝 Friend & Block <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Friend / Unfriend</div><span class="row-cmd">.friend @user / .unfriend @user / .unfriendall</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="friendUserId" placeholder="User ID">
+          <button class="btn btn-g" onclick="friendAction('add')">Friend</button>
+          <button class="btn btn-d" onclick="friendAction('remove')">Unfriend</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Block / Unblock</div><span class="row-cmd">.block @user / .unblock @user</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="blockUserId" placeholder="User ID">
+          <button class="btn btn-d" onclick="blockAction('block')">Block</button>
+          <button class="btn btn-g" onclick="blockAction('unblock')">Unblock</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 9. TOKEN TOOLS ── -->
+  <div class="section searchable" data-keywords="token check tokuser tinfo valid invalid ct tjoin">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🔑 Token Tools <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Token Lookup</div><div class="row-desc">Get user info from any token</div><span class="row-cmd">.tokuser &lt;token&gt; / .tinfo / .tc</span></div>
+        <div class="row-actions">
+          <input type="text" class="inp" id="tokenInput" placeholder="Discord token">
+          <button class="btn btn-p" onclick="tokenLookup()">Lookup</button>
+        </div>
+      </div>
+      <div class="result-box" id="tokenResult"></div>
+    </div>
+  </div>
+
+  <!-- ── 10. SERVER TOOLS ── -->
+  <div class="section searchable" data-keywords="massban masskick massrole channel create nuke server gc leave gcleave srvc serverinfo">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🏰 Server Tools <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row"><div class="row-info"><div class="row-name">Create Channel</div><span class="row-cmd">.createchannel &lt;name&gt;</span></div><div class="row-desc" style="color:#555">Use in Discord chat</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Create VC</div><span class="row-cmd">.createvc &lt;name&gt;</span></div><div class="row-desc" style="color:#555">Use in Discord chat</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Create Role</div><span class="row-cmd">.createrole &lt;name&gt;</span></div><div class="row-desc" style="color:#555">Use in Discord chat</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Mass Ban</div><span class="row-cmd">.massban</span></div><div class="row-desc" style="color:#e74c3c">⚠️ Bans all non-bot members. Irreversible.</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Mass Kick</div><span class="row-cmd">.masskick</span></div><div class="row-desc" style="color:#f39c12">Kicks all non-bot members</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Mass Delete Emojis</div><span class="row-cmd">.massdelemoji / .wipemojis</span></div><div class="row-desc" style="color:#555">Deletes all server emojis</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Leave All Group Chats</div><span class="row-cmd">.gcleaveall</span></div><div class="row-desc" style="color:#555">Leave every group DM</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Server Prune (7 days)</div><span class="row-cmd">.srvprune</span></div><div class="row-desc" style="color:#555">Prune inactive members</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Server Info</div><span class="row-cmd">.srvc</span></div><div class="row-desc" style="color:#555">Show server stats</div></div>
+      <div class="row"><div class="row-info"><div class="row-name">Nuke Channel</div><span class="row-cmd">.nukechannel &lt;name&gt;</span></div><div class="row-desc" style="color:#e74c3c">⚠️ Deletes + recreates current channel</div></div>
+    </div>
+  </div>
+
+  <!-- ── 11. FUN COMMANDS ── -->
+  <div class="section searchable" data-keywords="fun pp gay sigma rizz aura skibidi ping diddy pedophile goat cringe godly retard insult waifu sadcat">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">😂 Fun Commands (use in Discord chat) <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0">
+        <% const funCmds = ['ping','pp','gay','sigma','rizz','aura','skibidi','diddy','pedophile','goat','faggot','cringe','godly','nitro','hindu','ceepeelover','retard','autism','rape','anal','bangmom','blowjob','boobs','tits','cuck','cum','cumslut','dahoodian','dripcheck','eboy','egirl','femboy','thug','roadman','robloxian','jew','indian','comboy','swat','stomp','spit','tickle','whois','av','snipe','waifu','sadcat','hostinfo','stats','display','menu','help','ip']; %>
+        <% funCmds.forEach(c => { %>
+          <span class="row-cmd" style="cursor:default">.<%= c %></span>
+        <% }); %>
+      </div>
+      <div style="margin-top:10px;font-size:.76rem;color:#444">All fun commands accept <code>@user</code> as argument. Use them directly in Discord with your bot prefix.</div>
+    </div>
+  </div>
+
+  <!-- ── 12. ANIME GIFs ── -->
+  <div class="section searchable" data-keywords="anime gif sfw nsfw kiss slap hug pat waifu ecchi hentai">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">🎌 Anime GIFs (use in Discord chat) <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div style="margin-bottom:8px;font-size:.8rem;color:#555">SFW:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <% ['kiss','slap','hug','pat','wave','cuddle','lick','bite','bully','poke','bonk','yeet','highfive','handhold','nom','smug','dance','cry','sleep','blush','wink','smile'].forEach(c => { %>
+          <span class="row-cmd">.<%= c %></span>
+        <% }); %>
+      </div>
+      <div style="margin:10px 0 6px;font-size:.8rem;color:#555">NSFW:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <% ['ecchi','hentai','uniform','maid','oppai','selfies','raiden','marin'].forEach(c => { %>
+          <span class="row-cmd">.<%= c %></span>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 13. TEXT / PURGE ── -->
+  <div class="section searchable" data-keywords="purge delete messages ss send silent ghost s sd se ss ssd bold italic strong">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">💬 Message Tools (use in Discord chat) <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <% ['.s <text>','`.ss <text>`','.sd <secs> <text>','.se <edit>','.ssd <secs> <text>','.purge [n]','.ghostping @u [n]','.ghostspam @u [n]','.sp <text>','.bomber <text>','.firstmessage','.cls','.me <text>','.bold','.unbold','.italicon','.italicoff','.strongon','.strongoff','.hashon','.hashoff'].forEach(c => { %>
+          <span class="row-cmd" style="cursor:default"><%= c %></span>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 14. TWEET / SOCIAL ── -->
+  <div class="section searchable" data-keywords="tweet spotify discordreport social">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">📢 Social / Misc (use in Discord chat) <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <% ['.tweet <text>','.spotify <song>','.discordreport <uid>','.tinfo [token]','.tbio <tok> <bio>','.tpfp <tok> <url>','.tstatus <tok> <status>','.tpronouns <tok> <text>','.tokuser <token>','.tc <token>','.gentoken [n]','.rg','.rge','.rgd','.tjoin <invite> [n]','.sgcwl <uid>','.gcwl <uid>','.gcfill','.rpcrun','.stoprpc'].forEach(c => { %>
+          <span class="row-cmd" style="cursor:default"><%= c %></span>
+        <% }); %>
+      </div>
     </div>
   </div>
 
 </div>
 
 <div class="toast" id="toast"></div>
-
 <%- include('partials/super_button') %>
 
 <script>
+// ── Toast ─────────────────────────────────────────────────────────────────────
 function showToast(msg, ok=true) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.borderColor = ok ? 'rgba(138,43,226,0.4)' : 'rgba(231,76,60,0.4)';
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-async function api(path, body) {
-  const r = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  return r.json();
+// ── Generic API call ──────────────────────────────────────────────────────────
+async function efApi(path, body) {
+  try {
+    const r = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (d.success) showToast(d.message || '✅ Done');
+    else showToast('❌ ' + (d.error || 'Error'), false);
+    return d;
+  } catch(e) { showToast('❌ ' + e.message, false); return {}; }
 }
 
+// ── Section toggle ────────────────────────────────────────────────────────────
+function toggleSection(el) {
+  const body = el.nextElementSibling;
+  const chev = el.querySelector('.chevron');
+  const open = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+  body.style.maxHeight = open ? '0px' : body.scrollHeight + 'px';
+  if (chev) chev.classList.toggle('open', !open);
+}
+// Open all by default
+document.querySelectorAll('.section-body').forEach(b => b.style.maxHeight = b.scrollHeight + 'px');
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function filterSections() {
+  const q = document.getElementById('searchBar').value.toLowerCase();
+  document.querySelectorAll('.searchable').forEach(s => {
+    const kw = (s.dataset.keywords || '') + ' ' + s.textContent;
+    s.style.display = q && !kw.toLowerCase().includes(q) ? 'none' : '';
+  });
+}
+
+// ── Load state ────────────────────────────────────────────────────────────────
 async function loadState() {
   try {
     const d = await fetch('/api/extra-features').then(r=>r.json());
-    ['agct','silentantigc','alw','snipe'].forEach(k => {
+    ['agct','silentantigc','alw','snipe','pinginsult'].forEach(k => {
       const el = document.getElementById(k);
       if (el) el.checked = !!d[k];
     });
   } catch(e) {}
 }
 
+// ── Auto features ─────────────────────────────────────────────────────────────
 async function toggleFeature(key, val) {
-  const r = await api('/api/extra-features/toggle', { key, value: val });
-  showToast(r.success ? `${key} ${val?'enabled':'disabled'}` : (r.error||'Error'), r.success);
+  const r = await efApi('/api/extra-features/toggle', { key, value: val });
+  if (r.success) showToast(`${key}: ${val ? 'ON' : 'OFF'}`);
 }
-
 async function stfuAction(action) {
   const id = document.getElementById('stfuUserId').value.trim();
   if (!id) return showToast('Enter a User ID', false);
-  const r = await api('/api/extra-features/stfu', { userId: id, action });
-  showToast(r.success ? `STFU ${action==='on'?'enabled':'disabled'} for ${id}` : (r.error||'Error'), r.success);
+  await efApi('/api/extra-features/stfu', { userId: id, action });
 }
-
 async function arrAction(action) {
   const id = document.getElementById('arrUserId').value.trim();
   if (!id) return showToast('Enter a User ID', false);
-  const r = await api('/api/extra-features/arr', { userId: id, action });
-  showToast(r.success ? `ARR ${action==='on'?'enabled':'disabled'} for ${id}` : (r.error||'Error'), r.success);
+  await efApi('/api/extra-features/arr', { userId: id, action });
 }
-
 async function mimicAction(action) {
   const id = document.getElementById('mimicUserId').value.trim();
   if (action === 'on' && !id) return showToast('Enter a User ID', false);
-  const r = await api('/api/extra-features/mimic', { userId: id, action });
-  showToast(r.success ? `Mimic ${action==='on'?'started':'stopped'}` : (r.error||'Error'), r.success);
+  await efApi('/api/extra-features/mimic', { userId: id, action });
+}
+async function dreactAction(action) {
+  const uid = document.getElementById('dreactUserId').value.trim();
+  const emojis = document.getElementById('dreactEmojis').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/dreact', { userId: uid, emojis, action });
+}
+async function autoreactAction(action) {
+  const uid = document.getElementById('autoreactUserId').value.trim();
+  const emoji = document.getElementById('autoreactEmoji').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/autoreact', { userId: uid, emoji, action });
+}
+async function autofloodAction(action) {
+  const uid = document.getElementById('autofloodUserId').value.trim();
+  const msg = document.getElementById('autofloodMsg').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/autoflood', { userId: uid, message: msg, action });
+}
+async function blackifyAction(action) {
+  const uid = document.getElementById('blackifyUserId').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/blackify', { userId: uid, action });
+}
+async function ghostpingAction() {
+  const uid = document.getElementById('ghostpingUserId').value.trim();
+  const count = parseInt(document.getElementById('ghostpingCount').value) || 1;
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/ghostping', { userId: uid, count });
+}
+async function toggleAntiAfk(action) {
+  const interval = parseInt(document.getElementById('antiafkInterval').value) || 10;
+  await efApi('/api/extra-features/toggle', { key: 'antiafk', value: action === 'on', interval });
+}
+async function autonickAction(action) {
+  const uid = document.getElementById('forceNickUserId').value.trim();
+  const nick = document.getElementById('forceNickName').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/autonick', { userId: uid, nick, action });
 }
 
+// ── Profile ───────────────────────────────────────────────────────────────────
 async function setProfile(type) {
-  const map = { pfp: 'pfpUrl', banner: 'bannerUrl', name: 'displayName', bio: 'bioText' };
-  const val = document.getElementById(map[type]).value.trim();
+  const map = { pfp:'pfpUrl', banner:'bannerUrl', name:'displayName', bio:'bioText' };
+  const val = document.getElementById(map[type])?.value.trim();
   if (!val) return showToast('Enter a value', false);
-  const r = await api('/api/extra-features/profile', { type, value: val });
-  showToast(r.success ? 'Profile updated!' : (r.error||'Error'), r.success);
+  await efApi('/api/extra-features/profile', { type, value: val });
+}
+async function stealPfp() {
+  const uid = document.getElementById('stealPfpUserId').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/stealpfp', { userId: uid });
+}
+async function setPronouns() {
+  const p = document.getElementById('pronounsText').value.trim();
+  await efApi('/api/extra-features/pronouns', { pronouns: p });
+}
+async function setHypesquad(house) {
+  await efApi('/api/extra-features/hypesquad', { house });
 }
 
-async function setHypesquad(house) {
-  const r = await api('/api/extra-features/hypesquad', { house });
-  showToast(r.success ? `HypeSquad set to ${house}` : (r.error||'Error'), r.success);
+// ── Status ────────────────────────────────────────────────────────────────────
+async function setStatus(status) {
+  await efApi('/api/extra-features/setstatus', { status });
+}
+async function statusRotate(action) {
+  const statuses = document.getElementById('statusList').value.trim();
+  const delay = parseInt(document.getElementById('statusDelay').value) || 8;
+  await efApi('/api/extra-features/status-rotator', { statuses, delay, action });
+}
+
+// ── Friend / Block ────────────────────────────────────────────────────────────
+async function friendAction(action) {
+  const uid = document.getElementById('friendUserId').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/friend', { userId: uid, action });
+}
+async function blockAction(action) {
+  const uid = document.getElementById('blockUserId').value.trim();
+  if (!uid) return showToast('Enter a User ID', false);
+  await efApi('/api/extra-features/block', { userId: uid, action });
+}
+
+// ── Token lookup ──────────────────────────────────────────────────────────────
+async function tokenLookup() {
+  const tok = document.getElementById('tokenInput').value.trim();
+  if (!tok) return showToast('Enter a token', false);
+  const r = await efApi('/api/extra-features/tokuser', { token: tok });
+  const box = document.getElementById('tokenResult');
+  if (r.success && r.user) {
+    const u = r.user;
+    box.textContent = `Username: ${u.username}\nID: ${u.id}\nEmail: ${u.email}\nNitro: ${u.nitro}\nMFA: ${u.mfa}\nPhone: ${u.phone}\nVerified: ${u.verified}`;
+    box.style.display = 'block';
+  } else {
+    box.textContent = 'Invalid or failed.';
+    box.style.display = 'block';
+  }
 }
 
 loadState();
