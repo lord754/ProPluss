@@ -253,59 +253,54 @@ function applyDot(dotStatus, statusText) {
 async function checkUpdates(force) {
   const btn = document.getElementById('checkBtn');
   btn.disabled = true; btn.textContent = '⏳ Checking...';
-  applyDot('gray', 'Checking...');
+  applyDot('yellow', 'Checking...');
   try {
     const r = await fetch('/api/updater/check').then(x => x.json());
-    lastCheckTime = Date.now();
 
-    // Show installed info in LEFT column
-    if (r.installedVersion || r.installedShortSha) {
-      const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
-      // Version line
-      document.getElementById('installedVerNum').textContent = r.installedVersion ? r.installedVersion : '—';
-      if (r.installedChannel && r.installedChannel !== 'stable') {
-        const ch = document.getElementById('installedVerChannel');
-        ch.textContent = ' ' + r.installedChannel.toUpperCase();
-        ch.style.color = chColors[r.installedChannel] || '#a29bfe';
-      }
-      document.getElementById('installedVerText').style.display = 'block';
-      // Commit line — only show if we have a sha (after at least one update was applied)
-      if (r.installedShortSha) {
-        document.getElementById('installedShaNum').textContent = r.installedShortSha;
-        document.getElementById('installedShaText').style.display = 'block';
-      }
-    } else {
-      document.getElementById('installedVerPlaceholder').style.display = 'block';
+    // Always show version — use returned value or fallback constant
+    const ver = r.installedVersion || r.currentVersion || '1.1s';
+    const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
+
+    // Left column: version
+    document.getElementById('installedVerNum').textContent = ver;
+    if (r.installedChannel && r.installedChannel !== 'stable') {
+      const ch = document.getElementById('installedVerChannel');
+      ch.textContent = ' ' + r.installedChannel.toUpperCase();
+      ch.style.color = chColors[r.installedChannel] || '#a29bfe';
+    }
+    document.getElementById('installedVerText').style.display = 'block';
+    document.getElementById('installedVerPlaceholder').style.display = 'none';
+    // Commit sha line
+    if (r.installedShortSha) {
+      document.getElementById('installedShaNum').textContent = r.installedShortSha;
+      document.getElementById('installedShaText').style.display = 'block';
     }
 
-    // Build version label for header
+    // Header build version
     const bvEl = document.getElementById('buildVersion');
-    if (r.installedVersion) {
-      bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + r.installedVersion : 'v' + r.installedVersion;
-    }
+    bvEl.textContent = r.installedShortSha ? r.installedShortSha + ' · v' + ver : 'v' + ver;
 
+    // Always show revert banner state
     document.getElementById('revertBanner').style.display = r.canRevert ? 'flex' : 'none';
 
-    // Determine dot state
-    if (r.canRevert) {
-      applyDot('red', 'Revert Required?');
-    } else if (r.isUpToDate && !r.hasUpdate) {
-      applyDot('green', 'Up To Date');
-      document.getElementById('updatesContainer').innerHTML = '';
+    // Dot reflects revert OR update state — canRevert shows as warning, not blocker
+    if (r.error) {
+      applyDot('yellow', 'Minor Issues');
     } else if (r.hasUpdate) {
-      applyDot('red', 'Update Required');
+      applyDot('red', r.canRevert ? 'Update + Revert Available' : 'Update Required');
       renderUpdates(r.updates.filter(u => !u.isDismissed));
+    } else if (r.isUpToDate && !r.hasUpdate) {
+      applyDot(r.canRevert ? 'yellow' : 'green', r.canRevert ? 'Up To Date (Revert Available)' : 'Up To Date');
+      document.getElementById('updatesContainer').innerHTML = '';
     } else {
-      // All dismissed
-      applyDot('yellow', 'Updates Dismissed');
+      applyDot('yellow', r.canRevert ? 'Revert Available' : 'Updates Dismissed');
       document.getElementById('updatesContainer').innerHTML = '';
     }
 
     renderDismissed(r.dismissedItems);
     renderHistory(r.history);
   } catch(e) {
-    applyDot('yellow', 'Check Failed');
-    document.getElementById('statusLabel').textContent = 'Check Failed';
+    applyDot('yellow', 'Minor Issues');
     document.getElementById('dotTip').textContent = e.message;
   }
   btn.disabled = false; btn.textContent = '🔍 Check For Update';
@@ -452,45 +447,38 @@ async function doRevert() {
     const fl = await fetch('/api/updater/logs').then(x=>x.json());
     logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
     document.getElementById('revertBanner').style.display = 'none';
-    lastCheckTime = 0; await checkUpdates(true);
+    await checkUpdates();
   } catch(e) { clearInterval(poll); logBox.textContent += '\nError: '+e.message; }
 }
 
-// Load dot state from server on page load (before user clicks Check)
+// On page load: pre-populate version from lightweight state, then auto-check
 (async function initDot() {
   try {
     const r = await fetch('/api/updater/dot-status').then(x => x.json());
-    const dotMessages = {
-      green: 'Up To Date',
-      red: 'Update Required',
-      yellow: 'Check Needed',
-      gray: 'Not checked'
-    };
-    applyDot(r.dotStatus || 'gray', dotMessages[r.dotStatus] || 'Not checked');
-    // Override label if update failed
-    if (r.lastUpdateFailed) applyDot('red', 'Revert Required');
-
-    // Populate left column
-    if (r.installedVersion) {
-      document.getElementById('installedVerNum').textContent = r.installedVersion;
-      const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
-      if (r.installedChannel && r.installedChannel !== 'stable') {
-        const ch = document.getElementById('installedVerChannel');
-        ch.textContent = ' ' + r.installedChannel.toUpperCase();
-        ch.style.color = chColors[r.installedChannel] || '#a29bfe';
-      }
-      document.getElementById('installedVerText').style.display = 'block';
-      if (r.lastSha) {
-        document.getElementById('installedShaNum').textContent = r.lastSha.slice(0,7);
-        document.getElementById('installedShaText').style.display = 'block';
-      }
-      // Header build version
-      const bvEl = document.getElementById('buildVersion');
-      bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + r.installedVersion : 'v' + r.installedVersion;
-    } else {
-      document.getElementById('installedVerPlaceholder').style.display = 'block';
+    const ver = r.installedVersion || '1.1s';
+    document.getElementById('installedVerNum').textContent = ver;
+    const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
+    if (r.installedChannel && r.installedChannel !== 'stable') {
+      const ch = document.getElementById('installedVerChannel');
+      ch.textContent = ' ' + r.installedChannel.toUpperCase();
+      ch.style.color = chColors[r.installedChannel] || '#a29bfe';
     }
-  } catch(e) {}
+    document.getElementById('installedVerText').style.display = 'block';
+    document.getElementById('installedVerPlaceholder').style.display = 'none';
+    if (r.lastSha) {
+      document.getElementById('installedShaNum').textContent = r.lastSha.slice(0,7);
+      document.getElementById('installedShaText').style.display = 'block';
+    }
+    const bvEl = document.getElementById('buildVersion');
+    bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + ver : 'v' + ver;
+  } catch(e) {
+    // Still show default version even if dot-status fails
+    document.getElementById('installedVerNum').textContent = '1.1s';
+    document.getElementById('installedVerText').style.display = 'block';
+    document.getElementById('buildVersion').textContent = 'v1.1s';
+  }
+  // Auto-trigger full check
+  await checkUpdates();
 })();
 </script>
 </body>
