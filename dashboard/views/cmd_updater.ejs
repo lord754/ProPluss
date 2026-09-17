@@ -14,7 +14,7 @@
 .upd-header{text-align:center;margin:60px 0 28px}
 .upd-header h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff,#a29bfe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
 .upd-header p{color:#555;font-size:.9rem}
-.card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:14px}
+.card{background:#111116;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;margin-bottom:14px;overflow:hidden}
 .btn{padding:9px 18px;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:.82rem;transition:.2s;font-family:'Outfit',sans-serif;display:inline-flex;align-items:center;gap:5px}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn-primary{background:linear-gradient(90deg,#8a2be2,#6c5ce7);color:#fff;box-shadow:0 4px 12px rgba(138,43,226,0.25)}
@@ -35,10 +35,10 @@
 .dot-gray{background:#555}
 
 /* ── Check row: 3 columns — LEFT=version info, CENTER=button, RIGHT=dot+label ── */
-.check-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
-.check-row-left{display:flex;flex-direction:column;gap:2px}
-.check-row-center{display:flex;flex-direction:column;align-items:center;gap:4px}
-.check-row-right{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.check-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;width:100%;min-width:0}
+.check-row-left{display:flex;flex-direction:column;gap:2px;min-width:0}
+.check-row-center{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.check-row-right{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}
 .status-label{font-size:.83rem;font-weight:700;color:#aaa}
 .installed-ver{font-size:.82rem;font-weight:700;color:#ccc}
 .installed-sha-note{font-family:monospace;font-size:.75rem;color:#555}
@@ -132,7 +132,7 @@
 
 <div class="upd-wrap">
   <div class="upd-header">
-    <h1>&#x21BB; Pro+ Updater</h1>
+    <h1>🔄 Pro+ Updater</h1>
     <p>Check and apply GitHub updates without touching your config or tokens.</p>
     <div style="margin-top:10px;font-size:.8rem;color:#444">
       Current build: <span id="buildVersion" style="color:#8a2be2;font-family:monospace">—</span>
@@ -203,8 +203,6 @@
 <%- include('partials/super_button') %>
 
 <script>
-let lastCheckTime = 0;
-
 function fmtDate(d) {
   if (!d) return '';
   const dt = new Date(d);
@@ -240,8 +238,8 @@ function applyDot(dotStatus, statusText) {
   } else if (dotStatus === 'yellow') {
     dot.classList.add('dot-yellow');
     label.style.color = '#f1c40f';
-    label.textContent = statusText || 'Warning';
-    tip.textContent = statusText || 'Check needed or repo error';
+    label.textContent = statusText || 'Checking...';
+    tip.textContent = statusText || 'Checking for updates...';
   } else {
     dot.classList.add('dot-gray');
     label.style.color = '#555';
@@ -250,18 +248,16 @@ function applyDot(dotStatus, statusText) {
   }
 }
 
-async function checkUpdates(force) {
+async function checkUpdates() {
   const btn = document.getElementById('checkBtn');
   btn.disabled = true; btn.textContent = '⏳ Checking...';
-  applyDot('gray', 'Checking...');
+  applyDot('yellow', 'Checking...');
   try {
     const r = await fetch('/api/updater/check').then(x => x.json());
-    lastCheckTime = Date.now();
 
     // Show installed info in LEFT column
     if (r.installedVersion || r.installedShortSha) {
       const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
-      // Version line
       document.getElementById('installedVerNum').textContent = r.installedVersion ? r.installedVersion : '—';
       if (r.installedChannel && r.installedChannel !== 'stable') {
         const ch = document.getElementById('installedVerChannel');
@@ -269,7 +265,6 @@ async function checkUpdates(force) {
         ch.style.color = chColors[r.installedChannel] || '#a29bfe';
       }
       document.getElementById('installedVerText').style.display = 'block';
-      // Commit line — only show if we have a sha (after at least one update was applied)
       if (r.installedShortSha) {
         document.getElementById('installedShaNum').textContent = r.installedShortSha;
         document.getElementById('installedShaText').style.display = 'block';
@@ -287,7 +282,9 @@ async function checkUpdates(force) {
     document.getElementById('revertBanner').style.display = r.canRevert ? 'flex' : 'none';
 
     // Determine dot state
-    if (r.canRevert) {
+    if (r.error) {
+      applyDot('yellow', 'Minor Issues');
+    } else if (r.canRevert) {
       applyDot('red', 'Revert Required?');
     } else if (r.isUpToDate && !r.hasUpdate) {
       applyDot('green', 'Up To Date');
@@ -296,7 +293,7 @@ async function checkUpdates(force) {
       applyDot('red', 'Update Required');
       renderUpdates(r.updates.filter(u => !u.isDismissed));
     } else {
-      // All dismissed
+      // All dismissed — minor notice
       applyDot('yellow', 'Updates Dismissed');
       document.getElementById('updatesContainer').innerHTML = '';
     }
@@ -304,8 +301,7 @@ async function checkUpdates(force) {
     renderDismissed(r.dismissedItems);
     renderHistory(r.history);
   } catch(e) {
-    applyDot('yellow', 'Check Failed');
-    document.getElementById('statusLabel').textContent = 'Check Failed';
+    applyDot('yellow', 'Minor Issues');
     document.getElementById('dotTip').textContent = e.message;
   }
   btn.disabled = false; btn.textContent = '🔍 Check For Update';
@@ -407,7 +403,7 @@ async function applyUpdate(sha, btn) {
     if (result.failed > 0) {
       applyDot('red', 'Revert Required');
     }
-    await checkUpdates(true);
+    await checkUpdates();
   } catch(e) {
     clearInterval(poll); logBox.textContent += '\nError: '+e.message;
     btn.disabled = false; btn.textContent = 'Apply Update';
@@ -417,17 +413,17 @@ async function applyUpdate(sha, btn) {
 async function dismissUpdate(sha, btn) {
   btn.disabled = true;
   await fetch('/api/updater/dismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
-  lastCheckTime = 0; await checkUpdates(true);
+  await checkUpdates();
 }
 async function undismiss(sha, btn) {
   btn.disabled = true;
   await fetch('/api/updater/undismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
-  lastCheckTime = 0; await checkUpdates(true);
+  await checkUpdates();
 }
 async function undismissApply(sha, btn) {
   btn.disabled = true; btn.textContent = '⏳...';
   await fetch('/api/updater/undismiss', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
-  lastCheckTime = 0; await checkUpdates(true);
+  await checkUpdates();
   const item = document.getElementById('item-'+sha);
   if (item) { const ab = item.querySelector('.btn-primary'); if (ab) ab.click(); }
 }
@@ -435,7 +431,7 @@ async function deletePerm(sha, btn) {
   if (!confirm('Permanently remove this update from the list? It will never show again.')) return;
   btn.disabled = true;
   await fetch('/api/updater/delete', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sha})});
-  lastCheckTime = 0; await checkUpdates(true);
+  await checkUpdates();
 }
 async function doRevert() {
   if (!confirm('Revert to the version before the last update?')) return;
@@ -452,25 +448,15 @@ async function doRevert() {
     const fl = await fetch('/api/updater/logs').then(x=>x.json());
     logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
     document.getElementById('revertBanner').style.display = 'none';
-    lastCheckTime = 0; await checkUpdates(true);
+    await checkUpdates();
   } catch(e) { clearInterval(poll); logBox.textContent += '\nError: '+e.message; }
 }
 
-// Load dot state from server on page load (before user clicks Check)
+// On page load: show yellow "Checking for updates" immediately, then auto-run a real check
 (async function initDot() {
+  // Pre-populate version info from lightweight local state first
   try {
     const r = await fetch('/api/updater/dot-status').then(x => x.json());
-    const dotMessages = {
-      green: 'Up To Date',
-      red: 'Update Required',
-      yellow: 'Check Needed',
-      gray: 'Not checked'
-    };
-    applyDot(r.dotStatus || 'gray', dotMessages[r.dotStatus] || 'Not checked');
-    // Override label if update failed
-    if (r.lastUpdateFailed) applyDot('red', 'Revert Required');
-
-    // Populate left column
     if (r.installedVersion) {
       document.getElementById('installedVerNum').textContent = r.installedVersion;
       const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
@@ -484,13 +470,17 @@ async function doRevert() {
         document.getElementById('installedShaNum').textContent = r.lastSha.slice(0,7);
         document.getElementById('installedShaText').style.display = 'block';
       }
-      // Header build version
       const bvEl = document.getElementById('buildVersion');
       bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + r.installedVersion : 'v' + r.installedVersion;
     } else {
       document.getElementById('installedVerPlaceholder').style.display = 'block';
     }
   } catch(e) {}
+
+  // Show yellow dot while we auto-check
+  applyDot('yellow', 'Checking for updates...');
+  // Auto-run a full check on page load
+  await checkUpdates();
 })();
 </script>
 </body>
