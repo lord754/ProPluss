@@ -258,7 +258,7 @@ async function checkUpdates(force) {
     const r = await fetch('/api/updater/check').then(x => x.json());
 
     // Always show version — use returned value or fallback constant
-    const ver = r.installedVersion || r.currentVersion || '1.1s';
+    const ver = r.installedVersion || r.currentVersion || '1.1.1a';
     const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
 
     // Left column: version
@@ -455,7 +455,7 @@ async function doRevert() {
 (async function initDot() {
   try {
     const r = await fetch('/api/updater/dot-status').then(x => x.json());
-    const ver = r.installedVersion || '1.1s';
+    const ver = r.installedVersion || '1.1.1a';
     document.getElementById('installedVerNum').textContent = ver;
     const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
     if (r.installedChannel && r.installedChannel !== 'stable') {
@@ -473,7 +473,7 @@ async function doRevert() {
     bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + ver : 'v' + ver;
   } catch(e) {
     // Still show default version even if dot-status fails
-    document.getElementById('installedVerNum').textContent = '1.1s';
+    document.getElementById('installedVerNum').textContent = '1.1.1a';
     document.getElementById('installedVerText').style.display = 'block';
     document.getElementById('buildVersion').textContent = 'v1.1s';
   }
