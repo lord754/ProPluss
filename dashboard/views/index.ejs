@@ -221,6 +221,15 @@
                 </div>
 
                 <div class="rotator-card">
+                    <div class="rotator-card-title">📡 Stream Status <span class="rbadge rbadge-off" id="rStreamBadge">OFF</span></div>
+                    <input type="text" class="rotator-inp" id="rStreamList" placeholder="Playing Valorant, Grinding ranked...">
+                    <div style="display:flex;gap:6px;margin-top:4px">
+                        <button class="rbtn rbtn-on" onclick="rStartStream()">Start</button>
+                        <button class="rbtn rbtn-off" onclick="rStopStream()">Stop</button>
+                    </div>
+                </div>
+
+                <div class="rotator-card">
                     <div class="rotator-card-title">🟢 Online Status</div>
                     <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px">
                         <button class="rbtn rbtn-on" onclick="rSetStatus('online')">🟢 Online</button>
@@ -302,7 +311,7 @@
 
 <script>
 // ── Status Rotator (right panel) ──────────────────────────────────────────────
-let rStatusTimer = null, rEmojiTimer = null;
+let rStatusTimer = null, rEmojiTimer = null, rStreamTimer = null;
 
 async function rApi(path, body) {
     try {
@@ -361,6 +370,26 @@ function rStopEmoji() {
 }
 
 function rSetStatus(s) { rApi('/api/status-rotator/online-status', { status: s }); }
+
+async function rStartStream() {
+    const raw = document.getElementById('rStreamList').value;
+    const list = raw.split(',').map(s=>s.trim()).filter(Boolean);
+    if (!list.length) return;
+    if (rStreamTimer) clearInterval(rStreamTimer);
+    const badge = document.getElementById('rStreamBadge');
+    badge.className = 'rbadge rbadge-on'; badge.textContent = 'ON';
+    let idx = 0;
+    const tick = () => rApi('/api/status-rotator/stream', { name: list[idx++ % list.length] });
+    await tick();
+    rStreamTimer = setInterval(tick, 10000);
+}
+
+function rStopStream() {
+    if (rStreamTimer) { clearInterval(rStreamTimer); rStreamTimer = null; }
+    const badge = document.getElementById('rStreamBadge');
+    badge.className = 'rbadge rbadge-off'; badge.textContent = 'OFF';
+    rApi('/api/status-rotator/stream-stop', {});
+}
 </script>
 
 
