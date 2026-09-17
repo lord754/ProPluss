@@ -1,7 +1,7 @@
 {
   "name": "pro-plus",
-  "version": "1.0.0",
-  "description": "PRO+ Advanced Discord Selfbot — v1.0 Stable",
+  "version": "1.1.1a",
+  "description": "PRO+ Advanced Discord Selfbot — v1.1.1a Alpha",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
