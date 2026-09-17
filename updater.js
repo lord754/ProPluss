@@ -275,19 +275,51 @@ async function applyUpdate(sha, logs) {
     log(`Fetching commit ${sha.slice(0, 7)}...`);
 
     const commit = await getJson(`${API}/repos/${REPO}/commits/${sha}`);
-    const files = commit.files || [];
-    log(`${files.length} file(s) changed.`);
+    let files = commit.files || [];
+    log(`${files.length} file(s) in commit diff.`);
+
+    // Merge commits often return 0 or limited files via the single-commit endpoint.
+    // If we get 0 files, try fetching via the compare endpoint (parent..sha).
+    if (files.length === 0 && commit.parents && commit.parents.length >= 1) {
+        const parentSha = commit.parents[0].sha;
+        log(`Merge commit detected — comparing ${parentSha.slice(0,7)}...${sha.slice(0,7)}`);
+        try {
+            const cmp = await getJson(`${API}/repos/${REPO}/compare/${parentSha}...${sha}`);
+            files = cmp.files || [];
+            log(`Compare returned ${files.length} file(s).`);
+        } catch(e) {
+            log(`Compare failed: ${e.message}`);
+        }
+    }
+
+    if (files.length === 0) {
+        log('No files to update in this commit.');
+        // Still record state so it shows as installed
+        const state = loadState();
+        const commitMsg = commit.commit.message;
+        const versionParsed = extractVersionFromCommit(commitMsg);
+        const newVersion = versionParsed ? formatVersionDisplay(versionParsed).split(' ')[0] : (state.installedVersion || CURRENT_VERSION);
+        const newChannel = versionParsed ? versionParsed.channel : (state.installedChannel || CURRENT_CHANNEL);
+        state.lastSha = sha;
+        state.installedVersion = newVersion;
+        state.installedChannel = newChannel;
+        state.dismissed = (state.dismissed || []).filter(s => s !== sha);
+        state.deleted = (state.deleted || []).filter(s => s !== sha);
+        state.history = [{ sha: sha.slice(0,7), fullSha: sha, message: commitMsg.split('\n')[0], date: commit.commit.author.date, version: newVersion, channel: newChannel, updated: 0, skipped: 0, failed: 0 }, ...(state.history || [])].slice(0, 10);
+        saveState(state);
+        return { updated: 0, skipped: 0, failed: 0, history: state.history };
+    }
 
     const filesToChange = files.filter(f => !isProtected(f.filename) && f.status !== 'removed').map(f => f.filename);
     const backup = backupFiles(filesToChange);
 
     let updated = 0, skipped = 0, failed = 0;
     for (const file of files) {
-        if (isProtected(file.filename)) { log(`SKIP (protected): ${file.filename}`); skipped++; continue; }
-        if (file.status === 'removed') { log(`SKIP (removed): ${file.filename}`); skipped++; continue; }
+        if (isProtected(file.filename)) { log(`SKIP (protected — ${file.filename}): this file is never overwritten`); skipped++; continue; }
+        if (file.status === 'removed') { log(`SKIP (deleted in commit): ${file.filename}`); skipped++; continue; }
         try {
             const r = await get(`${RAW}/${REPO}/main/${file.filename}`);
-            if (r.status !== 200) throw new Error(`HTTP ${r.status}`);
+            if (r.status !== 200) throw new Error(`HTTP ${r.status} — file not found on main branch`);
             const dest = path.join(__dirname, file.filename);
             if (!fs.existsSync(path.dirname(dest))) fs.mkdirSync(path.dirname(dest), { recursive: true });
             fs.writeFileSync(dest, r.body);
