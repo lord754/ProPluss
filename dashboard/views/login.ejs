@@ -19,10 +19,11 @@
             background: #050508;
             color: #fff;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            overflow: hidden;
+            padding: 30px 20px;
             background-image: radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(52, 152, 219, 0.1) 0%, transparent 20%);
         }
@@ -123,56 +124,6 @@
             cursor: not-allowed;
         }
 
-        /* Pre-login top navigation */
-        .pre-login-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 14px 20px;
-            background: rgba(5,5,8,0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            z-index: 100;
-        }
-        .pre-login-nav a {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 7px 16px;
-            border-radius: 10px;
-            color: #888;
-            text-decoration: none;
-            font-size: 0.82rem;
-            font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.07);
-            background: rgba(255,255,255,0.03);
-            transition: 0.2s;
-        }
-        .pre-login-nav a:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.15);
-        }
-        .pre-login-nav a.active-nav {
-            color: #c084fc;
-            background: rgba(138,43,226,0.1);
-            border-color: rgba(138,43,226,0.3);
-        }
-        .nav-brand {
-            margin-right: 12px;
-            font-size: 1rem;
-            font-weight: 800;
-            background: linear-gradient(135deg,#fff,#a29bfe);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
         .error-msg {
             color: #e74c3c;
             padding: 10px;
@@ -210,15 +161,7 @@
 
 <body>
 
-    <!-- Pre-login Navigation -->
-    <nav class="pre-login-nav">
-        <span class="nav-brand">PRO+</span>
-        <a href="/login" class="active-nav">🔑 Login</a>
-        <a href="/accounts">👤 Multi Account Manager</a>
-        <a href="/commands/updater">&#x21BB; Pro+ Updater</a>
-    </nav>
-
-    <div class="login-card" style="margin-top:70px">
+    <div class="login-card">
         <div class="header">
             <h1>Welcome Back</h1>
             <p>Please login to access the dashboard</p>
@@ -252,6 +195,19 @@
                 <div id="spinner" class="loading-spinner"></div>
             </button>
         </form>
+    </div>
+
+    <!-- Quick access links below login card -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:20px;width:100%;max-width:400px;">
+        <div style="font-size:.75rem;color:#333;letter-spacing:.5px;text-transform:uppercase">Quick Access</div>
+        <div style="display:flex;gap:10px;width:100%">
+            <a href="/accounts" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#aaa;text-decoration:none;font-size:.82rem;font-weight:600;transition:.2s;text-align:center" onmouseover="this.style.background='rgba(255,255,255,0.09)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.color='#aaa'">
+                👤 Multi Account Manager
+            </a>
+            <a href="/commands/updater" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#aaa;text-decoration:none;font-size:.82rem;font-weight:600;transition:.2s;text-align:center" onmouseover="this.style.background='rgba(255,255,255,0.09)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.color='#aaa'">
+                &#x21BB; Pro+ Updater
+            </a>
+        </div>
     </div>
 
     <script>
