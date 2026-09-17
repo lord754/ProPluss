@@ -2598,6 +2598,43 @@ module.exports = (clientRef, clientsMap) => {
         } catch (e) { res.json({ success: false, error: e.message }); }
     });
 
+    // ── Environment Change API ─────────────────────────────────────────────────
+    app.post('/api/env/set', (req, res) => {
+        const { key, value } = req.body;
+        if (!key || value === undefined || value === null)
+            return res.json({ success: false, error: 'key and value required' });
+
+        // Whitelist of allowed env keys for safety
+        const allowed = [
+            'PREFIX','LAVALINK_WS','LAVALINK_REST','LAVALINK_PASSWORD',
+            'CLIENT_NAME','AI_API','APP_USER','APP_PASS','PORT','PUBLIC_URL'
+        ];
+        if (!allowed.includes(key))
+            return res.json({ success: false, error: `Key '${key}' is not allowed` });
+
+        try {
+            const envPath = path.join(__dirname, '..', '.env');
+            let content = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
+            const lines = content.split('\n');
+            let found = false;
+            const updated = lines.map(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith(key + '=') || trimmed === key) {
+                    found = true;
+                    return `${key}=${value}`;
+                }
+                return line;
+            });
+            if (!found) updated.push(`${key}=${value}`);
+            fs.writeFileSync(envPath, updated.join('\n'));
+            // Also update process.env so it takes partial effect without restart
+            process.env[key] = value;
+            res.json({ success: true, message: `${key} updated. Restart bot for full effect.` });
+        } catch(e) {
+            res.json({ success: false, error: e.message });
+        }
+    });
+
     app.listen(port, () => {
         console.log(`[Anti-Crash] Bot is ready on http://localhost:${port}/`);
     });

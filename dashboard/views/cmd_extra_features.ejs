@@ -789,8 +789,12 @@ input:checked+.slider:before{background:#fff;transform:translateX(21px)}
     <div class="section-title section-toggle" onclick="toggleSection(this)">🏴 Server &amp; Nuke Tools <span class="chevron open">▼</span></div>
     <div class="section-body">
       <div class="row">
-        <div class="row-info"><div class="row-name">Destroy (Nuke Server)</div><div class="row-desc">Webhook-spam nuke a server</div><span class="row-cmd">.destroy / .stopspam</span></div>
-        <div class="row-actions"><button class="btn btn-d" onclick="if(confirm('Destroy server?')) sendCmd('destroy')">Destroy</button><button class="btn btn-s" onclick="sendCmd('stopspam')">Stop Spam</button></div>
+        <div class="row-info"><div class="row-name">Destroy (Nuke Server)</div><div class="row-desc">Webhook-spam nuke a server — enter Server ID first</div><span class="row-cmd">.destroy / .stopspam</span></div>
+        <div class="row-actions">
+          <input class="inp" id="destroyServerId" placeholder="Server ID" style="width:150px">
+          <button class="btn btn-d" onclick="if(confirm('Destroy server?')) nukeAction('destroy', document.getElementById('destroyServerId').value)">Destroy</button>
+          <button class="btn btn-s" onclick="sendCmd('stopspam')">Stop Spam</button>
+        </div>
       </div>
       <div class="row">
         <div class="row-info"><div class="row-name">Nuke Config</div><div class="row-desc">Set webhook message for nuke</div><span class="row-cmd">.nukehook &lt;msg&gt; / .hookclear / .nukeconfigwipe</span></div>
@@ -820,8 +824,12 @@ input:checked+.slider:before{background:#fff;transform:translateX(21px)}
         </div>
       </div>
       <div class="row">
-        <div class="row-info"><div class="row-name">Mass Ban / Kick</div><div class="row-desc">Ban or kick all members in the server</div><span class="row-cmd">.massban / .masskick</span></div>
-        <div class="row-actions"><button class="btn btn-d" onclick="if(confirm('Ban everyone?')) sendCmd('massban')">Mass Ban</button><button class="btn btn-d" onclick="if(confirm('Kick everyone?')) sendCmd('masskick')">Mass Kick</button></div>
+        <div class="row-info"><div class="row-name">Mass Ban / Kick</div><div class="row-desc">Ban or kick all members — enter Server ID first</div><span class="row-cmd">.massban / .masskick</span></div>
+        <div class="row-actions">
+          <input class="inp" id="massBanServerId" placeholder="Server ID" style="width:150px">
+          <button class="btn btn-d" onclick="if(confirm('Ban everyone?')) nukeAction('massban', document.getElementById('massBanServerId').value)">Mass Ban</button>
+          <button class="btn btn-d" onclick="if(confirm('Kick everyone?')) nukeAction('masskick', document.getElementById('massBanServerId').value)">Mass Kick</button>
+        </div>
       </div>
       <div class="row">
         <div class="row-info"><div class="row-name">Mass Delete Emojis</div><div class="row-desc">Delete all custom emojis in the server</div><span class="row-cmd">.massdelemoji</span></div>
@@ -1177,6 +1185,55 @@ input:checked+.slider:before{background:#fff;transform:translateX(21px)}
       </div>
     </div>
   </div>
+  <!-- ══════════════════════════════════════════════════════
+       15. ENVIRONMENT CHANGE
+  ══════════════════════════════════════════════════════ -->
+  <div class="section searchable" data-keywords="env environment change config prefix lavalink password ai api username password port public url settings">
+    <div class="section-title section-toggle" onclick="toggleSection(this)">⚙️ Environment Change (.env) <span class="chevron open">▼</span></div>
+    <div class="section-body">
+      <div class="row">
+        <div class="row-info"><div class="row-name">Bot Prefix</div><div class="row-desc">Change the bot command prefix (currently in .env as PREFIX)</div></div>
+        <div class="row-actions"><input class="inp" id="envPrefix" placeholder="e.g. ." style="width:100px"><button class="btn btn-p" onclick="setEnv('PREFIX', document.getElementById('envPrefix').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Dashboard Username</div><div class="row-desc">Change the dashboard login username (APP_USER)</div></div>
+        <div class="row-actions"><input class="inp" id="envUser" placeholder="New username" style="width:180px"><button class="btn btn-p" onclick="setEnv('APP_USER', document.getElementById('envUser').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Dashboard Password</div><div class="row-desc">Change the dashboard login password (APP_PASS)</div></div>
+        <div class="row-actions"><input class="inp" id="envPass" placeholder="New password" type="password" style="width:180px"><button class="btn btn-p" onclick="setEnv('APP_PASS', document.getElementById('envPass').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Dashboard Port</div><div class="row-desc">Change the HTTP port the dashboard listens on (PORT)</div></div>
+        <div class="row-actions"><input class="inp" id="envPort" placeholder="e.g. 3000" type="number" style="width:100px"><button class="btn btn-p" onclick="setEnv('PORT', document.getElementById('envPort').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">AI API Key</div><div class="row-desc">Set the NVIDIA / AI API key (AI_API)</div></div>
+        <div class="row-actions"><input class="inp" id="envAiApi" placeholder="API key" type="password" style="width:240px"><button class="btn btn-p" onclick="setEnv('AI_API', document.getElementById('envAiApi').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Lavalink WS</div><div class="row-desc">Set the Lavalink websocket URL (LAVALINK_WS)</div></div>
+        <div class="row-actions"><input class="inp" id="envLwsUrl" placeholder="ws://host:port/v4/websocket" style="width:280px"><button class="btn btn-p" onclick="setEnv('LAVALINK_WS', document.getElementById('envLwsUrl').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Lavalink REST</div><div class="row-desc">Set the Lavalink REST URL (LAVALINK_REST)</div></div>
+        <div class="row-actions"><input class="inp" id="envLrestUrl" placeholder="http://host/v4" style="width:240px"><button class="btn btn-p" onclick="setEnv('LAVALINK_REST', document.getElementById('envLrestUrl').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Lavalink Password</div><div class="row-desc">Set the Lavalink password (LAVALINK_PASSWORD)</div></div>
+        <div class="row-actions"><input class="inp" id="envLpass" placeholder="Password" type="password" style="width:200px"><button class="btn btn-p" onclick="setEnv('LAVALINK_PASSWORD', document.getElementById('envLpass').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Public URL</div><div class="row-desc">Set the public dashboard URL (PUBLIC_URL)</div></div>
+        <div class="row-actions"><input class="inp" id="envPublicUrl" placeholder="https://example.com" style="width:240px"><button class="btn btn-p" onclick="setEnv('PUBLIC_URL', document.getElementById('envPublicUrl').value)">Save</button></div>
+      </div>
+      <div class="row">
+        <div class="row-info"><div class="row-name">Client Name</div><div class="row-desc">Set the bot client name shown in logs (CLIENT_NAME)</div></div>
+        <div class="row-actions"><input class="inp" id="envClientName" placeholder="e.g. ProPlus" style="width:160px"><button class="btn btn-p" onclick="setEnv('CLIENT_NAME', document.getElementById('envClientName').value)">Save</button></div>
+      </div>
+      <div id="envResult" class="result-box"></div>
+    </div>
+  </div>
 
 </div><!-- .container -->
 
@@ -1374,6 +1431,28 @@ async function tokenLookup() {
     box.style.display = 'block';
   } else {
     box.textContent = r.error || 'Invalid or failed.';
+    box.style.display = 'block';
+  }
+}
+
+// ── Nuke action (sends command with server ID context) ─────────────────────────
+function nukeAction(cmd, serverId) {
+  if (!serverId || !serverId.trim()) return showToast('Enter a Server ID first', false);
+  sendCmd(cmd + ' ' + serverId.trim());
+}
+
+// ── Environment change ────────────────────────────────────────────────────────
+async function setEnv(key, value) {
+  if (!key) return;
+  if (!value || !value.trim()) return showToast('Enter a value', false);
+  const r = await efApi('/api/env/set', { key, value: value.trim() });
+  const box = document.getElementById('envResult');
+  if (r.success) {
+    box.textContent = `✓ ${key} updated. Restart the bot for changes to take effect.`;
+    box.style.display = 'block';
+    showToast(`${key} saved ✓`);
+  } else {
+    box.textContent = r.error || 'Failed to update .env';
     box.style.display = 'block';
   }
 }

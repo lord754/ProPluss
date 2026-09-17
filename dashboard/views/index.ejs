@@ -46,13 +46,65 @@
                 padding: 6px 12px;
                 font-size: 0.8rem;
             }
-
-            .logout-text {
-                display: none;
-            }
-
-            /* Show icon only on small screens? Optional. */
+            .logout-text { display: none; }
         }
+
+        /* ── Status Rotator Panel (right-section) ──────────────────── */
+        .right-section { padding: 20px 10px 20px 0; }
+        .rotator-panel { display: flex; flex-direction: column; gap: 14px; }
+        .rotator-title { font-size: 1rem; font-weight: 800; color: #a29bfe; letter-spacing: .4px; margin-bottom: 4px; }
+        .rotator-card {
+            background: #111116;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 18px 20px;
+        }
+        .rotator-card-title {
+            font-size: .82rem; font-weight: 700; color: #ccc;
+            margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+        }
+        .rotator-input, .rotator-inp {
+            width: 100%; padding: 9px 12px;
+            background: #050508; border: 1px solid rgba(255,255,255,0.08);
+            color: #fff; border-radius: 9px; outline: none;
+            font-family: 'Outfit', sans-serif; font-size: .84rem;
+            margin-bottom: 10px; transition: .2s;
+            resize: vertical;
+        }
+        .rotator-input:focus, .rotator-inp:focus { border-color: #8a2be2; }
+        .rotator-input::placeholder, .rotator-inp::placeholder { color: #333; }
+        .rotator-num {
+            width: 60px; padding: 7px 10px;
+            background: #050508; border: 1px solid rgba(255,255,255,0.08);
+            color: #fff; border-radius: 8px; outline: none; font-size: .84rem;
+            font-family: 'Outfit', sans-serif;
+        }
+        .rotator-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .rbtn {
+            padding: 7px 16px; border: none; border-radius: 8px;
+            font-weight: 700; cursor: pointer; font-size: .78rem;
+            font-family: 'Outfit', sans-serif; transition: .2s;
+        }
+        .rbtn-on  { background: linear-gradient(90deg,#8a2be2,#6c5ce7); color: #fff; }
+        .rbtn-on:hover  { filter: brightness(1.15); }
+        .rbtn-off { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+        .rbtn-off:hover { background: #e74c3c; color: #fff; }
+        .rbtn-idle { background: rgba(243,156,18,0.1); color: #f39c12; border: 1px solid rgba(243,156,18,0.2); }
+        .rbtn-idle:hover { background: #f39c12; color: #fff; }
+        .rbtn-dnd  { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+        .rbtn-dnd:hover { background: #e74c3c; color: #fff; }
+        .rbadge {
+            font-size: .66rem; font-weight: 800; padding: 2px 8px;
+            border-radius: 8px; text-transform: uppercase; letter-spacing: .4px;
+        }
+        .rbadge-on  { background: rgba(46,204,113,0.12); color: #2ecc71; border: 1px solid rgba(46,204,113,0.25); }
+        .rbadge-off { background: rgba(255,255,255,0.05); color: #555; border: 1px solid rgba(255,255,255,0.08); }
+        .rotator-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .rotator-tag {
+            background: #1a1a2e; border: 1px solid rgba(138,43,226,0.25);
+            border-radius: 20px; padding: 3px 10px; font-size: .75rem; color: #a29bfe;
+        }
+        @media (max-width: 900px) { .right-section { padding: 0 0 20px; } }
     </style>
 </head>
 
@@ -133,6 +185,51 @@
         </div>
 
         <div class="right-section">
+            <!-- ── Status Rotator Panel ─────────────────────────────────── -->
+            <div class="rotator-panel">
+                <div class="rotator-title">⚡ Status Rotator</div>
+
+                <div class="rotator-card">
+                    <div class="rotator-card-title">🔁 Status Rotation <span class="rbadge rbadge-off" id="rStatusBadge">OFF</span></div>
+                    <textarea class="rotator-input" id="rStatusList" rows="3" placeholder="Playing games, Watching anime, Coding..."></textarea>
+                    <div class="rotator-row">
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <span style="color:#666;font-size:.78rem">Delay (s)</span>
+                            <input type="number" id="rStatusDelay" class="rotator-num" value="8" min="3">
+                        </div>
+                        <div style="display:flex;gap:6px">
+                            <button class="rbtn rbtn-on" onclick="rStartStatus()">Start</button>
+                            <button class="rbtn rbtn-off" onclick="rStopStatus()">Stop</button>
+                        </div>
+                    </div>
+                    <div id="rStatusTags" class="rotator-tags"></div>
+                </div>
+
+                <div class="rotator-card">
+                    <div class="rotator-card-title">😀 Emoji Rotation <span class="rbadge rbadge-off" id="rEmojiBadge">OFF</span></div>
+                    <input type="text" class="rotator-inp" id="rEmojiList" placeholder="😎, 🔥, 💀, 🎮">
+                    <div class="rotator-row">
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <span style="color:#666;font-size:.78rem">Delay (s)</span>
+                            <input type="number" id="rEmojiDelay" class="rotator-num" value="8" min="3">
+                        </div>
+                        <div style="display:flex;gap:6px">
+                            <button class="rbtn rbtn-on" onclick="rStartEmoji()">Start</button>
+                            <button class="rbtn rbtn-off" onclick="rStopEmoji()">Stop</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rotator-card">
+                    <div class="rotator-card-title">🟢 Online Status</div>
+                    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:4px">
+                        <button class="rbtn rbtn-on" onclick="rSetStatus('online')">🟢 Online</button>
+                        <button class="rbtn rbtn-idle" onclick="rSetStatus('idle')">🌙 Idle</button>
+                        <button class="rbtn rbtn-dnd" onclick="rSetStatus('dnd')">⛔ DND</button>
+                        <button class="rbtn rbtn-off" onclick="rSetStatus('invisible')">👻 Invisible</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -202,6 +299,71 @@
             }
         });
     </script>
+
+<script>
+// ── Status Rotator (right panel) ──────────────────────────────────────────────
+let rStatusTimer = null, rEmojiTimer = null;
+
+async function rApi(path, body) {
+    try {
+        const r = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        return r.json();
+    } catch(e) { return { success: false }; }
+}
+
+function rRenderTags(id, items) {
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.innerHTML = items.map(t => `<div class="rotator-tag">${t}</div>`).join('');
+}
+
+async function rStartStatus() {
+    const raw = document.getElementById('rStatusList').value;
+    const list = raw.split(',').map(s=>s.trim()).filter(Boolean);
+    const delay = parseInt(document.getElementById('rStatusDelay').value) || 8;
+    if (!list.length) return;
+    if (rStatusTimer) clearInterval(rStatusTimer);
+    rRenderTags('rStatusTags', list);
+    const badge = document.getElementById('rStatusBadge');
+    badge.className = 'rbadge rbadge-on'; badge.textContent = 'ON';
+    let idx = 0;
+    const tick = () => rApi('/api/status-rotator/set', { text: list[idx++ % list.length] });
+    await tick();
+    rStatusTimer = setInterval(tick, delay * 1000);
+}
+
+function rStopStatus() {
+    if (rStatusTimer) { clearInterval(rStatusTimer); rStatusTimer = null; }
+    const badge = document.getElementById('rStatusBadge');
+    badge.className = 'rbadge rbadge-off'; badge.textContent = 'OFF';
+    rApi('/api/status-rotator/set', { text: '' });
+    document.getElementById('rStatusTags').innerHTML = '';
+}
+
+async function rStartEmoji() {
+    const raw = document.getElementById('rEmojiList').value;
+    const list = raw.split(',').map(s=>s.trim()).filter(Boolean);
+    const delay = parseInt(document.getElementById('rEmojiDelay').value) || 8;
+    if (!list.length) return;
+    if (rEmojiTimer) clearInterval(rEmojiTimer);
+    const badge = document.getElementById('rEmojiBadge');
+    badge.className = 'rbadge rbadge-on'; badge.textContent = 'ON';
+    let idx = 0;
+    const tick = () => rApi('/api/status-rotator/emoji', { emoji: list[idx++ % list.length] });
+    await tick();
+    rEmojiTimer = setInterval(tick, delay * 1000);
+}
+
+function rStopEmoji() {
+    if (rEmojiTimer) { clearInterval(rEmojiTimer); rEmojiTimer = null; }
+    const badge = document.getElementById('rEmojiBadge');
+    badge.className = 'rbadge rbadge-off'; badge.textContent = 'OFF';
+}
+
+function rSetStatus(s) { rApi('/api/status-rotator/online-status', { status: s }); }
+</script>
+
+
     <%- include('partials/super_button') %>
 </body>
 
