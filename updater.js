@@ -8,52 +8,48 @@ const RAW = 'https://raw.githubusercontent.com';
 const STATE_FILE = path.join(__dirname, 'data', 'updater.json');
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
-// Format: x.x.x.x + channel letter suffix
-// Suffix letters: s=stable, a=alpha, b=beta, d=dev (dev only on explicit instruction)
-// Position meaning: [0].[1] = major,  [2].[3] = minor
-// Auto-suffix rules: major update → s, minor → a, beta → b, dev → d (explicit only)
-// Examples: 1.0s, 1.1s, 1.0.1a, 2.2b, 1.0.0.1d
+// Format: d.s.a.b
+//   d = Dev     (position 0) — major dev builds
+//   s = Stable  (position 1) — major stable releases
+//   a = Alpha   (position 2) — minor; YOU choose which commits are alpha
+//   b = Beta    (position 3) — minor; auto-detected from commit message / I choose
+//
+// Suffix letter appended to display version: 1.1s, 1.0.1a, 2.0b, 1.0.0.1d
+// d is ONLY set when explicitly instructed — never auto-assigned
+// s = auto-detected (stable commits, no special keyword)
+// b = auto-detected (commit contains beta/preview/rc keywords)
+// a = manually assigned (you tell me which commits are alpha)
 const CURRENT_VERSION = '1.1s';
-const CURRENT_CHANNEL = 'stable'; // alpha | beta | stable | dev
+const CURRENT_CHANNEL = 'stable'; // stable | alpha | beta | dev
 
-// Parse a version string into components
+// Channel letter → full name
+const CHANNEL_NAMES  = { d: 'dev', s: 'stable', a: 'alpha', b: 'beta' };
+const CHANNEL_LETTER = { dev: 'd', stable: 's', alpha: 'a', beta: 'b' };
+
+// Parse a version string like "1.1s", "1.0.1a", "2.0b", "1.0.0.1d"
 function parseVersion(raw) {
     if (!raw) return null;
-    const s = String(raw).trim().toLowerCase();
-    let channel = 'stable';
-    let core = s;
-    let letterSuffix = '';
-
-    // Detect trailing channel letter(s): d=dev, s=stable, a=alpha, b=beta
-    // Must be at end after digits, e.g. "1.0s", "1.1a", "2.2b", "1.0.0.1d"
-    const channelMatch = core.match(/^([\d.]+)(d|s|a|b|br|ba|bt|dev|stable|alpha|beta)$/);
-    if (channelMatch) {
-        core = channelMatch[1];
-        const sfx = channelMatch[2];
-        if (sfx === 'd' || sfx === 'dev') channel = 'dev';
-        else if (sfx === 's' || sfx === 'stable') channel = 'stable';
-        else if (sfx === 'a' || sfx === 'alpha' || sfx === 'ba') channel = 'alpha';
-        else if (sfx === 'b' || sfx === 'beta' || sfx === 'br' || sfx === 'bt') channel = 'beta';
-        letterSuffix = sfx;
-    }
-
-    // Remove trailing dots
+    const str = String(raw).trim().toLowerCase();
+    // Split trailing channel letter from numeric core
+    const m = str.match(/^([\d.]+)([dsab])$/);
+    let channel = 'stable', core = str;
+    if (m) { core = m[1]; channel = CHANNEL_NAMES[m[2]] || 'stable'; }
     core = core.replace(/\.+$/, '');
     const parts = core.split('.').map(n => parseInt(n, 10) || 0);
     while (parts.length < 4) parts.push(0);
-    const [maj1, maj2, min1, min2] = parts;
-    const isMajor = min1 === 0 && min2 === 0;
-    return { raw: String(raw), core, parts: parts.slice(0, 4), maj1, maj2, min1, min2, channel, letterSuffix, isMajor };
+    // positions: [0]=d, [1]=s, [2]=a, [3]=b
+    const [pd, ps, pa, pb] = parts;
+    // Major = d or s position changed; Minor = a or b position changed
+    const isMajor = pa === 0 && pb === 0;
+    return { raw: String(raw), core, parts: parts.slice(0, 4), pd, ps, pa, pb, channel, isMajor };
 }
 
-// Auto-determine channel suffix for a new update based on update type
-// Major → s, Minor → a, Beta → b, Dev → d (only explicit)
-function autoChannelForType(updateType, existingChannel) {
-    if (existingChannel === 'dev') return 'd';
-    if (existingChannel === 'beta' || updateType === 'Minor' && existingChannel === 'beta') return 'b';
-    if (updateType === 'Major') return 's';
-    if (updateType === 'Minor') return 'a';
-    return 's';
+// Auto-detect channel from commit message (never assigns 'd' — that's explicit only)
+function autoDetectChannel(message) {
+    const m = (message || '').toLowerCase();
+    if (/\b(beta|preview|rc\d*|release candidate)\b/.test(m)) return 'beta';
+    // alpha is never auto-detected — user assigns
+    return 'stable';
 }
 // Compare two parsed versions: >0 means a is newer
 function versionCompare(a, b) {
@@ -69,11 +65,9 @@ function versionCompare(a, b) {
 function formatVersionDisplay(parsed) {
     if (!parsed) return CURRENT_VERSION;
     let s = parsed.parts.filter((v, i) => i === 0 || v > 0 || i < 2).join('.');
-    // Trim trailing .0.0
     s = s.replace(/(?:\.0)+$/, '') || '0';
-    // Always append single-letter channel suffix: s, a, b, d
-    const channelLetter = { stable: 's', alpha: 'a', beta: 'b', dev: 'd' };
-    s += (channelLetter[parsed.channel] || 's');
+    // Append single channel letter
+    s += (CHANNEL_LETTER[parsed.channel] || 's');
     return s;
 }
 
@@ -219,9 +213,8 @@ async function checkForUpdates() {
         const msg = c.commit.message;
         const versionParsed = extractVersionFromCommit(msg);
         const features = extractFeaturesFromCommit(msg);
-        const channel = (versionParsed && versionParsed.channel) || 'stable';
-        const currentParsed = parseVersion(state.installedVersion || CURRENT_VERSION);
-        const isNewer = versionParsed ? versionCompare(versionParsed, currentParsed) > 0 : true;
+        // Use version's channel if parsed, else auto-detect from commit message
+        const channel = (versionParsed && versionParsed.channel) || autoDetectChannel(msg);
         const updateType = versionParsed ? (versionParsed.isMajor ? 'Major' : 'Minor') : 'Patch';
         return {
             sha: c.sha,
