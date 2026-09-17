@@ -34,14 +34,16 @@
 .dot-yellow{background:#f1c40f;box-shadow:0 0 6px rgba(241,196,15,0.6)}
 .dot-gray{background:#555}
 
-/* ── Check row: LEFT=button, RIGHT=dot+label ── */
-.check-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-.check-row-left{display:flex;align-items:center;gap:10px}
-.check-row-right{display:flex;align-items:center;gap:8px}
+/* ── Check row: 3 columns — LEFT=version info, CENTER=button, RIGHT=dot+label ── */
+.check-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+.check-row-left{display:flex;flex-direction:column;gap:2px}
+.check-row-center{display:flex;flex-direction:column;align-items:center;gap:4px}
+.check-row-right{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .status-label{font-size:.83rem;font-weight:700;color:#aaa}
-.installed-note{font-size:.75rem;color:#444;margin-top:6px}
-.installed-note span{color:#8a2be2;font-family:monospace}
-.version-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700}
+.installed-ver{font-size:.82rem;font-weight:700;color:#ccc}
+.installed-sha-note{font-family:monospace;font-size:.75rem;color:#555}
+.installed-ver-channel{font-size:.7rem;font-weight:700;text-transform:uppercase;margin-left:4px}
+@media(max-width:560px){.check-row{grid-template-columns:1fr;}.check-row-right{justify-content:flex-start;}}
 
 .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:700}
 .badge-green{background:rgba(46,204,113,0.1);color:#2ecc71;border:1px solid rgba(46,204,113,0.2)}
@@ -146,13 +148,21 @@
     <button class="btn btn-warn" onclick="doRevert()">↩ Revert Update</button>
   </div>
 
-  <!-- Main Check Card: button LEFT, dot RIGHT -->
+  <!-- Main Check Card: LEFT=version info, CENTER=button, RIGHT=dot+status -->
   <div class="card">
     <div class="check-row">
-      <!-- LEFT: Check button -->
+      <!-- LEFT: installed version + commit -->
       <div class="check-row-left">
+        <div class="installed-ver" id="installedVerText" style="display:none">
+          Currently on <span id="installedVerNum" style="color:#a29bfe"></span><span id="installedVerChannel" class="installed-ver-channel"></span>
+        </div>
+        <div class="installed-sha-note" id="installedShaText" style="display:none">commit <span id="installedShaNum" style="color:#8a2be2"></span></div>
+        <div style="font-size:.75rem;color:#333;display:none" id="installedVerPlaceholder">Not yet installed</div>
+      </div>
+      <!-- CENTER: Check button -->
+      <div class="check-row-center">
         <button class="btn btn-secondary" id="checkBtn" onclick="checkUpdates()">🔍 Check For Update</button>
-        <div id="cooldownNote" style="font-size:.75rem;color:#444;display:none"></div>
+        <div id="cooldownNote" style="font-size:.72rem;color:#444;display:none;text-align:center"></div>
       </div>
       <!-- RIGHT: status dot + label -->
       <div class="check-row-right">
@@ -162,10 +172,6 @@
           <span class="status-dot dot-gray" id="statusDot"></span>
         </div>
       </div>
-    </div>
-    <div class="installed-note" id="installedNote" style="display:none">
-      Installed: <span id="installedSha"></span>
-      <span id="installedVersionNote" style="margin-left:6px"></span>
     </div>
     <div id="updatesContainer"></div>
   </div>
@@ -280,17 +286,24 @@ async function checkUpdates(force) {
     lastCheckTime = Date.now();
     startCooldownTimer();
 
-    // Show installed info
-    if (r.installedShortSha || r.installedVersion) {
-      document.getElementById('installedNote').style.display = 'block';
-      document.getElementById('installedSha').textContent = r.installedShortSha
-        ? (r.installedShortSha + (r.installedVersion ? ' · v' + r.installedVersion : ''))
-        : ('v' + r.installedVersion);
-      const vn = document.getElementById('installedVersionNote');
+    // Show installed info in LEFT column
+    if (r.installedVersion || r.installedShortSha) {
+      const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
+      // Version line
+      document.getElementById('installedVerNum').textContent = r.installedVersion ? r.installedVersion : '—';
       if (r.installedChannel && r.installedChannel !== 'stable') {
-        const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
-        vn.innerHTML = `<span style="color:${chColors[r.installedChannel]||'#a29bfe'};font-weight:700;font-size:.73rem">${r.installedChannel.toUpperCase()}</span>`;
+        const ch = document.getElementById('installedVerChannel');
+        ch.textContent = ' ' + r.installedChannel.toUpperCase();
+        ch.style.color = chColors[r.installedChannel] || '#a29bfe';
       }
+      document.getElementById('installedVerText').style.display = 'block';
+      // Commit line — only show if we have a sha (after at least one update was applied)
+      if (r.installedShortSha) {
+        document.getElementById('installedShaNum').textContent = r.installedShortSha;
+        document.getElementById('installedShaText').style.display = 'block';
+      }
+    } else {
+      document.getElementById('installedVerPlaceholder').style.display = 'block';
     }
 
     // Build version label for header
@@ -482,9 +495,26 @@ async function doRevert() {
       gray: 'Not checked'
     };
     applyDot(r.dotStatus || 'gray', dotMessages[r.dotStatus] || 'Not checked');
+
+    // Populate left column
     if (r.installedVersion) {
+      document.getElementById('installedVerNum').textContent = r.installedVersion;
+      const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
+      if (r.installedChannel && r.installedChannel !== 'stable') {
+        const ch = document.getElementById('installedVerChannel');
+        ch.textContent = ' ' + r.installedChannel.toUpperCase();
+        ch.style.color = chColors[r.installedChannel] || '#a29bfe';
+      }
+      document.getElementById('installedVerText').style.display = 'block';
+      if (r.lastSha) {
+        document.getElementById('installedShaNum').textContent = r.lastSha.slice(0,7);
+        document.getElementById('installedShaText').style.display = 'block';
+      }
+      // Header build version
       const bvEl = document.getElementById('buildVersion');
       bvEl.textContent = r.lastSha ? r.lastSha.slice(0,7) + ' · v' + r.installedVersion : 'v' + r.installedVersion;
+    } else {
+      document.getElementById('installedVerPlaceholder').style.display = 'block';
     }
   } catch(e) {}
 })();
