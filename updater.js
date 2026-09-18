@@ -276,9 +276,15 @@ async function checkForUpdates() {
 function backupFiles(files) {
     try {
         const backed = {};
-        for (const f of files) {
+        // Always back up these core files regardless of what's in the diff
+        const ALWAYS_BACKUP = ['index.js', 'updater.js', 'package.json', 'accountManager.js'];
+        const allFiles = new Set([...files, ...ALWAYS_BACKUP]);
+        
+        for (const f of allFiles) {
             const src = path.join(__dirname, f);
-            if (fs.existsSync(src)) backed[f] = fs.readFileSync(src).toString('base64');
+            if (fs.existsSync(src) && !isProtected(f)) {
+                backed[f] = fs.readFileSync(src).toString('base64');
+            }
         }
         return backed;
     } catch { return {}; }

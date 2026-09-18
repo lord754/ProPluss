@@ -1124,8 +1124,8 @@ module.exports = (clientRef, clientsMap) => {
     app.get('/accounts', (req, res) => {
         const { accounts, active } = accountManager.getAccounts();
         const setupMode = accounts.length === 0;
-        // Allow access even without a live client in setup mode
-        const user = getClient().user || null;
+        // In setup mode, don't try to access client - it's not ready yet
+        const user = (!setupMode && getClient().user) ? getClient().user : null;
         res.render('accounts', { user, page: 'accounts', accounts, active, setupMode });
     });
 
@@ -1134,8 +1134,16 @@ module.exports = (clientRef, clientsMap) => {
         const { accounts, active } = accountManager.getAccounts();
         const statusManager = require('../commands/statusManager');
 
+        // Helper: fetch with a 5-second timeout so we never hang indefinitely
+        const fetchWithTimeout = (url, opts, ms = 5000) => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), ms);
+            return fetch(url, { ...opts, signal: controller.signal })
+                .finally(() => clearTimeout(timer));
+        };
+
         const enriched = await Promise.all(accounts.map(async (acc) => {
-            // Active account — use live client data
+            // Active account — use live client data if available
             if (acc.index === active && getClient().user) {
                 const u = getClient().user;
                 const presence = getClient().user.presence;
@@ -1149,19 +1157,16 @@ module.exports = (clientRef, clientsMap) => {
                     active: true
                 };
             }
-            // Inactive account — fetch from Discord API using token
+            // Inactive account — fetch from Discord API using token (5s timeout)
             try {
-                const apiRes = await fetch('https://discord.com/api/v10/users/@me', {
+                const apiRes = await fetchWithTimeout('https://discord.com/api/v10/users/@me', {
                     headers: { Authorization: acc.token }
-                });
+                }, 5000);
                 if (!apiRes.ok) throw new Error('fetch failed');
                 const data = await apiRes.json();
                 const avatarUrl = data.avatar
                     ? `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.png?size=128`
                     : `https://cdn.discordapp.com/embed/avatars/${parseInt(data.discriminator || 0) % 5}.png`;
-                // Read saved status for this account's data dir
-                const fs = require('fs');
-                const path = require('path');
                 const statusFile = path.join(__dirname, '..', 'data', `account_${acc.index}`, 'status.json');
                 let savedStatus = 'online';
                 if (fs.existsSync(statusFile)) {
@@ -1176,13 +1181,14 @@ module.exports = (clientRef, clientsMap) => {
                     active: false
                 };
             } catch (e) {
+                // Timeout or network error — return placeholder instead of hanging
                 return {
                     index: acc.index,
-                    username: 'Unknown',
+                    username: `Account #${acc.index}`,
                     discriminator: '0000',
                     avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
                     status: 'offline',
-                    active: false
+                    active: acc.index === active
                 };
             }
         }));
@@ -1199,8 +1205,25 @@ module.exports = (clientRef, clientsMap) => {
             return res.json({ success: false, message: `Token already exists at ${result.key}` });
         }
         const index = result;
-        if (isFirst && global.bootClient) {
-            global.bootClient(token.trim(), index).catch(e => console.error('[Accounts] Auto-boot failed:', e.message));
+        if (isFirst) {
+            // Try global.bootClient first, then fall back to requiring index.js bootstrap
+            const boot = global.bootClient || null;
+            if (boot) {
+                boot(token.trim(), index).catch(e => console.error('[Accounts] Auto-boot failed:', e.message));
+            } else {
+                // bootClient not registered yet — schedule a retry in case index.js registers it shortly
+                let attempts = 0;
+                const tryBoot = setInterval(() => {
+                    attempts++;
+                    if (global.bootClient) {
+                        clearInterval(tryBoot);
+                        global.bootClient(token.trim(), index).catch(e => console.error('[Accounts] Delayed boot failed:', e.message));
+                    } else if (attempts >= 10) {
+                        clearInterval(tryBoot);
+                        console.error('[Accounts] bootClient never registered — manual restart needed');
+                    }
+                }, 500);
+            }
         }
         res.json({ success: true, index, isFirst });
     });

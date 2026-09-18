@@ -1,6 +1,7 @@
 const icon = id => `/rpcassets/${id}.png`;
 module.exports = [
   { id:'minecraft',        name:'Minecraft',                   appId:'1402418491272986635', logo:icon('1402418491272986635'), cdnUrl:icon('1402418491272986635') },
+  { id:'among_us',         name:'Among Us',                    appId:'1402418440685486130', logo:icon('1402418440685486130'), cdnUrl:icon('1402418440685486130') },
   { id:'genshin',          name:'Genshin Impact',              appId:'762434991303950386',  logo:icon('762434991303950386'),  cdnUrl:icon('762434991303950386') },
   { id:'honkai_impact3',   name:'Honkai Impact 3rd',           appId:'1124351937098301590', logo:icon('1124351937098301590'), cdnUrl:icon('1124351937098301590') },
   { id:'valorant',         name:'VALORANT',                    appId:'700136079562375258',  logo:icon('700136079562375258'),  cdnUrl:icon('700136079562375258') },

@@ -104,8 +104,11 @@ input:checked+.slider:before{transform:translateX(30px)}
           <label class="input-label">Name (Top Line)</label>
           <input type="text" id="name" class="input-field" placeholder="e.g. PRO+ Bot">
         </div>
-
-      </div>
+        <div class="input-group">
+          <label class="input-label">Custom Application ID <span style="color:#666;font-size:0.8rem">(optional — overrides game selection)</span></label>
+          <input type="text" id="applicationId" class="input-field" placeholder="e.g. 1402418440685486130" maxlength="25" pattern="[0-9]*">
+          <div style="font-size:0.75rem;color:#555;margin-top:4px">Leave blank to use game spoof app ID. Enter your own Discord Application ID to use a custom rich presence.</div>
+        </div>
     </div>
 
     <div class="section-card">
@@ -301,6 +304,7 @@ function collectFormData() {
     enabled: document.getElementById('enabled').checked,
     type: document.getElementById('type').value,
     name: document.getElementById('name').value,
+    applicationId: document.getElementById('applicationId').value.trim(),
     details: document.getElementById('details').value,
     state: document.getElementById('state').value,
     gameSpoofing: document.getElementById('gameSpoofing').checked,
@@ -323,6 +327,7 @@ function applyFormData(d) {
   document.getElementById('enabled').checked = d.enabled || false;
   document.getElementById('type').value = d.type || 'PLAYING';
   document.getElementById('name').value = d.name || '';
+  document.getElementById('applicationId').value = d.applicationId || '';
   document.getElementById('details').value = d.details || '';
   document.getElementById('state').value = d.state || '';
   document.getElementById('gameSpoofing').checked = d.gameSpoofing || false;
