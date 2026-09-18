@@ -502,10 +502,7 @@ module.exports = (clientRef, clientsMap) => {
         res.render('cmd_rpc', { user: client.user, page: 'commands' });
     });
 
-    app.get('/commands/status-rotator', (req, res) => {
-        if (!client.user) return res.send(LOADING_PAGE('Status Rotator'));
-        res.render('cmd_status_rotator', { user: client.user, page: 'commands' });
-    });
+    // Status rotator is now embedded in the dashboard home page
 
     app.get('/commands/extra-features', (req, res) => {
         if (!client.user) return res.send(LOADING_PAGE('Extra Features'));
@@ -548,10 +545,6 @@ module.exports = (clientRef, clientsMap) => {
         try { await client.user.setStatus(status); res.json({ success: true }); } catch (e) { res.json({ success: false, error: e.message }); }
     });
 
-    // Status Rotator
-    app.get('/commands/status-rotator', (req, res) => {
-        res.render('cmd_status_rotator', { user: client.user, page: 'commands' });
-    });
 
     app.get('/api/status-rotator', (req, res) => {
         const statusManager = require('../commands/statusManager');
@@ -1046,7 +1039,7 @@ module.exports = (clientRef, clientsMap) => {
                 welcomerManager.removeSetup(guildId);
             } else if (action === 'saveConfig') {
                 const data = welcomerManager.loadData();
-                data.config = { textcolor, welcomeType, textMessage, cardMessage };
+                data.config = { textcolor, welcomeType, textMessage, cardMessage, enabled: data.config?.enabled !== false };
                 
                 // Update all existing setups automatically
                 if (!data.welcomeSetups) data.welcomeSetups = {};
@@ -1056,6 +1049,11 @@ module.exports = (clientRef, clientsMap) => {
                     data.welcomeSetups[gid].textMessage = textMessage;
                     data.welcomeSetups[gid].cardMessage = cardMessage;
                 }
+                welcomerManager.saveData(data);
+            } else if (action === 'toggleGlobal') {
+                const data = welcomerManager.loadData();
+                if (!data.config) data.config = {};
+                data.config.enabled = req.body.enabled;
                 welcomerManager.saveData(data);
             }
             res.json({ success: true });

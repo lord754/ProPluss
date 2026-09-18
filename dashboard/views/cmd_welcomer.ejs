@@ -320,6 +320,20 @@
             <div class="section-card">
                 <div class="section-title">Welcome Preview Options</div>
 
+                <!-- ENABLE/DISABLE TOGGLE -->
+                <div class="input-group full-width" style="margin-bottom: 25px; background: rgba(138,43,226,0.08); padding: 15px; border-radius: 12px; border: 1px solid rgba(138,43,226,0.2);">
+                    <label class="input-label" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0;">
+                        <span style="font-size: 1rem; font-weight: 600; color: #a29bfe;">
+                            <i class="fas fa-power-off" style="margin-right: 8px;"></i>Enable Welcomer
+                        </span>
+                        <label class="toggle-switch" style="margin: 0;">
+                            <input type="checkbox" id="welcomerEnabled" onchange="toggleWelcomerGlobal()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                    <p style="color: #888; font-size: 0.85rem; margin: 10px 0 0 0;">When disabled, no welcome messages will be sent even if channels are whitelisted.</p>
+                </div>
+
                 <div class="input-group full-width" style="margin-bottom: 25px;">
                     <label class="input-label">Welcome Type</label>
                     <select id="welcomeType" class="input-field" onchange="toggleWelcomeType()">
@@ -417,6 +431,7 @@
                         document.getElementById('welcomeType').value = data.config.welcomeType || 'card';
                         document.getElementById('textMessage').value = data.config.textMessage || 'hey {user} welcome to the {server} you are {count} member';
                         document.getElementById('cardMessage').value = data.config.cardMessage || 'WELCOME TO {server}\n{user}\nMember #{count}';
+                        document.getElementById('welcomerEnabled').checked = data.config.enabled !== false;
                         toggleWelcomeType();
                     }
 
@@ -591,10 +606,29 @@
                 } catch (e) { console.error('Error removing', e); }
             }
 
+            async function toggleWelcomerGlobal() {
+                const enabled = document.getElementById('welcomerEnabled').checked;
+                try {
+                    await fetch('/api/welcomer', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'toggleGlobal', enabled })
+                    });
+                } catch (e) { console.error('Error toggling welcomer', e); }
+            }
+
             window.onload = () => {
                 loadData();
             };
         </script>
+    <style>
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .3s; border-radius: 26px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: #8a2be2; }
+        input:checked + .toggle-slider:before { transform: translateX(24px); }
+    </style>
 </body>
 
 </html>

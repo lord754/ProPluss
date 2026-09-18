@@ -198,6 +198,11 @@ async function bootClient(token, accountIndex) {
     client.on('guildMemberAdd', async member => {
         try {
             const welcomerManager = require('./commands/welcomerManager');
+            const data = welcomerManager.loadData();
+            
+            // Check if welcomer is globally enabled
+            if (data.config?.enabled === false) return;
+            
             const setup = welcomerManager.getSetup(member.guild.id);
             if (!setup?.channelId) return;
             const channel = member.guild.channels.cache.get(setup.channelId);
