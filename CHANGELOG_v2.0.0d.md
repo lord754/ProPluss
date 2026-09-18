@@ -10,6 +10,10 @@
 1. **Version 2.0.0d** — Bumped to Developer Stable Release
 2. **Status Rotator Consolidation** — Removed duplicate status rotator page; now only accessible from dashboard home
 3. **Welcomer Toggle** — Added global enable/disable switch for welcomer system with persistent state
+4. **Enhanced Help Command** — Rewrote help with Discord embeds, added `.help extra` for Big5 features with pagination (`.help extra 5` for page 5)
+5. **Settings Command** — New command and dashboard page for managing environment variables (PREFIX, OPENAI_API_KEY)
+6. **Installer.js Separation** — Excluded from main repo, available as release asset only
+7. **Comprehensive Documentation** — README.md, CHANGELOG, DEVELOPMENT_ROADMAP.md, IMPLEMENTATION_STATUS.md
 
 ### 🔧 Known Issues (To Be Addressed)
 
