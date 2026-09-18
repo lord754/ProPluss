@@ -509,6 +509,53 @@ module.exports = (clientRef, clientsMap) => {
         res.render('cmd_extra_features', { user: client.user, page: 'commands' });
     });
 
+    app.get('/commands/settings', (req, res) => {
+        if (!client.user) return res.send(LOADING_PAGE('Settings'));
+        res.render('cmd_settings', { user: client.user, page: 'commands' });
+    });
+
+    app.get('/api/settings', (req, res) => {
+        res.json({
+            PREFIX: process.env.PREFIX || '.',
+            OPENAI_API_KEY: process.env.OPENAI_API_KEY ? 'set' : null
+        });
+    });
+
+    app.post('/api/settings', (req, res) => {
+        const { PREFIX, OPENAI_API_KEY } = req.body;
+        const envPath = path.join(__dirname, '../.env');
+        
+        try {
+            let envContent = fs.readFileSync(envPath, 'utf8');
+            const lines = envContent.split('\n');
+            const updates = {};
+            
+            if (PREFIX !== undefined) updates.PREFIX = PREFIX;
+            if (OPENAI_API_KEY) updates.OPENAI_API_KEY = OPENAI_API_KEY;
+            
+            Object.keys(updates).forEach(key => {
+                let found = false;
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith(`${key}=`)) {
+                        lines[i] = `${key}=${updates[key]}`;
+                        found = true;
+                        process.env[key] = updates[key];
+                        break;
+                    }
+                }
+                if (!found) {
+                    lines.push(`${key}=${updates[key]}`);
+                    process.env[key] = updates[key];
+                }
+            });
+            
+            fs.writeFileSync(envPath, lines.join('\n'));
+            res.json({ success: true });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
     // Status Rotator APIs
     app.post('/api/status-rotator/set', async (req, res) => {
         const { text } = req.body;
