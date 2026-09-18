@@ -462,8 +462,8 @@ module.exports = (clientRef, clientsMap) => {
             const dotStatus = updater.getDotStatus();
             res.json({
                 dotStatus,
-                installedVersion: state.installedVersion || updater.CURRENT_VERSION,
-                installedChannel: state.installedChannel || updater.CURRENT_CHANNEL,
+                installedVersion: updater.CURRENT_VERSION,
+                installedChannel: updater.CURRENT_CHANNEL,
                 lastSha: state.lastSha,
                 lastCheckTime: state.lastCheckTime,
                 lastUpdateFailed: !!state.lastUpdateFailed,
@@ -518,7 +518,7 @@ module.exports = (clientRef, clientsMap) => {
 
     app.get('/commands/extra-features', (req, res) => {
         if (!client.user) return res.send(LOADING_PAGE('Extra Features'));
-        res.render('cmd_extra_features', { user: client.user, page: 'commands' });
+        res.render('cmd_extra_features', { user: client.user, page: 'commands', botVersion: updater.CURRENT_VERSION });
     });
 
     app.get('/commands/settings', (req, res) => {

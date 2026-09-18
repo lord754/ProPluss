@@ -268,7 +268,7 @@ async function checkUpdates(force) {
     const r = await fetch('/api/updater/check').then(x => x.json());
 
     // Always show version — use returned value or fallback constant
-    const ver = r.installedVersion || r.currentVersion || '1.1.1a';
+    const ver = r.installedVersion || r.currentVersion || '2.2.1a';
     const chColors = { alpha:'#f39c12', beta:'#3498db', dev:'#e74c3c', stable:'#2ecc71' };
 
     // Left column: version
@@ -508,4 +508,4 @@ async function doRevert() {
 </body>
 </html>
 
-// v2.2.1a
+<%#- v2.2.1a %>

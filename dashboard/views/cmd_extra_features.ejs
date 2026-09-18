@@ -80,7 +80,7 @@ input:checked+.slider:before{background:#fff;transform:translateX(21px)}
 <div class="container">
   <div class="page-header">
     <h1>⚡ Extra Features</h1>
-    <p>Full Big5 control panel — all 282 commands accessible from dashboard · v1.1.1a Alpha</p>
+    <p>Full Big5 control panel — all commands accessible from dashboard · v<%= locals.botVersion || '2.2.1a' %> Alpha</p>
   </div>
 
   <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Search commands..." oninput="filterSections()">
@@ -1462,4 +1462,4 @@ loadState();
 </body>
 </html>
 
-// v2.2.1a
+<%#- v2.2.1a %>

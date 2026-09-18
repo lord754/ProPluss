@@ -249,9 +249,9 @@ async function checkForUpdates() {
     const hasUpdate = updates.some(u => !u.isDismissed);
     const isUpToDate = newCommits.length === 0;
 
-    // Compute display version
-    const installedVersion = state.installedVersion || CURRENT_VERSION;
-    const installedChannel = state.installedChannel || CURRENT_CHANNEL;
+    // Always use CURRENT_VERSION from code — the state file may be stale from a prior version
+    const installedVersion = CURRENT_VERSION;
+    const installedChannel = CURRENT_CHANNEL;
     const installedVersionLabel = state.lastSha
         ? `${state.lastSha.slice(0, 7)} + ${installedVersion}`
         : installedVersion;
