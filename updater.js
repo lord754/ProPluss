@@ -19,8 +19,8 @@ const STATE_FILE = path.join(__dirname, 'data', 'updater.json');
 // s = auto-detected (stable commits, no special keyword)
 // b = auto-detected (commit contains beta/preview/rc keywords)
 // a = manually assigned (you tell me which commits are alpha)
-const CURRENT_VERSION = '1.2.1a';
-const CURRENT_CHANNEL = 'alpha'; // stable | alpha | beta | dev
+const CURRENT_VERSION = '2.0.0d';
+const CURRENT_CHANNEL = 'dev'; // stable | alpha | beta | dev
 
 // Channel letter → full name
 const CHANNEL_NAMES  = { d: 'dev', s: 'stable', a: 'alpha', b: 'beta' };
@@ -193,7 +193,7 @@ async function checkForUpdates() {
 
     let commits;
     try {
-        commits = await getJson(`${API}/repos/${REPO}/commits?per_page=20`);
+        commits = await getJson(`${API}/repos/${REPO}/commits?per_page=50`);
         state.repoError = null;
     } catch (e) {
         state.repoError = e.message;
@@ -361,6 +361,8 @@ async function applyUpdate(sha, logs) {
     const backup = backupFiles(filesToChange);
 
     let updated = 0, skipped = 0, failed = 0;
+    const total = files.filter(f => !isProtected(f.filename) && f.status !== 'removed').length;
+    let processed = 0;
     for (const file of files) {
         if (isProtected(file.filename)) { log(`SKIP (protected — ${file.filename}): this file is never overwritten`); skipped++; continue; }
         if (file.status === 'removed') { log(`SKIP (deleted in commit): ${file.filename}`); skipped++; continue; }
@@ -373,6 +375,11 @@ async function applyUpdate(sha, logs) {
             log(`OK: ${file.filename}`);
             updated++;
         } catch (e) { log(`FAIL: ${file.filename} — ${e.message}`); failed++; }
+        processed++;
+        if (total > 0) {
+            const pct = Math.round((processed / total) * 100);
+            log(`[PROGRESS: ${pct}%]`);
+        }
         await new Promise(r => setTimeout(r, 80));
     }
 

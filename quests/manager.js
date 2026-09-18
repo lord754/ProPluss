@@ -93,6 +93,39 @@ class QuestManagerBridge {
         }
     }
 
+    async startBountiesOnly() {
+        if (this.isRunning) {
+            this.log('system', 'Already running.');
+            return;
+        }
+        this.isRunning = true;
+        this.log('system', 'Starting Bounties-Only Protocol...');
+        try {
+            const manager = await this.client.fetchQuests();
+            this.activeManager = manager;
+            manager.setLogger((msg) => this.log(msg));
+            const valid = manager.filterQuestsValid();
+            const bounties = valid.filter(q => q.isBounty);
+            this.log('system', `Found ${bounties.length} bounty(s).`);
+            if (bounties.length === 0) {
+                this.log('system', 'No bounties available right now.');
+                this.isRunning = false;
+                return;
+            }
+            await Promise.all(bounties.map(async (q) => {
+                await new Promise(r => setTimeout(r, Math.random() * 5000));
+                try { await manager.doingQuest(q); }
+                catch (e) { if (e.message !== 'Stopped') this.log(q.id, `Error: ${e.message}`); }
+            }));
+            this.log('system', 'All bounties done.');
+        } catch (error) {
+            this.log('system', `Critical Error: ${error.message}`);
+        } finally {
+            this.isRunning = false;
+            this.activeManager = null;
+        }
+    }
+
     stopAll() {
         if (this.activeManager) {
             this.activeManager.stopAll();

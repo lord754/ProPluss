@@ -1,6 +1,6 @@
 # PRO+ Discord Selfbot
 
-**Version 2.0.0d — Developer Stable Release**
+**Version 2.0dev — Developer Build**
 
 Advanced Discord selfbot with dashboard, voice features, Big5 toolkit, multi-account support, and extensive automation.
 

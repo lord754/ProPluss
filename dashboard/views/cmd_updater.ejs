@@ -89,6 +89,12 @@
 .log-box::-webkit-scrollbar{width:4px}
 .log-box::-webkit-scrollbar-thumb{background:#1a1a24;border-radius:2px}
 
+/* Progress bar */
+.progress-wrap{margin:10px 0 4px;display:none}
+.progress-track{height:8px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#8a2be2,#c084fc);border-radius:8px;transition:width .3s ease}
+.progress-pct{font-size:.72rem;color:#a29bfe;font-family:monospace;margin-top:4px;text-align:right}
+
 /* Dismissed dropdown */
 .dropdown-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:4px 0}
 .dropdown-toggle:hover .dropdown-label{color:#ccc}
@@ -178,6 +184,10 @@
   <!-- Log Card -->
   <div class="card" id="logCard" style="display:none">
     <div style="font-size:.85rem;font-weight:700;color:#a29bfe;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Update Log</div>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
     <div class="log-box" id="logBox"></div>
   </div>
 
@@ -387,16 +397,30 @@ async function applyUpdate(sha, btn) {
   btn.disabled = true; btn.textContent = '⏳...';
   const logCard = document.getElementById('logCard');
   const logBox = document.getElementById('logBox');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressPct = document.getElementById('progressPct');
   logCard.style.display = 'block'; logBox.textContent = '';
+  progressWrap.style.display = 'block';
+  progressFill.style.width = '0%'; progressPct.textContent = '0%';
   const poll = setInterval(async () => {
     const r = await fetch('/api/updater/logs').then(x => x.json());
-    logBox.textContent = r.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+    let lastPct = null;
+    const visible = [];
+    for (const line of r.logs) {
+      const m = line.match(/\[PROGRESS:\s*(\d+)%\]/);
+      if (m) { lastPct = parseInt(m[1]); } else { visible.push(line); }
+    }
+    logBox.textContent = visible.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+    if (lastPct !== null) { progressFill.style.width = lastPct+'%'; progressPct.textContent = lastPct+'%'; }
   }, 800);
   try {
     const result = await fetch('/api/updater/apply', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({sha}) }).then(x=>x.json());
     clearInterval(poll);
     const fl = await fetch('/api/updater/logs').then(x=>x.json());
-    logBox.textContent = fl.logs.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+    const visible = fl.logs.filter(l => !/\[PROGRESS:\s*\d+%\]/.test(l));
+    logBox.textContent = visible.join('\n'); logBox.scrollTop = logBox.scrollHeight;
+    progressFill.style.width = '100%'; progressPct.textContent = '100%';
     document.getElementById('revertBanner').style.display = 'flex';
     // Show red dot if failures
     if (result.failed > 0) {

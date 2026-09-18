@@ -40,7 +40,7 @@
         }
 
         .terminal-controls {
-            display: gap;
+            display: flex;
             gap: 10px;
         }
 
@@ -93,6 +93,39 @@
             cursor: not-allowed;
         }
 
+        .btn-bounty-only {
+            border-color: #fd79a8;
+            color: #fd79a8;
+            background: rgba(253, 121, 168, 0.05);
+        }
+
+        .btn-bounty-only:hover {
+            background: rgba(253, 121, 168, 0.2);
+        }
+
+        .btn-bounty-only:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .terminal-window {
+            background: rgba(10, 10, 15, 0.95);
+            border: 1px solid var(--neon-purple);
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            min-height: 320px;
+            overflow: hidden;
+        }
+
+        @media (max-width: 600px) {
+            .terminal-window { height: 70vh; min-height: 260px; }
+            .terminal-controls { flex-wrap: wrap; gap: 5px; }
+            .btn-t { padding: 4px 10px; font-size: 0.75rem; }
+        }
+
         .terminal-body {
             flex: 1;
             padding: 15px;
@@ -137,6 +170,7 @@
                 <div class="terminal-controls">
                     <button onclick="startAll()" class="btn-t btn-start">START ALL</button>
                     <button onclick="startBounties()" class="btn-t btn-bounty" title="Completes quests AND bounties">BOUNTIES</button>
+                    <button onclick="startBountiesOnly()" class="btn-t btn-bounty-only" title="Bounties only — skips regular quests">BOUNTIES ONLY</button>
                     <button onclick="stopAll()" class="btn-t btn-stop">STOP ALL</button>
                     <button onclick="clearConsole()" class="btn-t">CLEAR</button>
                 </div>
@@ -182,6 +216,12 @@
             async function startBounties() {
                 appendLog("> Starting BOUNTIES protocol — completing quests AND bounties...");
                 try { await fetch('/quest/start-bounties', { method: 'POST' }); }
+                catch (e) { appendLog(`> Error: ${e.message}`); }
+            }
+
+            async function startBountiesOnly() {
+                appendLog("> Starting BOUNTIES ONLY protocol...");
+                try { await fetch('/quest/start-bounties-only', { method: 'POST' }); }
                 catch (e) { appendLog(`> Error: ${e.message}`); }
             }
 

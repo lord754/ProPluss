@@ -727,6 +727,23 @@
             </div>
         </div>
 
+        <!-- RECORDER SECTION -->
+        <div id="recorderSection" style="display:none; margin-top:20px; width:100%; max-width:500px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:20px; box-sizing:border-box;">
+            <div style="font-size:1rem; font-weight:700; color:#ccc; margin-bottom:16px; display:flex; align-items:center; gap:8px;">⏺️ Voice Recorder</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                <select id="recFormatSelect" style="padding:8px 12px; background:#0b0b10; border:1px solid #333; color:#fff; border-radius:10px; font-family:'Outfit',sans-serif; font-size:0.85rem; outline:none;">
+                    <option value="mp3">MP3</option>
+                    <option value="wav">WAV</option>
+                    <option value="m4a">M4A</option>
+                    <option value="aac">AAC</option>
+                </select>
+                <button onclick="recStart()" id="recStartBtn" style="padding:9px 18px; border-radius:10px; border:none; background:linear-gradient(135deg,#e74c3c,#c0392b); color:#fff; font-weight:700; cursor:pointer; font-size:0.85rem; transition:0.2s;">⏺ Start Recording</button>
+                <button onclick="recStop()" id="recStopBtn" disabled style="padding:9px 18px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:#666; font-weight:700; cursor:not-allowed; font-size:0.85rem; transition:0.2s;">⏹ Stop</button>
+            </div>
+            <div id="recStatus" style="font-size:0.8rem; color:#555; min-height:18px;"></div>
+            <div id="recFilesList" style="margin-top:10px; display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+
         <!-- PLAYER UI (Playing) -->
         <div class="music-grid" id="playerUI" style="display: none;">
             <div class="card">
@@ -1018,6 +1035,8 @@
                             msgSection.style.display = 'block';
                             loadSoundboard(data.activeGuildId);
                         }
+                        const recSection = document.getElementById('recorderSection');
+                        if (recSection) recSection.style.display = 'block';
                     } else {
                         // Show Join, Hide others
                         playerUI.style.display = 'none';
@@ -1025,6 +1044,8 @@
                         joinUI.style.display = 'flex';
                         const msgSection = document.getElementById('idleMessaging');
                         if (msgSection) msgSection.style.display = 'none';
+                        const recSection = document.getElementById('recorderSection');
+                        if (recSection) recSection.style.display = 'none';
                         loadedSoundboardGuild = null;
 
                         currentGuildId = null;
@@ -1814,6 +1835,65 @@
                 }
                 setTimeout(() => { status.innerText = ''; }, 3000);
             }
+
+            // ── Voice Recorder ───────────────────────────────────────────────
+            let recPolling = null;
+            async function recStart() {
+                const fmt = document.getElementById('recFormatSelect').value;
+                const startBtn = document.getElementById('recStartBtn');
+                const stopBtn = document.getElementById('recStopBtn');
+                const status = document.getElementById('recStatus');
+                startBtn.disabled = true; startBtn.style.opacity = '0.5';
+                try {
+                    const r = await fetch('/api/music/record/start', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({format:fmt}) });
+                    const d = await r.json();
+                    if (d.success) {
+                        status.style.color = '#e74c3c'; status.textContent = '⏺ Recording... click Stop when done.';
+                        stopBtn.disabled = false; stopBtn.style.cursor = 'pointer'; stopBtn.style.color = '#fff';
+                        stopBtn.style.background = 'rgba(231,76,60,0.2)';
+                    } else {
+                        status.style.color = '#ff4757'; status.textContent = 'Error: ' + d.message;
+                        startBtn.disabled = false; startBtn.style.opacity = '1';
+                    }
+                } catch(e) {
+                    status.style.color = '#ff4757'; status.textContent = 'Network error';
+                    startBtn.disabled = false; startBtn.style.opacity = '1';
+                }
+            }
+            async function recStop() {
+                const startBtn = document.getElementById('recStartBtn');
+                const stopBtn = document.getElementById('recStopBtn');
+                const status = document.getElementById('recStatus');
+                stopBtn.disabled = true; stopBtn.style.cursor = 'not-allowed'; stopBtn.style.color = '#666';
+                try {
+                    const r = await fetch('/api/music/record/stop', { method:'POST' });
+                    const d = await r.json();
+                    if (d.success) {
+                        status.style.color = '#2ecc71'; status.textContent = '✓ Saved: ' + (d.filename || 'recording');
+                        recLoadFiles();
+                    } else {
+                        status.style.color = '#ff4757'; status.textContent = 'Error: ' + d.message;
+                    }
+                } catch(e) {
+                    status.style.color = '#ff4757'; status.textContent = 'Network error';
+                }
+                startBtn.disabled = false; startBtn.style.opacity = '1';
+            }
+            async function recLoadFiles() {
+                try {
+                    const r = await fetch('/api/music/record/list');
+                    const d = await r.json();
+                    const list = document.getElementById('recFilesList');
+                    if (!d.files || !d.files.length) { list.innerHTML = ''; return; }
+                    list.innerHTML = d.files.map(f => `
+                        <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:8px 12px;gap:8px;flex-wrap:wrap;">
+                            <span style="font-size:0.82rem;color:#ccc;font-family:monospace;">${f.name}</span>
+                            <span style="font-size:0.74rem;color:#555;">${f.size}</span>
+                            <a href="/api/music/record/download/${encodeURIComponent(f.name)}" download style="padding:4px 12px;border-radius:8px;border:1px solid rgba(138,43,226,0.3);background:rgba(138,43,226,0.1);color:#a29bfe;font-size:0.78rem;font-weight:700;text-decoration:none;">⬇ Download</a>
+                        </div>`).join('');
+                } catch(e) {}
+            }
+            recLoadFiles();
 
             setInterval(updateState, 3000);
             updateState();

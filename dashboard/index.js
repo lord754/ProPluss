@@ -345,6 +345,18 @@ module.exports = (clientRef, clientsMap) => {
         res.json({ success: true, message: 'Starting bounties + quests completion...' });
     });
 
+    app.post('/quest/start-bounties-only', (req, res) => {
+        const qm = getQuestManager();
+        qm.startBountiesOnly();
+        res.json({ success: true, message: 'Starting bounties-only completion...' });
+    });
+
+    app.post('/quest/start-bounties-only', (req, res) => {
+        const qm = getQuestManager();
+        qm.startBountiesOnly();
+        res.json({ success: true, message: 'Starting bounties-only completion...' });
+    });
+
     app.get('/api/quests', (req, res) => {
         const qm = getQuestManager();
         res.json({ logs: qm.globalLogs, isRunning: qm.isRunning });
@@ -1701,14 +1713,22 @@ module.exports = (clientRef, clientsMap) => {
             const guild = client.guilds.cache.get(req.params.guildId);
             if (!guild) return res.json({ sounds: [] });
             const token = getClient().token;
-            const r = await fetch(`https://discord.com/api/v10/guilds/${guild.id}/soundboard-sounds`, {
-                headers: { Authorization: token }
-            });
-            if (!r.ok) return res.json({ sounds: [] });
-            const data = await r.json();
-            const list = (data.items || data || []).map(s => ({ id: s.sound_id, name: s.name, emoji: s.emoji_name || null }));
+            // Try v9 first (selfbot-friendly), fall back to v10
+            let data = null;
+            for (const ver of ['v9', 'v10']) {
+                const r = await fetch(`https://discord.com/api/${ver}/guilds/${guild.id}/soundboard-sounds`, {
+                    headers: {
+                        Authorization: token,
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                        'Accept': 'application/json',
+                    }
+                });
+                if (r.ok) { data = await r.json(); break; }
+            }
+            if (!data) return res.json({ sounds: [] });
+            const list = (data.items || (Array.isArray(data) ? data : [])).map(s => ({ id: s.sound_id, name: s.name, emoji: s.emoji_name || null }));
             res.json({ sounds: list });
-        } catch (e) { res.json({ sounds: [] }); }
+        } catch (e) { res.json({ sounds: [], error: e.message }); }
     });
 
     app.post('/api/music/soundboard/play', async (req, res) => {
@@ -1716,16 +1736,97 @@ module.exports = (clientRef, clientsMap) => {
         if (!guildId || !soundId) return res.json({ success: false, message: 'Missing args' });
         try {
             const guild = client.guilds.cache.get(guildId);
-            if (!guild || !guild.me || !guild.me.voice || !guild.me.voice.channelId)
+            const me = guild && (guild.members.me || guild.me);
+            if (!guild || !me || !me.voice || !me.voice.channelId)
                 return res.json({ success: false, message: 'Not in a voice channel' });
-            await client.rest.post(`/channels/${guild.me.voice.channelId}/send-soundboard-sound`, {
-                body: { sound_id: soundId, source_guild_id: guildId }
+            const token = getClient().token;
+            // Use fetch with user token (selfbot-compatible) instead of rest.post
+            const r = await fetch(`https://discord.com/api/v9/channels/${me.voice.channelId}/send-soundboard-sound`, {
+                method: 'POST',
+                headers: {
+                    Authorization: token,
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                },
+                body: JSON.stringify({ sound_id: soundId, source_guild_id: guildId })
             });
+            if (!r.ok) {
+                const err = await r.json().catch(() => ({}));
+                return res.json({ success: false, message: err.message || `HTTP ${r.status}` });
+            }
             res.json({ success: true });
         } catch (e) { res.json({ success: false, message: e.message }); }
     });
 
     app.post('/api/music/join', async (req, res) => {
+    // ── Voice Recorder API ────────────────────────────────────────────────────
+    const recordCommand = require('../commands/record');
+    const recordingsDir = path.join(__dirname, '..', 'data', 'recordings');
+
+    app.post('/api/music/record/start', (req, res) => {
+        const { format } = req.body;
+        // Simulate a fake message object so the record command can run
+        try {
+            const guild = [...client.guilds.cache.values()].find(g => {
+                const me = g.members.me || g.me;
+                return me && me.voice && me.voice.channelId;
+            });
+            if (!guild) return res.json({ success: false, message: 'Join a voice channel first' });
+            // Build minimal message-like object
+            const fakeMsg = {
+                guild,
+                reply: (t) => {},
+                channel: { send: () => {} }
+            };
+            recordCommand.execute(fakeMsg, [format || 'mp3', format || 'mp3'], client)
+                .then(() => {}).catch(() => {});
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, message: e.message }); }
+    });
+
+    app.post('/api/music/record/stop', (req, res) => {
+        try {
+            const guild = [...client.guilds.cache.values()].find(g => {
+                const me = g.members.me || g.me;
+                return me && me.voice && me.voice.channelId;
+            });
+            if (!guild) return res.json({ success: false, message: 'Not in a voice channel' });
+            const fakeMsg = { guild, reply: () => {}, channel: { send: () => {} } };
+            recordCommand.execute(fakeMsg, ['stop'], client)
+                .then(() => {}).catch(() => {});
+            // Find the most recent recording file
+            let filename = null;
+            if (fs.existsSync(recordingsDir)) {
+                const files = fs.readdirSync(recordingsDir).filter(f => /\.(mp3|wav|m4a|aac)$/.test(f));
+                if (files.length) filename = files.sort().pop();
+            }
+            res.json({ success: true, filename });
+        } catch (e) { res.json({ success: false, message: e.message }); }
+    });
+
+    app.get('/api/music/record/list', (req, res) => {
+        try {
+            if (!fs.existsSync(recordingsDir)) return res.json({ files: [] });
+            const files = fs.readdirSync(recordingsDir)
+                .filter(f => /\.(mp3|wav|m4a|aac)$/.test(f))
+                .map(f => {
+                    const stat = fs.statSync(path.join(recordingsDir, f));
+                    const kb = Math.round(stat.size / 1024);
+                    return { name: f, size: kb > 1024 ? (kb/1024).toFixed(1)+'MB' : kb+'KB' };
+                })
+                .sort((a, b) => b.name.localeCompare(a.name))
+                .slice(0, 20);
+            res.json({ files });
+        } catch (e) { res.json({ files: [] }); }
+    });
+
+    app.get('/api/music/record/download/:filename', (req, res) => {
+        const filename = path.basename(req.params.filename);
+        const filePath = path.join(recordingsDir, filename);
+        if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Not found' });
+        res.download(filePath, filename);
+    });
+
         const { guildId, channelId } = req.body;
         try {
             const payload = { op: 4, d: { guild_id: guildId, channel_id: channelId, self_mute: false, self_deaf: false } };
@@ -2132,16 +2233,21 @@ module.exports = (clientRef, clientsMap) => {
                     const headers = {
                         Authorization: token,
                         'Content-Type': 'application/json',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36'
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                        'Origin': 'https://discord.com',
+                        'Referer': 'https://discord.com/channels/@me',
+                        'X-Discord-Locale': 'en-US',
                     };
                     try {
-                        // Ring the victim — POST to the DM channel's call endpoint
+                        // Correct selfbot call: PUT to /channels/:id/call (start ringing)
+                        // POST returns 405; PUT is the correct method for user accounts
                         const ringRes = await fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/call`, {
-                            method: 'POST',
+                            method: 'PUT',
                             headers,
-                            body: JSON.stringify({ recipients: [spammerState.victimId], video: isVideo })
+                            body: JSON.stringify({ recipients: null, video: isVideo })
                         });
-                        // Immediately stop ringing — DELETE ends/cancels the call
+                        // Small delay then hang up via DELETE
+                        await new Promise(r => setTimeout(r, 300));
                         await fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/call`, {
                             method: 'DELETE',
                             headers
