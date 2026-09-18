@@ -116,12 +116,12 @@ async function generateReply(userId, userContent) {
     messages.push({ role: "user", content: userContent });
 
     // Determine Model Parameters
-    let modelName = "moonshotai/kimi-k2-thinking";
+    let modelName = "meta/llama-3.3-70b-instruct";
     let temp = 1;
     let maxTokens = 16384;
 
     if (config.modelType === "fast") {
-        modelName = "moonshotai/kimi-k2-instruct-0905";
+        modelName = "meta/llama-3.1-8b-instruct";
         temp = 0.6;
         maxTokens = 4096;
     }
