@@ -195,6 +195,39 @@ async function bootClient(token, accountIndex) {
         for (const [id, t] of afkCooldowns) if (now - t > 3600000) afkCooldowns.delete(id);
     }, 6 * 3600000); // every 6h instead of 1h
 
+    // ── In-memory AFK cache (avoid disk read on every message) ───────────────
+    const afkPath = path.join(__dirname, 'data', 'afk.json');
+    const logPath = path.join(__dirname, 'data', 'afklog.json');
+    let _afkCache = null;
+    let _afkCacheMtime = 0;
+    function getAfkData() {
+        try {
+            const stat = fs.existsSync(afkPath) ? fs.statSync(afkPath).mtimeMs : 0;
+            if (_afkCache === null || stat !== _afkCacheMtime) {
+                _afkCache = stat ? JSON.parse(fs.readFileSync(afkPath, 'utf8')) : { isOn: false, reason: '', logsEnabled: false };
+                _afkCacheMtime = stat;
+            }
+        } catch { _afkCache = { isOn: false, reason: '', logsEnabled: false }; }
+        return _afkCache;
+    }
+    function invalidateAfkCache() { _afkCache = null; _afkCacheMtime = 0; }
+    // Expose so other modules can invalidate after writing afk.json
+    client._invalidateAfkCache = invalidateAfkCache;
+
+    // ── Pre-built Set for big5 command lookup (built once, not per-message) ──
+    const _big5CmdsSet = new Set(['rstatus','stopstatus','remoji','stopemoji','stream','streamoff','setstatus','playing','listening','watching','stopactivity','setpfp','setbanner','stealpfp','stealbanner','setname','setbio','stealbio','setpronoun','stealpronoun','copyprofile','hypesquad','ct','snipe','agct','silentantigc','alw','wl','arr','arrend','ar1','ar1e','ar2','ar2e','dreact','dreactoff','autoreact','autoreactoff','autoflood','stopautoflood','stfu','stfuoff','pingresponse','pinginsult','pingreact','mimic','mimicoff','blackify','unblackify','murder','murderstop','kill','kille','multilast','stopmultilast','rg','rge','tjoin','autonick','whois','av','guildicon','banner','hostinfo','firstmessage','cls','ping','diddy','pedophile','goat','faggot','cringe','godly','nitro','hindu','ceepeelover','kiss','slap','hug','pat','wave','cuddle','lick','bite','bully','poke','bonk','yeet','highfive','handhold','nom','smug','dance','cry','sleep','blush','wink','smile','ecchi','hentai','uniform','maid','oppai','selfies','raiden','marin']);
+
+    // ── Hoist hot-path requires out of messageCreate ──────────────────────────
+    const mimicMgr = require('./commands/mimicManager');
+    const igMgr    = require('./commands/igManager');
+    const ytMgr    = require('./commands/ytManager');
+    const calcMgr  = require('./commands/calculator');
+    const currMgr  = require('./commands/currency');
+    const qrMgr    = require('./commands/qrManager');
+    const ipMgr    = require('./commands/ip');
+    const clipMgr  = require('./commands/clipboardManager');
+    const big5Mgr  = require('./commands/big5');
+
     client.on('guildMemberAdd', async member => {
         try {
             const welcomerManager = require('./commands/welcomerManager');
@@ -248,15 +281,12 @@ async function bootClient(token, accountIndex) {
     client.on('messageCreate', async (message) => {
         try {
             if (!message.author) return;
-            require('./commands/mimicManager').handle(message, client);
+            mimicMgr.handle(message, client);
 
             const mentionsMe = message.mentions.users.has(client.user.id);
             const isDm = message.channel.type === 'DM';
             if ((mentionsMe || isDm) && message.author.id !== client.user.id) {
-                const afkPath = path.join(__dirname, 'data', 'afk.json');
-                const logPath = path.join(__dirname, 'data', 'afklog.json');
-                let afkData = { isOn: false, reason: '', logsEnabled: false };
-                if (fs.existsSync(afkPath)) afkData = JSON.parse(fs.readFileSync(afkPath, 'utf8'));
+                const afkData = getAfkData();
                 if (afkData.logsEnabled) {
                     let logs = fs.existsSync(logPath) ? JSON.parse(fs.readFileSync(logPath, 'utf8')) : [];
                     let c = message.content
@@ -277,12 +307,12 @@ async function bootClient(token, accountIndex) {
             }
 
             if (isAllowedUser(message.author.id)) {
-                if (await require('./commands/igManager').handle(message)) return;
-                if (await require('./commands/ytManager').handle(message)) return;
-                if (await require('./commands/calculator').handle(message)) return;
-                if (await require('./commands/currency').handle(message)) return;
-                if (await require('./commands/qrManager').handle(message, client, true)) return;
-                if (await require('./commands/ip').handle(message)) return;
+                if (await igMgr.handle(message)) return;
+                if (await ytMgr.handle(message)) return;
+                if (await calcMgr.handle(message)) return;
+                if (await currMgr.handle(message)) return;
+                if (await qrMgr.handle(message, client, true)) return;
+                if (await ipMgr.handle(message)) return;
                 if (message.guild && client.ttsMap?.has(message.guild.id)) {
                     const prefix = process.env.PREFIX || '!';
                     if (message.channel.id === client.ttsMap.get(message.guild.id) && !message.content.startsWith(prefix)) {
@@ -301,14 +331,11 @@ async function bootClient(token, accountIndex) {
             const command = client.commands.get(commandName);
             if (!command) {
                 // Try big5 commands
-                const big5 = require('./commands/big5');
-                const big5Cmds = new Set(['rstatus','stopstatus','remoji','stopemoji','stream','streamoff','setstatus','playing','listening','watching','stopactivity','setpfp','setbanner','stealpfp','stealbanner','setname','setbio','stealbio','setpronoun','stealpronoun','copyprofile','hypesquad','ct','snipe','agct','silentantigc','alw','wl','arr','arrend','ar1','ar1e','ar2','ar2e','dreact','dreactoff','autoreact','autoreactoff','autoflood','stopautoflood','stfu','stfuoff','pingresponse','pinginsult','pingreact','mimic','mimicoff','blackify','unblackify','murder','murderstop','kill','kille','multilast','stopmultilast','rg','rge','tjoin','autonick','whois','av','guildicon','banner','hostinfo','firstmessage','cls','ping','diddy','pedophile','goat','faggot','cringe','godly','nitro','hindu','ceepeelover','kiss','slap','hug','pat','wave','cuddle','lick','bite','bully','poke','bonk','yeet','highfive','handhold','nom','smug','dance','cry','sleep','blush','wink','smile','ecchi','hentai','uniform','maid','oppai','selfies','raiden','marin']);
-                if (big5Cmds.has(commandName)) {
-                    try { await big5.execute(message, args, client); } catch (e) { console.error('[Big5]', e.message); }
+                if (_big5CmdsSet.has(commandName)) {
+                    try { await big5Mgr.execute(message, args, client); } catch (e) { console.error('[Big5]', e.message); }
                     return;
                 }
-                const clipboardManager = require('./commands/clipboardManager');
-                const responseText = clipboardManager.getResponse(commandName);
+                const responseText = clipMgr.getResponse(commandName);
                 if (responseText) {
                     const refId = message.reference?.messageId || null;
                     if (message.author.id === client.user.id) { try { await message.delete(); } catch (e) {} }
@@ -370,4 +397,4 @@ if (accounts.length === 0) {
 // Expose bootClient globally so dashboard can trigger it after first token add
 global.bootClient = bootClient;
 
-// v2.2.1a
+// v2.2.2a

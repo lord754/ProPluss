@@ -1,10 +1,10 @@
 {
   "name": "pro-plus",
-  "version": "2.1.0",
-  "description": "PRO+ Advanced Discord Selfbot — v2.1s Stable",
+  "version": "2.2.2",
+  "description": "PRO+ Advanced Discord Selfbot — v2.2.2a Alpha",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node --max-old-space-size=180 index.js"
   },
   "keywords": [
     "discord",
