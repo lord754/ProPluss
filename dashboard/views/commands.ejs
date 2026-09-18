@@ -256,20 +256,6 @@
                 </div>
             </div>
 
-            <!-- Status Rotator -->
-            <div class="cmd-card" onclick="openCard(this, 'status-rotator')">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" class="custom-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
-                        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="card-title">Status Rotator</div>
-                    <div class="card-desc">Auto-rotate custom statuses and emojis on a timer.</div>
-                </div>
-            </div>
-
             <!-- Extra Features -->
             <div class="cmd-card" onclick="openCard(this, 'extra-features')">
                 <div class="card-icon">
@@ -368,15 +354,20 @@
 
             // Handle Back Navigation (Browser Back)
             window.addEventListener('pageshow', (event) => {
-                if (event.persisted) {
-                    // Restore state if coming from cache
-                    document.querySelectorAll('.cmd-card').forEach(c => c.style.opacity = '1');
-                    const clone = document.querySelector('.card-clone');
-                    if (clone) clone.remove();
-                }
+                // Always clean up: remove all leftover clones and restore card opacity
+                document.querySelectorAll('.card-clone').forEach(c => c.remove());
+                document.querySelectorAll('.cmd-card').forEach(c => {
+                    c.style.opacity = '1';
+                    c.classList.remove('animating');
+                });
+            });
+
+            // Also clean up on load in case of non-bfcache restores
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.card-clone').forEach(c => c.remove());
             });
         </script>
 </body>
 
 </html>
-<%#- v2.2.1a %>
+<%#- v2.2.2a %>

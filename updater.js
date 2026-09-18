@@ -156,8 +156,21 @@ function get(url) {
 
 async function getJson(url) {
     const r = await get(url);
+    if (r.status === 403) {
+        const isHtml = r.text.trimStart().toLowerCase().startsWith('<!doctype');
+        throw new Error(isHtml
+            ? 'GitHub API rate limit hit (403). Wait a minute and try again.'
+            : `GitHub API 403: ${r.text.slice(0, 200)}`);
+    }
+    if (r.status === 404) throw new Error(`GitHub API 404 — repo not found or private: ${url}`);
     if (r.status !== 200) throw new Error(`GitHub API ${r.status}: ${r.text.slice(0, 200)}`);
-    return JSON.parse(r.text);
+    const isHtml = r.text.trimStart().toLowerCase().startsWith('<!doctype');
+    if (isHtml) throw new Error('GitHub returned an HTML page instead of JSON — likely a redirect or rate limit. Check your internet connection and try again.');
+    try {
+        return JSON.parse(r.text);
+    } catch (e) {
+        throw new Error(`GitHub response was not valid JSON (${e.message}). Response preview: ${r.text.slice(0, 100)}`);
+    }
 }
 
 // ─── STATUS DOT LOGIC ────────────────────────────────────────────────────────
@@ -569,4 +582,4 @@ module.exports = {
     CHANNEL_LABELS,
 };
 
-// v2.2.1a
+// v2.2.2a
