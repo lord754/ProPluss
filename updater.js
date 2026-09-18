@@ -1,11 +1,15 @@
 const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { execSync } = require('child_process');
 
 const REPO = 'lord754/ProPluss';
+const REPO_URL = `https://github.com/${REPO}.git`;
 const API = 'https://api.github.com';
 const RAW = 'https://raw.githubusercontent.com';
 const STATE_FILE = path.join(__dirname, 'data', 'updater.json');
+const TEMP_DIR = path.join(__dirname, '.temp');
 
 // ─── VERSION ─────────────────────────────────────────────────────────────────
 // Format: d.s.a.b
@@ -19,8 +23,8 @@ const STATE_FILE = path.join(__dirname, 'data', 'updater.json');
 // s = auto-detected (stable commits, no special keyword)
 // b = auto-detected (commit contains beta/preview/rc keywords)
 // a = manually assigned (you tell me which commits are alpha)
-const CURRENT_VERSION = '2.0.0d';
-const CURRENT_CHANNEL = 'dev'; // stable | alpha | beta | dev
+const CURRENT_VERSION = '2.1s';
+const CURRENT_CHANNEL = 'stable'; // stable | alpha | beta | dev
 
 // Channel letter → full name
 const CHANNEL_NAMES  = { d: 'dev', s: 'stable', a: 'alpha', b: 'beta' };
@@ -272,14 +276,12 @@ async function checkForUpdates() {
     };
 }
 
-// ─── APPLY ───────────────────────────────────────────────────────────────────
+// ─── BACKUP (for revert support) ─────────────────────────────────────────────
 function backupFiles(files) {
     try {
         const backed = {};
-        // Always back up these core files regardless of what's in the diff
         const ALWAYS_BACKUP = ['index.js', 'updater.js', 'package.json', 'accountManager.js'];
         const allFiles = new Set([...files, ...ALWAYS_BACKUP]);
-        
         for (const f of allFiles) {
             const src = path.join(__dirname, f);
             if (fs.existsSync(src) && !isProtected(f)) {
@@ -290,126 +292,164 @@ function backupFiles(files) {
     } catch { return {}; }
 }
 
+// ─── APPLY (full .temp clone strategy) ───────────────────────────────────────
+// 1. git clone the repo into .temp at the target SHA
+// 2. Walk every file in .temp (except protected): add/overwrite in main dir
+// 3. Walk every local file not in .temp (except protected): delete it
+// 4. Remove .temp
+function cleanTemp() {
+    try {
+        if (fs.existsSync(TEMP_DIR)) {
+            // Recursive delete — works on Node 14.14+
+            fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+        }
+    } catch (e) { /* best-effort */ }
+}
+
+function walkDir(dir, base) {
+    // Returns all file paths relative to base
+    const results = [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+        const rel = base ? `${base}/${e.name}` : e.name;
+        if (e.isDirectory()) {
+            results.push(...walkDir(path.join(dir, e.name), rel));
+        } else {
+            results.push(rel);
+        }
+    }
+    return results;
+}
+
 async function applyUpdate(sha, logs) {
     const log = msg => logs.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
-    log(`Fetching commit ${sha.slice(0, 7)}...`);
+    log(`Starting full-repo sync to commit ${sha.slice(0, 7)}...`);
 
-    const commit = await getJson(`${API}/repos/${REPO}/commits/${sha}`);
-    let files = commit.files || [];
-    log(`${files.length} file(s) in commit diff.`);
+    // ── 1. Clean any leftover .temp ───────────────────────────────────────────
+    cleanTemp();
+    log('Cloning repo into .temp (this may take a moment)...');
 
-    // Merge commits often return 0 or limited files via the single-commit endpoint.
-    // If we get 0 files, try fetching via the compare endpoint (parent..sha).
-    if (files.length === 0 && commit.parents && commit.parents.length >= 1) {
-        const parentSha = commit.parents[0].sha;
-        log(`Merge commit detected — comparing ${parentSha.slice(0,7)}...${sha.slice(0,7)}`);
-        try {
-            const cmp = await getJson(`${API}/repos/${REPO}/compare/${parentSha}...${sha}`);
-            files = cmp.files || [];
-            log(`Compare returned ${files.length} file(s).`);
-        } catch(e) {
-            log(`Compare failed: ${e.message}`);
-        }
-    }
-
-    // NEW: For apply old versions, get ALL files from the tree
-    // This ensures missing files are downloaded
-    let allTreeFiles = [];
+    // ── 2. Clone at the target commit ─────────────────────────────────────────
     try {
-        const tree = await getJson(`${API}/repos/${REPO}/git/trees/${sha}?recursive=1`);
-        allTreeFiles = (tree.tree || [])
-            .filter(item => item.type === 'blob' && !isProtected(item.path))
-            .map(item => ({ filename: item.path, sha: item.sha, size: item.size }));
-        log(`Commit tree contains ${allTreeFiles.length} files total.`);
-    } catch (e) {
-        log(`Could not fetch full tree: ${e.message}`);
-    }
-
-    // Merge diff files with missing files from tree
-    const fileMap = new Map();
-    files.forEach(f => fileMap.set(f.filename, f));
-    allTreeFiles.forEach(f => {
-        if (!fileMap.has(f.filename)) {
-            const localPath = path.join(__dirname, f.filename);
-            if (!fs.existsSync(localPath)) {
-                fileMap.set(f.filename, { filename: f.filename, status: 'missing', sha: f.sha });
-            }
+        // Shallow clone of the full repo then checkout the target sha
+        execSync(`git clone --depth=1 --no-tags "${REPO_URL}" "${TEMP_DIR}"`, { timeout: 120000 });
+        // If the target sha isn't HEAD, fetch it specifically and checkout
+        try {
+            execSync(`git -C "${TEMP_DIR}" fetch --depth=1 origin ${sha}`, { timeout: 60000 });
+            execSync(`git -C "${TEMP_DIR}" checkout ${sha}`, { timeout: 30000 });
+        } catch {
+            // If fetch/checkout fails (sha is already HEAD or not reachable), proceed with cloned HEAD
         }
-    });
-    files = Array.from(fileMap.values());
-    log(`Total files to process (diff + missing): ${files.length}`);
-
-    if (files.length === 0) {
-        log('No files to update in this commit.');
-        // Still record state so it shows as installed
-        const state = loadState();
-        const commitMsg = commit.commit.message;
-        const versionParsed = extractVersionFromCommit(commitMsg);
-        const newVersion = versionParsed ? formatVersionDisplay(versionParsed).split(' ')[0] : (state.installedVersion || CURRENT_VERSION);
-        const newChannel = versionParsed ? versionParsed.channel : (state.installedChannel || CURRENT_CHANNEL);
-        state.lastSha = sha;
-        state.installedVersion = newVersion;
-        state.installedChannel = newChannel;
-        state.dismissed = (state.dismissed || []).filter(s => s !== sha);
-        state.deleted = (state.deleted || []).filter(s => s !== sha);
-        state.history = [{ sha: sha.slice(0,7), fullSha: sha, message: commitMsg.split('\n')[0], date: commit.commit.author.date, version: newVersion, channel: newChannel, updated: 0, skipped: 0, failed: 0 }, ...(state.history || [])].slice(0, 10);
-        saveState(state);
-        return { updated: 0, skipped: 0, failed: 0, history: state.history };
+        log('Clone successful.');
+    } catch (e) {
+        cleanTemp();
+        throw new Error(`Git clone failed: ${e.message}`);
     }
 
-    const filesToChange = files.filter(f => !isProtected(f.filename) && f.status !== 'removed').map(f => f.filename);
+    // ── 3. Get actual HEAD sha from the cloned repo ───────────────────────────
+    let actualSha = sha;
+    try {
+        actualSha = execSync(`git -C "${TEMP_DIR}" rev-parse HEAD`, { encoding: 'utf8' }).trim();
+        log(`Syncing to: ${actualSha.slice(0, 7)}`);
+    } catch { /* use the provided sha */ }
+
+    // ── 4. Walk .temp — collect all files to add/update ───────────────────────
+    const SKIP_IN_TEMP = ['.git'];
+    const tempFiles = walkDir(TEMP_DIR, '').filter(f => {
+        const top = f.split('/')[0];
+        return !SKIP_IN_TEMP.includes(top) && !isProtected(f);
+    });
+    log(`Remote tree: ${tempFiles.length} file(s) to sync.`);
+
+    // ── 5. Build backup of files that will be touched ─────────────────────────
+    const filesToChange = tempFiles.filter(f => !isProtected(f));
     const backup = backupFiles(filesToChange);
 
+    // ── 6. Copy .temp → main (add + overwrite) ────────────────────────────────
     let updated = 0, skipped = 0, failed = 0;
-    const total = files.filter(f => !isProtected(f.filename) && f.status !== 'removed').length;
+    const total = tempFiles.length;
     let processed = 0;
-    for (const file of files) {
-        if (isProtected(file.filename)) { log(`SKIP (protected — ${file.filename}): this file is never overwritten`); skipped++; continue; }
-        if (file.status === 'removed') { log(`SKIP (deleted in commit): ${file.filename}`); skipped++; continue; }
-        try {
-            const r = await get(`${RAW}/${REPO}/${sha}/${file.filename}`);
-            if (r.status !== 200) throw new Error(`HTTP ${r.status} — file not found at commit ${sha.slice(0,7)}`);
-            const dest = path.join(__dirname, file.filename);
-            if (!fs.existsSync(path.dirname(dest))) fs.mkdirSync(path.dirname(dest), { recursive: true });
-            fs.writeFileSync(dest, r.body);
-            log(`OK: ${file.filename}`);
-            updated++;
-        } catch (e) { log(`FAIL: ${file.filename} — ${e.message}`); failed++; }
+
+    for (const relPath of tempFiles) {
         processed++;
+        if (isProtected(relPath)) { log(`SKIP (protected): ${relPath}`); skipped++; }
+        else {
+            try {
+                const src = path.join(TEMP_DIR, relPath);
+                const dest = path.join(__dirname, relPath);
+                const destDir = path.dirname(dest);
+                if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+                fs.copyFileSync(src, dest);
+                updated++;
+            } catch (e) { log(`FAIL: ${relPath} — ${e.message}`); failed++; }
+        }
         if (total > 0) {
-            const pct = Math.round((processed / total) * 100);
+            const pct = Math.round((processed / total) * 60); // first 60% = copy phase
             log(`[PROGRESS: ${pct}%]`);
         }
-        await new Promise(r => setTimeout(r, 80));
     }
+    log(`Copy phase done. Updated: ${updated}, Skipped: ${skipped}, Failed: ${failed}`);
 
-    log(`Done. Updated: ${updated}, Skipped: ${skipped}, Failed: ${failed}`);
+    // ── 7. Delete local files NOT in .temp (i.e. deleted from repo) ──────────
+    // Walk local dir, excluding .temp itself and data/ and protected files
+    const LOCAL_SKIP = ['.temp', '.git', 'data', 'node_modules', '.npm', '.kiro'];
+    const localFiles = walkDir(__dirname, '').filter(f => {
+        const top = f.split('/')[0];
+        return !LOCAL_SKIP.includes(top) && !isProtected(f);
+    });
+    const tempSet = new Set(tempFiles);
+    let deleted = 0;
+    const delTotal = localFiles.length;
+    let delProcessed = 0;
+    for (const relPath of localFiles) {
+        delProcessed++;
+        if (!tempSet.has(relPath) && !isProtected(relPath)) {
+            try {
+                fs.unlinkSync(path.join(__dirname, relPath));
+                log(`DELETED: ${relPath}`);
+                deleted++;
+            } catch { /* file already gone */ }
+        }
+        if (delTotal > 0) {
+            const pct = 60 + Math.round((delProcessed / delTotal) * 35); // 60-95%
+            log(`[PROGRESS: ${pct}%]`);
+        }
+    }
+    if (deleted > 0) log(`Cleanup: removed ${deleted} file(s) no longer in repo.`);
 
+    // ── 8. Remove .temp ───────────────────────────────────────────────────────
+    log('Cleaning up .temp...');
+    cleanTemp();
+    log('[PROGRESS: 100%]');
+    log(`Done. Updated: ${updated}, Deleted: ${deleted}, Skipped: ${skipped}, Failed: ${failed}`);
+
+    // ── 9. Persist state ──────────────────────────────────────────────────────
     const state = loadState();
     const prevSha = state.lastSha;
 
-    // Extract version from this commit
-    const commitMsg = commit.commit.message;
-    const versionParsed = extractVersionFromCommit(commitMsg);
-    const newVersion = versionParsed ? formatVersionDisplay(versionParsed).split(' ')[0] : (state.installedVersion || CURRENT_VERSION);
-    const newChannel = versionParsed ? versionParsed.channel : (state.installedChannel || CURRENT_CHANNEL);
+    // Try to read version from updated package.json in main dir
+    let newVersion = state.installedVersion || CURRENT_VERSION;
+    let newChannel = state.installedChannel || CURRENT_CHANNEL;
+    try {
+        const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+        if (pkg.version) newVersion = pkg.version;
+    } catch { /* fallback */ }
 
-    state.lastSha = sha;
+    state.lastSha = actualSha;
     state.installedVersion = newVersion;
     state.installedChannel = newChannel;
     state.restartCount = 0;
     state.revertSha = prevSha;
     state.revertFiles = backup;
-    // If failed > 0, mark as potentially damaged for red dot
     state.lastUpdateFailed = failed > 0;
     state.dismissed = (state.dismissed || []).filter(s => s !== sha);
     state.deleted = (state.deleted || []).filter(s => s !== sha);
     state.history = [
         {
-            sha: sha.slice(0, 7),
-            fullSha: sha,
-            message: commitMsg.split('\n')[0],
-            date: commit.commit.author.date,
+            sha: actualSha.slice(0, 7),
+            fullSha: actualSha,
+            message: `Full sync to ${actualSha.slice(0, 7)}`,
+            date: new Date().toISOString(),
             version: newVersion,
             channel: newChannel,
             updated,
@@ -419,7 +459,7 @@ async function applyUpdate(sha, logs) {
         ...(state.history || [])
     ].slice(0, 10);
     saveState(state);
-    return { updated, skipped, failed, history: state.history };
+    return { updated, skipped, failed, deleted, history: state.history };
 }
 
 // ─── REVERT ───────────────────────────────────────────────────────────────────

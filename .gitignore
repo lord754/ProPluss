@@ -7,3 +7,4 @@ big_5_v2/
 .npm/
 installer.js
 RELEASE_NOTES_v2.0.0d.md
+.temp/

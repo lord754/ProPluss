@@ -2237,27 +2237,55 @@ module.exports = (clientRef, clientsMap) => {
                         'Origin': 'https://discord.com',
                         'Referer': 'https://discord.com/channels/@me',
                         'X-Discord-Locale': 'en-US',
+                        'X-Super-Properties': Buffer.from(JSON.stringify({
+                            os: 'Windows', browser: 'Chrome', device: '',
+                            system_locale: 'en-US', browser_user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                            browser_version: '138.0.0.0', os_version: '10', referrer: '', referring_domain: '',
+                            referrer_current: '', referring_domain_current: '', release_channel: 'stable',
+                            client_build_number: 9999, client_event_source: null
+                        })).toString('base64'),
                     };
                     try {
-                        // Correct selfbot call: PUT to /channels/:id/call (start ringing)
-                        // POST returns 405; PUT is the correct method for user accounts
+                        // Ring via POST with recipients array — this is the correct selfbot payload
+                        // (PUT is for joining an existing call; POST creates/rings a new one)
                         const ringRes = await fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/call`, {
-                            method: 'PUT',
+                            method: 'POST',
                             headers,
-                            body: JSON.stringify({ recipients: null, video: isVideo })
+                            body: JSON.stringify({
+                                recipients: [spammerState.victimId],
+                                video: isVideo,
+                                ring_on_connect: true
+                            })
                         });
-                        // Small delay then hang up via DELETE
-                        await new Promise(r => setTimeout(r, 300));
+                        const ringStatus = ringRes.status;
+                        // Hang up after 400ms regardless (ring-then-drop)
+                        await new Promise(r => setTimeout(r, 400));
                         await fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/call`, {
                             method: 'DELETE',
                             headers
-                        });
-                        if (ringRes.ok || ringRes.status === 200 || ringRes.status === 204) {
+                        }).catch(() => {});
+
+                        // 200/201 = ringing; 403 = blocked; 405 = method not allowed on this account type
+                        if (ringStatus === 200 || ringStatus === 201 || ringStatus === 204) {
                             spammerState.completed++;
-                        } else {
-                            const errBody = await ringRes.text().catch(() => '');
+                        } else if (ringStatus === 403) {
                             spammerState.failed++;
-                            if (processed <= 3) logSpammer(`Call HTTP ${ringRes.status}: ${errBody.slice(0, 120)}`);
+                            if (processed <= 2) logSpammer(`Call blocked (403) — target may have calls disabled`);
+                        } else {
+                            // Try the PATCH variant as a fallback (some account types use it)
+                            const patchRes = await fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/call`, {
+                                method: 'PATCH',
+                                headers,
+                                body: JSON.stringify({ recipients: [spammerState.victimId], video: isVideo })
+                            }).catch(() => ({ status: 0 }));
+                            if (patchRes.status === 200 || patchRes.status === 201 || patchRes.status === 204) {
+                                spammerState.completed++;
+                                await new Promise(r => setTimeout(r, 400));
+                                await fetch(`https://discord.com/api/v9/channels/${dmChannel.id}/call`, { method: 'DELETE', headers }).catch(() => {});
+                            } else {
+                                spammerState.failed++;
+                                if (processed <= 3) logSpammer(`Call HTTP ${ringStatus} (fallback ${patchRes.status})`);
+                            }
                         }
                         if (processed <= 5 || processed % 10 === 0) {
                             logSpammer(`${isVideo ? 'Video' : 'Voice'} call ${processed}/${spammerState.count}`);
