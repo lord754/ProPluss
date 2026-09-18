@@ -25,3 +25,5 @@ const Properties = {
 };
 
 module.exports = { USER_AGENT, Properties };
+
+// v2.2.1a

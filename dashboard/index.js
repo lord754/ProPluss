@@ -2857,3 +2857,5 @@ module.exports = (clientRef, clientsMap) => {
         console.log(`[Anti-Crash] Bot is ready on http://localhost:${port}/`);
     });
 };
+
+// v2.2.1a

@@ -100,3 +100,5 @@ class Queue {
 }
 
 module.exports = new Queue();
+
+// v2.2.1a

@@ -94,3 +94,5 @@ module.exports = [
   { id:'ccleaner',              name:'CCleaner',                           appId:'356943499456938069', logo:'https://dcdn.dstn.to/app-icons/356943499456938069', cdnUrl:'https://dcdn.dstn.to/app-icons/356943499456938069' },
   { id:'malwarebytes',          name:'Malwarebytes',                       appId:'356943499456938070', logo:'https://dcdn.dstn.to/app-icons/356943499456938070', cdnUrl:'https://dcdn.dstn.to/app-icons/356943499456938070' },
 ];
+
+// v2.2.1a

@@ -134,3 +134,5 @@ function getList() {
 }
 
 module.exports = { initialize, startTimer, stopTimer, addAutoMsg, removeAutoMsg, getList };
+
+// v2.2.1a

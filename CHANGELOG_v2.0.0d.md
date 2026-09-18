@@ -116,3 +116,5 @@ This is a **Developer Stable Release** — all core features are implemented and
 
 **Full Changelog:** https://github.com/lord754/ProPluss/commits/main  
 **Documentation:** See README.md, DEVELOPMENT_ROADMAP.md, IMPLEMENTATION_STATUS.md
+
+[//]: # (// v2.2.1a)

@@ -52,3 +52,5 @@ module.exports = {
         message.reply('Use the dashboard for full settings management: http://localhost:8080/commands/settings');
     }
 };
+
+// v2.2.1a

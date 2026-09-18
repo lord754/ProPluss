@@ -59,3 +59,5 @@ This is working as designed. The confusion may be that it takes a few seconds fo
 
 ### Issue X: Welcomer Toggle  
 **Status:** FIXED (already done earlier)
+
+[//]: # (// v2.2.1a)

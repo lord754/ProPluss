@@ -50,3 +50,5 @@ module.exports = {
     removeTrigger,
     getResponse
 };
+
+// v2.2.1a

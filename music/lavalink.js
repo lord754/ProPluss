@@ -234,3 +234,5 @@ class Lavalink {
 }
 
 module.exports = Lavalink;
+
+// v2.2.1a

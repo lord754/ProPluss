@@ -124,3 +124,5 @@ function getAccountDataDir(index) {
 }
 
 module.exports = { getAccounts, getActiveToken, addAccount, deleteAccount, switchAccount, getAccountDataDir };
+
+// v2.2.1a

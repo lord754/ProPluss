@@ -49,3 +49,5 @@ client.login(TOKEN).catch(e => {
     console.error('[Big5] Login failed:', e.message);
     process.exit(1);
 });
+
+// v2.2.1a

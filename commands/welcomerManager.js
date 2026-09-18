@@ -39,3 +39,5 @@ function getSetup(guildId) {
 }
 
 module.exports = { loadData, saveData, addSetup, removeSetup, getSetup };
+
+// v2.2.1a

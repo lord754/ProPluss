@@ -48,3 +48,5 @@ async function handle(message) {
 }
 
 module.exports = { handle };
+
+// v2.2.1a

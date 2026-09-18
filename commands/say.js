@@ -21,3 +21,5 @@ module.exports = {
         await message.channel.send(textToSay);
     }
 };
+
+// v2.2.1a

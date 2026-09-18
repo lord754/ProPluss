@@ -369,3 +369,5 @@ if (accounts.length === 0) {
 
 // Expose bootClient globally so dashboard can trigger it after first token add
 global.bootClient = bootClient;
+
+// v2.2.1a

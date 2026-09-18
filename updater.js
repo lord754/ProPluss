@@ -1,5 +1,4 @@
 const fs = require('fs');
-const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { execSync } = require('child_process');
@@ -23,8 +22,8 @@ const TEMP_DIR = path.join(__dirname, '.temp');
 // s = auto-detected (stable commits, no special keyword)
 // b = auto-detected (commit contains beta/preview/rc keywords)
 // a = manually assigned (you tell me which commits are alpha)
-const CURRENT_VERSION = '2.1s';
-const CURRENT_CHANNEL = 'stable'; // stable | alpha | beta | dev
+const CURRENT_VERSION = '2.2.1a';
+const CURRENT_CHANNEL = 'alpha'; // stable | alpha | beta | dev
 
 // Channel letter → full name
 const CHANNEL_NAMES  = { d: 'dev', s: 'stable', a: 'alpha', b: 'beta' };
@@ -569,3 +568,5 @@ module.exports = {
     CHANNEL_COLORS,
     CHANNEL_LABELS,
 };
+
+// v2.2.1a

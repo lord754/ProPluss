@@ -189,3 +189,5 @@ class QuestManager {
 }
 
 module.exports = { QuestManager };
+
+// v2.2.1a

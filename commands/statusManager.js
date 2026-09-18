@@ -111,3 +111,5 @@ module.exports = {
     stopRotator,
     isRotatorRunning
 };
+
+// v2.2.1a

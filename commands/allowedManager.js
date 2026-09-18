@@ -104,3 +104,5 @@ module.exports = {
     ensureSelfAllowed,
     getActiveIndex,
 };
+
+// v2.2.1a

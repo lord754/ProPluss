@@ -138,3 +138,5 @@ function getList() {
 }
 
 module.exports = { initialize, addTimedMsg, removeTimedMsg, getList };
+
+// v2.2.1a

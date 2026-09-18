@@ -15,3 +15,5 @@ module.exports = {
     },
     delete: (name) => { save(load().filter(p => p.name !== name)); }
 };
+
+// v2.2.1a

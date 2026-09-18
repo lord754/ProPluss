@@ -9,3 +9,5 @@ module.exports = {
         sent.edit(`🏓 Pong!\nLatency: ${latency}ms\nAPI Latency: ${apiLatency}ms`);
     }
 };
+
+// v2.2.1a

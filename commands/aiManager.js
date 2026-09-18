@@ -116,12 +116,13 @@ async function generateReply(userId, userContent) {
     messages.push({ role: "user", content: userContent });
 
     // Determine Model Parameters
-    let modelName = "moonshotai/kimi-k2-thinking";
-    let temp = 1;
-    let maxTokens = 16384;
+    // v2.2.1a: updated models — kimi-k2 was removed (410), using nemotron + llama fallback
+    let modelName = "nvidia/llama-3.1-nemotron-ultra-253b-v1";
+    let temp = 0.7;
+    let maxTokens = 8192;
 
     if (config.modelType === "fast") {
-        modelName = "moonshotai/kimi-k2-instruct-0905";
+        modelName = "meta/llama-3.3-70b-instruct";
         temp = 0.6;
         maxTokens = 4096;
     }
@@ -137,23 +138,17 @@ async function generateReply(userId, userContent) {
         });
 
         let fullContent = "";
-        let fullReasoning = "";
 
         for await (const chunk of completion) {
             const delta = chunk.choices[0]?.delta;
-            if (delta?.reasoning_content) {
-                fullReasoning += delta.reasoning_content;
-                // process.stdout.write(delta.reasoning_content); // Hidden
-            }
             if (delta?.content) {
                 fullContent += delta.content;
-                // process.stdout.write(delta.content); // Hidden
             }
         }
 
         console.log(`\n[AI] Reply complete (Model: ${config.modelType}).`);
 
-        // Strip out <think> blocks if the model returns them in the main content chunk
+        // Strip out <think> blocks if present
         fullContent = fullContent.replace(/<think>[\s\S]*?(?:<\/think>|$)\s*/gi, '');
 
         // Save to history
@@ -164,6 +159,24 @@ async function generateReply(userId, userContent) {
         return fullContent;
 
     } catch (error) {
+        // Retry with fallback model on 410/404/gone errors
+        if (error.status === 410 || error.status === 404) {
+            console.warn(`[AI] Primary model unavailable (${error.status}), retrying with fallback...`);
+            try {
+                const fallback = await openai.chat.completions.create({
+                    model: "meta/llama-3.3-70b-instruct",
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 2048,
+                    stream: false
+                });
+                const reply = fallback.choices[0]?.message?.content || "";
+                if (reply.trim()) await addHistory(userId, userContent, reply);
+                return reply;
+            } catch (fallbackErr) {
+                console.error("[AI] Fallback also failed:", fallbackErr.message);
+            }
+        }
         console.error("[AI] Error generating reply:", error);
         return "what you mean?";
     }
