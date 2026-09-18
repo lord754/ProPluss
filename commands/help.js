@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder } = require('discord.js-selfbot-v13');
 const fs = require('fs');
 const path = require('path');
 
