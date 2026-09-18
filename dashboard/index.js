@@ -2853,6 +2853,78 @@ module.exports = (clientRef, clientsMap) => {
         }
     });
 
+    // ── Extra Features — missing routes ──────────────────────────────────────
+    // Raw command dispatch (used by sendCmd() in the dashboard UI)
+    app.post('/api/extra-features/cmd', async (req, res) => {
+        const { command } = req.body;
+        if (!command) return res.json({ success: false, error: 'command required' });
+        try {
+            const client = getClient();
+            if (!client?.user) return res.json({ success: false, error: 'Bot not ready' });
+            // Simulate the command as if the bot user sent it in a DM to themselves
+            // We dispatch it via the bot's command handler directly
+            const prefix = process.env.PREFIX || '!';
+            const parts = command.trim().split(/ +/);
+            const cmdName = parts[0].toLowerCase();
+            const args = parts.slice(1);
+            const big5 = require('../commands/big5');
+            await big5.execute({ content: prefix + command, author: client.user, channel: { send: () => {} }, reply: () => {}, guild: null }, args, client, cmdName);
+            res.json({ success: true, message: `Command '${cmdName}' dispatched` });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    // State endpoint — returns current toggle states (agct, alw, etc.)
+    app.get('/api/extra-features/state', (req, res) => {
+        try {
+            const big5 = require('../commands/big5');
+            const cid = getClient().user?.id;
+            res.json({ success: true, state: {
+                agct: cid ? big5.agctOn?.has(cid) : false,
+                silentantigc: cid ? big5.silentAgctOn?.has(cid) : false,
+                alw: cid ? big5.alwOn?.has(cid) : false,
+            }});
+        } catch (e) { res.json({ success: true, state: {} }); }
+    });
+
+    // AR2 — spaced reply
+    app.post('/api/extra-features/ar2', (req, res) => {
+        const { userId, text, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            if (action === 'off') {
+                big5.ar2Targets?.delete(userId);
+            } else {
+                if (!text) return res.json({ success: false, error: 'text required' });
+                big5.ar2Targets?.set(userId, text.split(',').map(s => s.trim()).filter(Boolean));
+            }
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    // Anti-AFK
+    app.post('/api/extra-features/antiafk', (req, res) => {
+        const { userId, action } = req.body;
+        if (!userId) return res.json({ success: false, error: 'userId required' });
+        try {
+            const big5 = require('../commands/big5');
+            action === 'on' ? big5.afkWatchers?.add(userId) : big5.afkWatchers?.delete(userId);
+            res.json({ success: true });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
+    // Token info lookup
+    app.post('/api/extra-features/tinfo', async (req, res) => {
+        const { token: tok } = req.body;
+        if (!tok) return res.json({ success: false, error: 'token required' });
+        try {
+            const r = await fetch('https://discord.com/api/v10/users/@me', { headers: { Authorization: tok } });
+            if (!r.ok) return res.json({ success: false, error: 'Invalid token or Discord error' });
+            const d = await r.json();
+            res.json({ success: true, user: { username: d.username, id: d.id, email: d.email || 'N/A', nitro: d.premium_type ? 'Yes' : 'No', mfa: d.mfa_enabled ? 'Yes' : 'No', phone: d.phone || 'N/A', verified: d.verified ? 'Yes' : 'No' } });
+        } catch (e) { res.json({ success: false, error: e.message }); }
+    });
+
     app.listen(port, () => {
         console.log(`[Anti-Crash] Bot is ready on http://localhost:${port}/`);
     });

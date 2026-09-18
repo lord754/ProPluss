@@ -310,8 +310,15 @@ async function checkUpdates(force) {
     renderDismissed(r.dismissedItems);
     renderHistory(r.history);
   } catch(e) {
-    applyDot('yellow', 'Minor Issues');
+    applyDot('yellow', 'Check Failed');
     document.getElementById('dotTip').textContent = e.message;
+    // Show the error in the log box so the user can see it
+    const logCard = document.getElementById('logCard');
+    const logBox = document.getElementById('logBox');
+    if (logCard) logCard.style.display = '';
+    if (logBox) {
+      logBox.textContent = 'Check failed: ' + e.message + '\n\nIf this says "rate limit", wait 1 minute and try again.\nIf the repo is private, make sure it is public on GitHub.';
+    }
   }
   btn.disabled = false; btn.textContent = '🔍 Check For Update';
 }
