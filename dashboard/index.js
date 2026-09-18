@@ -572,20 +572,25 @@ module.exports = (clientRef, clientsMap) => {
     app.post('/api/status-rotator/set', async (req, res) => {
         const { text } = req.body;
         try {
-            const statusManager = require('../commands/statusManager');
-            statusManager.saveData({ custom_status: text || '' }, client.accountIndex);
-            const rpcManager = require('../commands/rpcManager');
-            await rpcManager.setPresence(client, rpcManager.loadData(client.accountIndex));
+            // Directly set the custom status text on Discord
+            await client.user.setPresence({
+                activities: text ? [{ type: 'CUSTOM', name: 'Custom Status', state: text }] : [],
+                status: client.user.presence?.status || 'online'
+            });
             res.json({ success: true });
         } catch (e) { res.json({ success: false, error: e.message }); }
     });
     app.post('/api/status-rotator/emoji', async (req, res) => {
         const { emoji } = req.body;
         try {
-            const statusManager = require('../commands/statusManager');
-            statusManager.saveData({ emoji: emoji || '' }, client.accountIndex);
-            const rpcManager = require('../commands/rpcManager');
-            await rpcManager.setPresence(client, rpcManager.loadData(client.accountIndex));
+            // Update emoji in the presence — keep existing custom status text
+            const currentActivities = client.user.presence?.activities || [];
+            const customAct = currentActivities.find(a => a.type === 'CUSTOM' || a.name === 'Custom Status');
+            const currentText = customAct ? (customAct.state || customAct.name || '') : '';
+            await client.user.setPresence({
+                activities: [{ type: 'CUSTOM', name: 'Custom Status', state: currentText, emoji: emoji ? { name: emoji } : undefined }],
+                status: client.user.presence?.status || 'online'
+            });
             res.json({ success: true });
         } catch (e) { res.json({ success: false, error: e.message }); }
     });
