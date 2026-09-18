@@ -306,6 +306,33 @@ async function applyUpdate(sha, logs) {
         }
     }
 
+    // NEW: For apply old versions, get ALL files from the tree
+    // This ensures missing files are downloaded
+    let allTreeFiles = [];
+    try {
+        const tree = await getJson(`${API}/repos/${REPO}/git/trees/${sha}?recursive=1`);
+        allTreeFiles = (tree.tree || [])
+            .filter(item => item.type === 'blob' && !isProtected(item.path))
+            .map(item => ({ filename: item.path, sha: item.sha, size: item.size }));
+        log(`Commit tree contains ${allTreeFiles.length} files total.`);
+    } catch (e) {
+        log(`Could not fetch full tree: ${e.message}`);
+    }
+
+    // Merge diff files with missing files from tree
+    const fileMap = new Map();
+    files.forEach(f => fileMap.set(f.filename, f));
+    allTreeFiles.forEach(f => {
+        if (!fileMap.has(f.filename)) {
+            const localPath = path.join(__dirname, f.filename);
+            if (!fs.existsSync(localPath)) {
+                fileMap.set(f.filename, { filename: f.filename, status: 'missing', sha: f.sha });
+            }
+        }
+    });
+    files = Array.from(fileMap.values());
+    log(`Total files to process (diff + missing): ${files.length}`);
+
     if (files.length === 0) {
         log('No files to update in this commit.');
         // Still record state so it shows as installed
@@ -332,8 +359,8 @@ async function applyUpdate(sha, logs) {
         if (isProtected(file.filename)) { log(`SKIP (protected — ${file.filename}): this file is never overwritten`); skipped++; continue; }
         if (file.status === 'removed') { log(`SKIP (deleted in commit): ${file.filename}`); skipped++; continue; }
         try {
-            const r = await get(`${RAW}/${REPO}/main/${file.filename}`);
-            if (r.status !== 200) throw new Error(`HTTP ${r.status} — file not found on main branch`);
+            const r = await get(`${RAW}/${REPO}/${sha}/${file.filename}`);
+            if (r.status !== 200) throw new Error(`HTTP ${r.status} — file not found at commit ${sha.slice(0,7)}`);
             const dest = path.join(__dirname, file.filename);
             if (!fs.existsSync(path.dirname(dest))) fs.mkdirSync(path.dirname(dest), { recursive: true });
             fs.writeFileSync(dest, r.body);
